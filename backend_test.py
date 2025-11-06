@@ -150,6 +150,15 @@ class PeptimancerAPITester:
         """Test generation history endpoint"""
         return self.run_test("Generation History", "GET", "generation-history", 200)
 
+    def test_empty_validation_endpoint(self):
+        """Test empty validation endpoint - HOTFIX VALIDATION"""
+        return self.run_test(
+            "HOTFIX: Empty Validation Endpoint", 
+            "GET", 
+            "validate-sequence/", 
+            200  # Should handle gracefully, not 404
+        )
+
     def test_generate_analogues_max_count(self):
         """Test analogue generation with maximum count"""
         test_data = {
