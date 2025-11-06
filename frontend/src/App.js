@@ -17,11 +17,12 @@ const API = `${BACKEND_URL}/api`;
 
 function App() {
   const [formData, setFormData] = useState({
-    base_molecule: 'HAEGTFTSDVSSYLEG',
-    allowed_mods: 'substitution, lipidation, cyclization',
-    exclusions: 'proline substitution, C-terminal modifications', 
-    target_use: 'GLP-1 receptor agonist for diabetes treatment',
-    num_analogues: 3
+    base_molecule: 'HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR',
+    allowed_mods: 'Substitution, Lipidation, Cyclization, D-isomers',
+    exclusions: 'No Aib or γ-Glu residues', 
+    target_use: 'Metabolic Research / GLP-1R',
+    num_analogues: 3,
+    include_cost: true
   });
   
   const [results, setResults] = useState(null);
