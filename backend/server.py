@@ -327,43 +327,86 @@ Generate all {request.num_analogues} analogues in this exact format."""
     
     return analogues
 
-def parse_analogue_response(ai_response: str, base_molecule: str) -> List[PeptideAnalogue]:
-    """Parse AI response into structured PeptideAnalogue objects"""
+def parse_analogue_response(ai_response: str, base_molecule: str, include_cost: bool = False) -> List[PeptideAnalogue]:
+    """Parse AI response into structured PeptideAnalogue objects with Vault-grade format"""
     analogues = []
     
-    # Split response into individual analogues
-    analogue_sections = re.split(r'---+', ai_response)
+    # Split response into individual analogues using the ### marker
+    analogue_sections = re.split(r'### 🧬 Analogue:', ai_response)
     
-    for section in analogue_sections:
-        if '**Analogue Name**:' not in section:
+    for i, section in enumerate(analogue_sections):
+        if i == 0 or not section.strip():  # Skip empty first section
             continue
             
         try:
-            # Extract fields using regex
-            name_match = re.search(r'\*\*Analogue Name\*\*:\s*(.+)', section)
-            sequence_match = re.search(r'\*\*Modified Sequence\*\*:\s*(.+)', section)
-            mods_match = re.findall(r'- (.+)', section)
-            positions_match = re.search(r'\*\*Modification Positions\*\*:\s*(.+)', section)
-            ip_match = re.search(r'\*\*IP Risk Score\*\*:\s*(\d+(?:\.\d+)?)', section)
-            novelty_match = re.search(r'\*\*Novelty Score\*\*:\s*(\d+(?:\.\d+)?)', section)
-            affinity_match = re.search(r'\*\*Affinity Estimate\*\*:\s*(.+)', section)
-            pk_match = re.search(r'\*\*PK Estimate\*\*:\s*(.+)', section)
+            # Extract analogue name
+            name_match = re.search(r'^([^\n]+)', section.strip())
+            analogue_name = name_match.group(1).strip() if name_match else f"Analogue-{i}"
             
-            if name_match and sequence_match:
-                analogue = PeptideAnalogue(
-                    analogue_name=name_match.group(1).strip(),
-                    modified_sequence=sequence_match.group(1).strip(),
-                    modifications_applied=mods_match[:3],  # Max 3 modifications
-                    modification_positions=[positions_match.group(1).strip()] if positions_match else [],
-                    ip_risk_score=float(ip_match.group(1)) if ip_match else 5.0,
-                    novelty_score=float(novelty_match.group(1)) if novelty_match else 5.0,
-                    affinity_estimate=affinity_match.group(1).strip() if affinity_match else "Medium maintained",
-                    pk_estimate=pk_match.group(1).strip() if pk_match else "Similar stability"
-                )
-                analogues.append(analogue)
+            # Extract sequence
+            sequence_match = re.search(r'\*\*Sequence:\*\*\s*\n`([^`]+)`', section)
+            modified_sequence = sequence_match.group(1).strip() if sequence_match else ""
+            
+            # Extract modifications
+            mods_section = re.search(r'\*\*Modifications Applied:\*\*\s*\n((?:- .+\n?)+)', section)
+            modifications = []
+            if mods_section:
+                mod_lines = mods_section.group(1).strip().split('\n')
+                modifications = [line.strip('- ').strip() for line in mod_lines if line.strip().startswith('-')]
+            
+            # Extract IP Risk Profile
+            ip_risk_match = re.search(r'- Patent Similarity Risk: ([^\n]+)', section)
+            novelty_match = re.search(r'- Novelty Score: (\d+(?:\.\d+)?)%', section)
+            ip_notes_match = re.search(r'📜 IP Risk Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
+            
+            patent_risk = ip_risk_match.group(1).strip() if ip_risk_match else "Medium"
+            novelty_score = float(novelty_match.group(1)) if novelty_match else 50.0
+            ip_notes = ip_notes_match.group(1).strip() if ip_notes_match else "Patent analysis pending"
+            
+            # Extract Bioactivity Profile
+            binding_match = re.search(r'- Binding Affinity: ([+-]?\d+(?:\.\d+)?) kcal/mol', section)
+            half_life_match = re.search(r'- Predicted Half-Life: (\d+(?:\.\d+)?) days', section)
+            complexity_match = re.search(r'- Synthesis Complexity: (\d+) / 5', section)
+            cost_match = re.search(r'- Estimated Cost: \$(\d+(?:\.\d+)?) CAD/mg', section) if include_cost else None
+            bioactivity_notes_match = re.search(r'🧪 Bioactivity Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
+            
+            binding_affinity = float(binding_match.group(1)) if binding_match else -8.5
+            predicted_half_life = float(half_life_match.group(1)) if half_life_match else 2.1
+            synthesis_complexity = int(complexity_match.group(1)) if complexity_match else 3
+            synthesis_cost = float(cost_match.group(1)) if cost_match else None
+            bioactivity_notes = bioactivity_notes_match.group(1).strip() if bioactivity_notes_match else "Standard GLP-1R profile expected"
+            
+            # Generate Vault ID
+            vault_id = generate_vault_id(modified_sequence, modifications)
+            
+            # Create analogue with both new and legacy fields
+            analogue = PeptideAnalogue(
+                analogue_name=analogue_name,
+                modified_sequence=modified_sequence,
+                modifications_applied=modifications,
+                modification_positions=modifications,  # Using same for now
                 
+                # New Vault-grade fields
+                patent_similarity_risk=patent_risk,
+                novelty_score=novelty_score,
+                ip_notes=ip_notes,
+                binding_affinity=binding_affinity,
+                predicted_half_life=predicted_half_life,
+                synthesis_complexity=synthesis_complexity,
+                synthesis_cost=synthesis_cost,
+                bioactivity_notes=bioactivity_notes,
+                vault_id=vault_id,
+                
+                # Legacy compatibility fields
+                ip_risk_score=max(0, min(10, 10 - (novelty_score / 10))),  # Convert novelty to legacy scale
+                novelty_score_legacy=novelty_score / 10,  # Convert to 0-10 scale
+                affinity_estimate=f"ΔG = {binding_affinity} kcal/mol",
+                pk_estimate=f"t½ = {predicted_half_life} days"
+            )
+            analogues.append(analogue)
+            
         except Exception as e:
-            logging.warning(f"Failed to parse analogue section: {e}")
+            logging.warning(f"Failed to parse analogue section {i}: {e}")
             continue
     
     return analogues
