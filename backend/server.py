@@ -567,10 +567,23 @@ async def create_peptide_analogues(request: PeptideGenerationRequest):
             analogues=analogues
         )
         
-        # Store in MongoDB for history
+        # Store in MongoDB for history and create vault ledger entries
         doc = response.model_dump()
         doc['timestamp'] = doc['timestamp'].isoformat()
         await db.peptide_generations.insert_one(doc)
+        
+        # Create vault ledger entries for each analogue
+        for analogue in response.analogues:
+            ledger_entry = VaultLedgerEntry(
+                vault_id=analogue.vault_id,
+                generation_id=response.request_id,
+                base_molecule=response.base_molecule,
+                analogue_data=analogue.model_dump()
+            )
+            
+            ledger_doc = ledger_entry.model_dump()
+            ledger_doc['timestamp'] = ledger_doc['timestamp'].isoformat()
+            await db.vault_ledger.insert_one(ledger_doc)
         
         return response
         
