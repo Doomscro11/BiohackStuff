@@ -660,16 +660,20 @@ async def validate_empty_sequence():
 async def export_vault_report(export_request: ExportRequest):
     """Export Vault-grade report in PDF format"""
     try:
+        # Validate request
+        if not export_request.generation_id or not export_request.generation_id.strip():
+            raise HTTPException(status_code=400, detail="Generation ID is required")
+        
         # Retrieve generation from database
         generation_doc = await db.peptide_generations.find_one(
-            {"request_id": export_request.generation_id}, {"_id": 0}
+            {"request_id": export_request.generation_id.strip()}, {"_id": 0}
         )
         
         if not generation_doc:
             raise HTTPException(status_code=404, detail="Generation not found")
         
         # Convert back to response model
-        if isinstance(generation_doc['timestamp'], str):
+        if isinstance(generation_doc.get('timestamp'), str):
             generation_doc['timestamp'] = datetime.fromisoformat(generation_doc['timestamp'])
         
         generation_response = PeptideGenerationResponse(**generation_doc)
@@ -683,11 +687,13 @@ async def export_vault_report(export_request: ExportRequest):
         )
         
         # Update export count in vault ledger
-        vault_ids = [analogue.vault_id for analogue in generation_response.analogues]
-        await db.vault_ledger.update_many(
-            {"vault_id": {"$in": vault_ids}},
-            {"$inc": {"export_count": 1}}
-        )
+        if generation_response.analogues:
+            vault_ids = [analogue.vault_id for analogue in generation_response.analogues if analogue.vault_id]
+            if vault_ids:
+                await db.vault_ledger.update_many(
+                    {"vault_id": {"$in": vault_ids}},
+                    {"$inc": {"export_count": 1}}
+                )
         
         return FileResponse(
             path=pdf_path,
@@ -695,6 +701,8 @@ async def export_vault_report(export_request: ExportRequest):
             media_type="application/pdf"
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Export failed: {e}")
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
