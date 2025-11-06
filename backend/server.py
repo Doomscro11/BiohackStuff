@@ -642,6 +642,201 @@ async def validate_empty_sequence():
         "composition": {}
     }
 
+# Phase III: Vault Export System
+@api_router.post("/export-report")
+async def export_vault_report(export_request: ExportRequest):
+    """Export Vault-grade report in PDF format"""
+    try:
+        # Retrieve generation from database
+        generation_doc = await db.peptide_generations.find_one(
+            {"request_id": export_request.generation_id}, {"_id": 0}
+        )
+        
+        if not generation_doc:
+            raise HTTPException(status_code=404, detail="Generation not found")
+        
+        # Convert back to response model
+        if isinstance(generation_doc['timestamp'], str):
+            generation_doc['timestamp'] = datetime.fromisoformat(generation_doc['timestamp'])
+        
+        generation_response = PeptideGenerationResponse(**generation_doc)
+        
+        # Generate PDF report
+        pdf_generator = VaultPDFGenerator()
+        pdf_path = pdf_generator.generate_report(
+            generation_response, 
+            include_cost=export_request.include_cost,
+            watermark=export_request.watermark
+        )
+        
+        # Update export count in vault ledger
+        vault_ids = [analogue.vault_id for analogue in generation_response.analogues]
+        await db.vault_ledger.update_many(
+            {"vault_id": {"$in": vault_ids}},
+            {"$inc": {"export_count": 1}}
+        )
+        
+        return FileResponse(
+            path=pdf_path,
+            filename=f"peptimancer_vault_report_{export_request.generation_id[:8]}.pdf",
+            media_type="application/pdf"
+        )
+        
+    except Exception as e:
+        logging.error(f"Export failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+# Phase III: Synthesis Partner Integration
+@api_router.post("/request-synthesis")
+async def request_synthesis_quote(synthesis_request: SynthesisRequest):
+    """Send analogue to synthesis partner for quotation"""
+    try:
+        # Retrieve analogue from vault ledger
+        ledger_entry = await db.vault_ledger.find_one(
+            {"vault_id": synthesis_request.vault_id}, {"_id": 0}
+        )
+        
+        if not ledger_entry:
+            raise HTTPException(status_code=404, detail="Vault ID not found")
+        
+        # Prepare synthesis request data
+        synthesis_data = {
+            "request_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "vault_id": synthesis_request.vault_id,
+            "partner_name": synthesis_request.partner_name,
+            "analogue_data": ledger_entry["analogue_data"],
+            "requirements": {
+                "quantity_mg": synthesis_request.quantity_mg,
+                "purity_requirement": synthesis_request.purity_requirement,
+                "timeline_days": synthesis_request.timeline_days,
+                "additional_notes": synthesis_request.additional_notes
+            },
+            "contact_email": synthesis_request.contact_email
+        }
+        
+        # Store synthesis request
+        await db.synthesis_requests.insert_one(synthesis_data)
+        
+        # Update vault ledger with synthesis request
+        await db.vault_ledger.update_one(
+            {"vault_id": synthesis_request.vault_id},
+            {"$push": {"synthesis_requests": synthesis_data}}
+        )
+        
+        # In a real implementation, this would send to partner webhook
+        # For now, we'll simulate the webhook call
+        webhook_response = {
+            "status": "submitted",
+            "partner_reference": f"SYN-{synthesis_data['request_id'][:8]}",
+            "estimated_quote_time": "2-3 business days",
+            "message": f"Synthesis request submitted to {synthesis_request.partner_name}"
+        }
+        
+        return {
+            "synthesis_request_id": synthesis_data["request_id"],
+            "vault_id": synthesis_request.vault_id,
+            "partner_response": webhook_response,
+            "status": "submitted"
+        }
+        
+    except Exception as e:
+        logging.error(f"Synthesis request failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Synthesis request failed: {str(e)}")
+
+# Phase III: Pro Vault Tier - Token Management
+@api_router.post("/vault-tokens/create")
+async def create_vault_token(user_id: str, tier: str = "pro", credits: int = 100):
+    """Create Pro Vault access token"""
+    try:
+        token = ProVaultToken(
+            user_id=user_id,
+            tier=tier,
+            credits=credits,
+            expires_at=datetime.now(timezone.utc).replace(year=datetime.now().year + 1)
+        )
+        
+        token_doc = token.model_dump()
+        token_doc['created_at'] = token_doc['created_at'].isoformat()
+        token_doc['expires_at'] = token_doc['expires_at'].isoformat()
+        
+        await db.vault_tokens.insert_one(token_doc)
+        
+        return {
+            "token_id": token.token_id,
+            "tier": token.tier,
+            "credits": token.credits,
+            "status": "active"
+        }
+        
+    except Exception as e:
+        logging.error(f"Token creation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Token creation failed: {str(e)}")
+
+@api_router.get("/vault-tokens/{token_id}")
+async def get_vault_token_status(token_id: str):
+    """Check Pro Vault token status and credits"""
+    try:
+        token_doc = await db.vault_tokens.find_one({"token_id": token_id}, {"_id": 0})
+        
+        if not token_doc:
+            raise HTTPException(status_code=404, detail="Token not found")
+        
+        return {
+            "token_id": token_id,
+            "tier": token_doc["tier"],
+            "credits": token_doc["credits"],
+            "expires_at": token_doc["expires_at"],
+            "status": "active" if token_doc["credits"] > 0 else "depleted"
+        }
+        
+    except Exception as e:
+        logging.error(f"Token check failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Token check failed: {str(e)}")
+
+# Phase III: Vault Ledger / IP Registry
+@api_router.get("/vault-ledger")
+async def get_vault_ledger(limit: int = 50):
+    """Get vault ledger entries for IP tracking"""
+    try:
+        ledger_entries = await db.vault_ledger.find(
+            {}, {"_id": 0}
+        ).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        # Convert timestamps
+        for entry in ledger_entries:
+            if isinstance(entry['timestamp'], str):
+                entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
+        
+        return {
+            "ledger_entries": ledger_entries,
+            "total_entries": len(ledger_entries),
+            "registry_status": "active"
+        }
+        
+    except Exception as e:
+        logging.error(f"Vault ledger retrieval failed: {e}")
+        return {"ledger_entries": [], "error": str(e)}
+
+@api_router.get("/vault-ledger/{vault_id}")
+async def get_vault_entry(vault_id: str):
+    """Get specific vault entry for IP audit trail"""
+    try:
+        entry = await db.vault_ledger.find_one({"vault_id": vault_id}, {"_id": 0})
+        
+        if not entry:
+            raise HTTPException(status_code=404, detail="Vault entry not found")
+        
+        # Convert timestamp
+        if isinstance(entry['timestamp'], str):
+            entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
+        
+        return entry
+        
+    except Exception as e:
+        logging.error(f"Vault entry retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
