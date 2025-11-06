@@ -1,0 +1,1 @@
+{"detail":"Export failed: Character \"🧬\" at index 0 in text is outside the range of characters supported by the font used: \"helveticaB\". Please consider using a Unicode font."}
