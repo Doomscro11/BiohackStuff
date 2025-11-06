@@ -426,10 +426,39 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Export Ready Footer */}
-                      <div className="flex items-center justify-between pt-2 border-t">
+                      {/* Export Ready Footer with Phase III Actions */}
+                      <div className="flex items-center justify-between pt-4 border-t bg-gray-50 dark:bg-gray-800 -m-6 mt-4 p-4 rounded-b-lg">
                         <div className="text-xs text-gray-500">
                           🔗 Export-ready • Vault-grade format
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleSynthesisRequest(analogue.vault_id, analogue.analogue_name)}
+                            disabled={synthesisLoading === analogue.vault_id}
+                            data-testid={`synthesis-request-${index}`}
+                          >
+                            {synthesisLoading === analogue.vault_id ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-1" />
+                            ) : (
+                              <Send className="h-3 w-3 mr-1" />
+                            )}
+                            Synthesis Quote
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => handleExportPDF(results.request_id)}
+                            disabled={exportLoading}
+                            data-testid={`export-pdf-${index}`}
+                          >
+                            {exportLoading ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
+                            ) : (
+                              <Download className="h-3 w-3 mr-1" />
+                            )}
+                            Export PDF
+                          </Button>
                         </div>
                         <div className="text-xs text-gray-400">
                           Generated: {new Date().toLocaleDateString()}
