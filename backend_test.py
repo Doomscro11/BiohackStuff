@@ -426,11 +426,24 @@ class PeptimancerAPITester:
 
     def run_all_tests(self):
         """Run all backend API tests"""
-        print("🧪 Starting Peptimancer Backend API Tests - Iteration 2 (Edge Cases)")
+        print("🧪 Starting Peptimancer Backend API Tests - Iteration 3 (HOTFIX VALIDATION)")
         print("=" * 70)
         
         # Basic connectivity tests
         self.test_root_endpoint()
+        
+        print("\n🔥 HOTFIX VALIDATION TESTS")
+        print("-" * 40)
+        
+        # HOTFIX validation tests - these are the critical ones
+        self.test_generate_analogues_invalid_sequence()  # Should return 400
+        self.test_edge_case_empty_sequence()  # Should return 400
+        self.test_edge_case_special_characters()  # Should return 400
+        self.test_empty_validation_endpoint()  # Should handle gracefully
+        self.test_valid_sequence_still_works()  # Should still work
+        
+        print("\n✅ BASELINE FUNCTIONALITY TESTS")
+        print("-" * 40)
         
         # Sequence validation tests
         self.test_sequence_validation_valid()
@@ -439,9 +452,6 @@ class PeptimancerAPITester:
         # Core functionality tests
         self.test_generate_analogues_basic()
         self.test_generate_analogues_minimal()
-        
-        # Error handling tests
-        self.test_generate_analogues_invalid_sequence()
         
         # Additional functionality tests
         self.test_generation_history()
