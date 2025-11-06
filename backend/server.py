@@ -762,8 +762,11 @@ async def request_synthesis_quote(synthesis_request: SynthesisRequest):
 async def create_vault_token(user_id: str, tier: str = "pro", credits: int = 100):
     """Create Pro Vault access token"""
     try:
+        if not user_id or not user_id.strip():
+            raise HTTPException(status_code=400, detail="User ID is required")
+        
         token = ProVaultToken(
-            user_id=user_id,
+            user_id=user_id.strip(),
             tier=tier,
             credits=credits,
             expires_at=datetime.now(timezone.utc).replace(year=datetime.now().year + 1)
@@ -771,7 +774,8 @@ async def create_vault_token(user_id: str, tier: str = "pro", credits: int = 100
         
         token_doc = token.model_dump()
         token_doc['created_at'] = token_doc['created_at'].isoformat()
-        token_doc['expires_at'] = token_doc['expires_at'].isoformat()
+        if token_doc['expires_at']:
+            token_doc['expires_at'] = token_doc['expires_at'].isoformat()
         
         await db.vault_tokens.insert_one(token_doc)
         
@@ -782,6 +786,8 @@ async def create_vault_token(user_id: str, tier: str = "pro", credits: int = 100
             "status": "active"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Token creation failed: {e}")
         raise HTTPException(status_code=500, detail=f"Token creation failed: {str(e)}")
@@ -790,7 +796,10 @@ async def create_vault_token(user_id: str, tier: str = "pro", credits: int = 100
 async def get_vault_token_status(token_id: str):
     """Check Pro Vault token status and credits"""
     try:
-        token_doc = await db.vault_tokens.find_one({"token_id": token_id}, {"_id": 0})
+        if not token_id or not token_id.strip():
+            raise HTTPException(status_code=400, detail="Token ID is required")
+        
+        token_doc = await db.vault_tokens.find_one({"token_id": token_id.strip()}, {"_id": 0})
         
         if not token_doc:
             raise HTTPException(status_code=404, detail="Token not found")
@@ -803,6 +812,8 @@ async def get_vault_token_status(token_id: str):
             "status": "active" if token_doc["credits"] > 0 else "depleted"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Token check failed: {e}")
         raise HTTPException(status_code=500, detail=f"Token check failed: {str(e)}")
