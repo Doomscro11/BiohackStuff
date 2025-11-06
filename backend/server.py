@@ -680,7 +680,7 @@ async def get_generation_history(limit: int = 50):
                         try:
                             dt = datetime.fromisoformat(value)
                             clean_record[key] = dt.isoformat()
-                        except:
+                        except (ValueError, TypeError):
                             clean_record[key] = value
                     else:
                         clean_record[key] = value
