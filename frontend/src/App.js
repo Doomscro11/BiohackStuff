@@ -163,10 +163,13 @@ function App() {
     return 'bg-gray-500';
   };
 
-  const getComplexityColor = (complexity) => {
-    if (complexity <= 2) return 'bg-green-500';
-    if (complexity <= 3) return 'bg-yellow-500';
-    return 'bg-red-500';
+  const getModeColor = (color) => {
+    switch (color) {
+      case 'green': return 'bg-green-100 border-green-500 text-green-800';
+      case 'yellow': return 'bg-yellow-100 border-yellow-500 text-yellow-800'; 
+      case 'red': return 'bg-red-100 border-red-500 text-red-800';
+      default: return 'bg-gray-100 border-gray-500 text-gray-800';
+    }
   };
 
   return (
