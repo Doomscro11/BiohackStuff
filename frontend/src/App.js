@@ -165,9 +165,16 @@ function App() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Peptimancer
             </h1>
+            <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+              <CreditCard className="h-3 w-3 mr-1" />
+              Vault Pro
+            </Badge>
           </div>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             AI-Powered Peptide Architect • Generate Novel Analogues with Advanced Chemistry
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            🔐 Phase III: Export • Synthesis Partners • Pro Vault Access
           </p>
         </div>
 
