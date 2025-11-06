@@ -129,7 +129,7 @@ class PeptimancerAPITester:
         )
 
     def test_generate_analogues_invalid_sequence(self):
-        """Test analogue generation with invalid sequence"""
+        """Test analogue generation with invalid sequence - HOTFIX VALIDATION"""
         test_data = {
             "base_molecule": "INVALID123",
             "allowed_mods": "substitution",
@@ -139,7 +139,7 @@ class PeptimancerAPITester:
         }
         
         return self.run_test(
-            "Generate Analogues (Invalid Sequence)", 
+            "HOTFIX: Generate Analogues (Invalid Sequence)", 
             "POST", 
             "generate-analogues", 
             400,  # Should return 400 for invalid sequence
