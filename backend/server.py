@@ -308,7 +308,7 @@ class VaultPDFGenerator:
             pdf.cell(0, 6, 'Modifications Applied:', ln=True)
             pdf.set_font('Arial', '', 8)
             for mod in analogue.modifications_applied:
-                pdf.cell(0, 5, f'• {mod}', ln=True)
+                pdf.cell(0, 5, f'- {mod}', ln=True)
             pdf.ln(2)
             
             # IP Risk Profile
