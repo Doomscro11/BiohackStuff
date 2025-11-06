@@ -6,11 +6,11 @@ import logging
 from datetime import datetime
 
 # Import settings service
-from .services.settings import (
+from services.settings import (
     get_settings, set_settings, get_audit_history, get_settings_info,
     reset_settings_to_defaults, export_settings_backup, initialize_settings
 )
-from .config_dynamic import ALLOWED_MODES
+from config_dynamic import ALLOWED_MODES
 
 logger = logging.getLogger(__name__)
 
