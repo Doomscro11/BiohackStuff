@@ -70,6 +70,7 @@ class PeptideAnalogue(BaseModel):
     pk_estimate: str = Field(default="", description="Legacy PK estimate")
 
 class PeptideGenerationRequest(BaseModel):
+    generation_id: str = Field(..., description="Unique generation identifier")
     base_molecule: str = Field(..., description="1-letter amino acid sequence")
     allowed_mods: str = Field(..., description="Comma-separated list of allowed modifications")
     exclusions: str = Field(..., description="Exclusion clauses for modifications")
