@@ -127,7 +127,7 @@ function App() {
                       {sequenceValidation.is_valid ? (
                         <span className="text-green-600">✓ Valid sequence ({sequenceValidation.length} amino acids)</span>
                       ) : (
-                        <span className="text-red-600">✗ Invalid amino acid sequence</span>
+                        <span className="text-red-600">✗ {sequenceValidation.error || 'Invalid amino acid sequence'}</span>
                       )}
                     </div>
                   )}
