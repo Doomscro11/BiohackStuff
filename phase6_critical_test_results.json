@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-11-06T18:23:30.046130",
+  "tests": {
+    "api_health": {
+      "status": "FAIL",
+      "error": "HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=5)"
+    },
+    "vault_ledger": {
+      "status": "FAIL",
+      "error": "HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)"
+    },
+    "generation_history": {
+      "status": "FAIL",
+      "error": "HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)"
+    },
+    "analogue_generation": {
+      "status": "FAIL",
+      "error": "HTTP 502: "
+    },
+    "pdf_export": {
+      "status": "SKIP",
+      "error": "No generation ID"
+    },
+    "cro_integration": {
+      "status": "SKIP",
+      "error": "No vault ID"
+    }
+  },
+  "summary": {
+    "tests_passed": 0,
+    "tests_total": 4,
+    "success_rate": 0.0,
+    "critical_issues_from_iteration_5": {
+      "vault_ledger_fixed": false,
+      "generation_history_fixed": false,
+      "pdf_export_still_working": false
+    }
+  }
+}
