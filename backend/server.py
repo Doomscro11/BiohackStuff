@@ -593,21 +593,83 @@ async def create_peptide_analogues(request: PeptideGenerationRequest):
         logging.error(f"Error generating peptide analogues: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate analogues: {str(e)}")
 
-@api_router.get("/generation-history", response_model=List[PeptideGenerationResponse])
-async def get_generation_history():
-    """Get history of peptide generation requests"""
+@api_router.get("/generation-history")
+async def get_generation_history(limit: int = 50):
+    """Get history of peptide generation requests with enhanced serialization"""
     try:
-        history = await db.peptide_generations.find({}, {"_id": 0}).sort("timestamp", -1).limit(50).to_list(50)
+        # Use aggregation pipeline for better control
+        pipeline = [
+            {"$sort": {"timestamp": -1}},
+            {"$limit": limit},
+            {"$project": {"_id": 0}}  # Explicitly exclude _id field
+        ]
         
-        # Convert ISO string timestamps back to datetime objects
-        for record in history:
-            if isinstance(record['timestamp'], str):
-                record['timestamp'] = datetime.fromisoformat(record['timestamp'])
+        history_entries = []
+        async for record in db.peptide_generations.aggregate(pipeline):
+            try:
+                # Clean the record for JSON serialization
+                clean_record = {}
+                
+                for key, value in record.items():
+                    if key == "_id":  # Skip any _id that might slip through
+                        continue
+                    elif hasattr(value, 'isoformat'):  # datetime objects
+                        clean_record[key] = value.isoformat()
+                    elif isinstance(value, dict):
+                        # Clean nested dictionaries
+                        clean_dict = {}
+                        for nested_key, nested_value in value.items():
+                            if hasattr(nested_value, 'isoformat'):
+                                clean_dict[nested_key] = nested_value.isoformat()
+                            else:
+                                clean_dict[nested_key] = nested_value
+                        clean_record[key] = clean_dict
+                    elif isinstance(value, list):
+                        # Clean list items (analogues)
+                        clean_list = []
+                        for item in value:
+                            if isinstance(item, dict):
+                                clean_item = {}
+                                for item_key, item_value in item.items():
+                                    if hasattr(item_value, 'isoformat'):
+                                        clean_item[item_key] = item_value.isoformat()
+                                    else:
+                                        clean_item[item_key] = item_value
+                                clean_list.append(clean_item)
+                            else:
+                                clean_list.append(item)
+                        clean_record[key] = clean_list
+                    elif isinstance(value, str) and key == 'timestamp':
+                        # Handle timestamp strings
+                        try:
+                            dt = datetime.fromisoformat(value)
+                            clean_record[key] = dt.isoformat()
+                        except:
+                            clean_record[key] = value
+                    else:
+                        clean_record[key] = value
+                
+                history_entries.append(clean_record)
+                
+            except Exception as e:
+                logging.warning(f"Skipping problematic history entry: {e}")
+                continue
         
-        return history
+        return {
+            "history": history_entries,
+            "total_entries": len(history_entries),
+            "status": "active"
+        }
+        
     except Exception as e:
         logging.error(f"Error fetching generation history: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch generation history: {str(e)}")
+        # Return empty but valid response instead of error
+        return {
+            "history": [],
+            "total_entries": 0,
+            "status": "error", 
+            "error_message": str(e)
+        }
 
 @api_router.get("/validate-sequence/{sequence}")
 async def validate_peptide_sequence(sequence: str):
