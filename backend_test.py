@@ -599,54 +599,6 @@ if __name__ == "__main__":
     
     # Exit with appropriate code
     sys.exit(0 if results['enterprise_ready'] else 1)
-                try:
-                    response_data = response.json()
-                    details = f"Status: {response.status_code}, Response keys: {list(response_data.keys()) if isinstance(response_data, dict) else 'Non-dict response'}"
-                except:
-                    details = f"Status: {response.status_code}, Response length: {len(response.text)}"
-            else:
-                details = f"Expected {expected_status}, got {response.status_code}. Response: {response.text[:200]}"
-            
-            self.log_test(name, success, details)
-            return success, response.json() if success and response.text else {}
-
-        except requests.exceptions.Timeout:
-            self.log_test(name, False, f"Request timed out after {timeout} seconds")
-            return False, {}
-        except Exception as e:
-            self.log_test(name, False, f"Error: {str(e)}")
-            return False, {}
-
-    def test_root_endpoint(self):
-        """Test root API endpoint"""
-        return self.run_test("Root API Endpoint", "GET", "", 200)
-
-    def test_sequence_validation_valid(self):
-        """Test sequence validation with valid sequence"""
-        test_sequence = "HAEGTFTSDVSSYLEG"
-        return self.run_test(
-            "Sequence Validation (Valid)", 
-            "GET", 
-            f"validate-sequence/{test_sequence}", 
-            200
-        )
-
-    def test_valid_sequence_still_works(self):
-        """Test that valid sequences still work correctly after hotfixes"""
-        test_sequence = "HAEGTFTSDVSSYLEG"
-        success, response = self.run_test(
-            "HOTFIX: Valid Sequences Still Work", 
-            "GET", 
-            f"validate-sequence/{test_sequence}", 
-            200
-        )
-        
-        if success and response.get('is_valid') == True:
-            self.log_test("Valid Sequence Processing", True, f"Sequence correctly validated as valid")
-            return True, response
-        else:
-            self.log_test("Valid Sequence Processing", False, f"Valid sequence not properly validated")
-            return False, response
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
