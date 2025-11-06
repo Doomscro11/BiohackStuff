@@ -18,9 +18,14 @@ from fpdf import FPDF
 import json
 from io import BytesIO
 import tempfile
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Thread pool for concurrent operations
+thread_pool = ThreadPoolExecutor(max_workers=10)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
