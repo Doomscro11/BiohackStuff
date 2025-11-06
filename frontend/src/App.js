@@ -72,6 +72,62 @@ function App() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Phase III: Export Functions
+  const handleExportPDF = async (generationId) => {
+    setExportLoading(true);
+    try {
+      const response = await axios.post(`${API}/export-report`, {
+        generation_id: generationId,
+        format: 'pdf',
+        include_cost: formData.include_cost,
+        include_ip_analysis: true,
+        watermark: true
+      }, {
+        responseType: 'blob'
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `peptimancer_vault_report_${generationId.slice(0,8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Export failed:', error);
+      setError('PDF export failed. Please try again.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // Phase III: Synthesis Request
+  const handleSynthesisRequest = async (vaultId, analogueName) => {
+    setSynthesisLoading(vaultId);
+    try {
+      const response = await axios.post(`${API}/request-synthesis`, {
+        vault_id: vaultId,
+        partner_name: 'CRO Partners Inc.',
+        quantity_mg: 100.0,
+        purity_requirement: 95.0,
+        timeline_days: 14,
+        contact_email: 'research@example.com',
+        additional_notes: `Synthesis request for ${analogueName}`
+      });
+
+      alert(`Synthesis request submitted!\nPartner Reference: ${response.data.partner_response.partner_reference}\nStatus: ${response.data.status}`);
+      
+    } catch (error) {
+      console.error('Synthesis request failed:', error);
+      setError('Synthesis request failed. Please try again.');
+    } finally {
+      setSynthesisLoading(null);
+    }
+  };
+
   const getRiskColor = (risk) => {
     if (typeof risk === 'string') {
       switch (risk.toLowerCase()) {
