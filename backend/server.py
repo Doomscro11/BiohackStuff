@@ -566,6 +566,48 @@ def parse_analogue_response(ai_response: str, base_molecule: str, include_cost: 
 async def root():
     return {"message": "Peptimancer - AI-Powered Peptide Architect", "version": "1.0.0"}
 
+@api_router.get("/mode")
+async def get_current_mode():
+    """Get current system mode and status"""
+    try:
+        settings = await get_settings()
+        from config_dynamic import get_mode_display
+        
+        mode_info = get_mode_display(settings["integrationsMode"])
+        
+        return {
+            "mode": settings["integrationsMode"],
+            "demo_mode": settings["demoMode"],
+            "watermark_enabled": settings["watermarkExports"],
+            "enterprise_features": settings["enterpriseFeatures"],
+            "mode_info": {
+                "name": mode_info["name"],
+                "description": mode_info["description"],
+                "color": mode_info["color"]
+            },
+            "limits": {
+                "max_analogues": settings["maxAnalogues"],
+                "rate_limit": settings["rateLimitDemo"] if settings["demoMode"] else settings["rateLimitLive"]
+            }
+        }
+    except Exception as e:
+        logging.error(f"Failed to get mode info: {e}")
+        return {
+            "mode": "unknown",
+            "demo_mode": False,
+            "watermark_enabled": True,
+            "enterprise_features": True,
+            "mode_info": {
+                "name": "Unknown Mode",
+                "description": "Unable to determine current mode",
+                "color": "gray"
+            },
+            "limits": {
+                "max_analogues": 10,
+                "rate_limit": 50
+            }
+        }
+
 @api_router.post("/generate-analogues", response_model=PeptideGenerationResponse)
 async def create_peptide_analogues(request: PeptideGenerationRequest):
     """Generate novel peptide analogues using AI-powered design with dynamic settings"""
