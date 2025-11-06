@@ -420,7 +420,7 @@ For each analogue, apply up to 3 scientific modifications that:
 
 RETURN FORMAT (for each analogue):
 
-### 🧬 Analogue: [unique descriptive name]
+### Analogue: [unique descriptive name]
 
 **Sequence:**  
 `[modified sequence with inline notation, e.g., D-Ser, [PEG3-C18]]`
