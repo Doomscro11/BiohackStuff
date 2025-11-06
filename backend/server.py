@@ -61,6 +61,7 @@ class PeptideGenerationRequest(BaseModel):
     exclusions: str = Field(..., description="Exclusion clauses for modifications")
     target_use: str = Field(..., description="Target therapeutic use or application")
     num_analogues: int = Field(..., ge=1, le=10, description="Number of analogues to generate (1-10)")
+    include_cost: bool = Field(default=False, description="Include synthesis cost estimates")
 
 class PeptideGenerationResponse(BaseModel):
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
