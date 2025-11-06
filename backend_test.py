@@ -170,7 +170,7 @@ class PeptimancerAPITester:
         )
 
     def test_edge_case_empty_sequence(self):
-        """Test with empty sequence"""
+        """Test with empty sequence - HOTFIX VALIDATION"""
         test_data = {
             "base_molecule": "",
             "allowed_mods": "substitution",
@@ -180,7 +180,7 @@ class PeptimancerAPITester:
         }
         
         return self.run_test(
-            "Edge Case: Empty Sequence", 
+            "HOTFIX: Empty Sequence Returns 400", 
             "POST", 
             "generate-analogues", 
             400, 
