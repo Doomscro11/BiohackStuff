@@ -63,12 +63,9 @@ def get_current_user(request: Request):
     return require_admin(request)
 
 def require_admin_role(user: Dict[str, Any]):
-    """Ensure user has admin role"""
-    if user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin role required"
-        )
+    """Ensure user has admin role - now handled by require_admin middleware"""
+    # This function is now redundant as require_admin already checks role
+    pass
 
 # Admin endpoints
 @admin_router.get("/settings")
