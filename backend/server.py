@@ -816,9 +816,9 @@ async def get_vault_ledger(limit: int = 50):
             {}, {"_id": 0}
         ).sort("timestamp", -1).limit(limit).to_list(limit)
         
-        # Convert timestamps
+        # Convert timestamps and ensure proper serialization
         for entry in ledger_entries:
-            if isinstance(entry['timestamp'], str):
+            if isinstance(entry.get('timestamp'), str):
                 entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
         
         return {
@@ -829,7 +829,7 @@ async def get_vault_ledger(limit: int = 50):
         
     except Exception as e:
         logging.error(f"Vault ledger retrieval failed: {e}")
-        return {"ledger_entries": [], "error": str(e)}
+        raise HTTPException(status_code=500, detail=f"Vault ledger retrieval failed: {str(e)}")
 
 @api_router.get("/vault-ledger/{vault_id}")
 async def get_vault_entry(vault_id: str):
@@ -840,15 +840,17 @@ async def get_vault_entry(vault_id: str):
         if not entry:
             raise HTTPException(status_code=404, detail="Vault entry not found")
         
-        # Convert timestamp
-        if isinstance(entry['timestamp'], str):
+        # Convert timestamp if needed
+        if isinstance(entry.get('timestamp'), str):
             entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
         
         return entry
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Vault entry retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Vault entry retrieval failed: {str(e)}")
 
 # Include the router in the main app
 app.include_router(api_router)
