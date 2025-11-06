@@ -187,6 +187,22 @@ function App() {
               Vault Pro
             </Badge>
           </div>
+          
+          {/* Mode Indicator */}
+          {currentMode && (
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 mb-4 ${getModeColor(currentMode.mode_info?.color)}`}>
+              <div className={`w-2 h-2 rounded-full ${
+                currentMode.mode_info?.color === 'green' ? 'bg-green-500' :
+                currentMode.mode_info?.color === 'yellow' ? 'bg-yellow-500' :
+                currentMode.mode_info?.color === 'red' ? 'bg-red-500' : 'bg-gray-500'
+              }`} />
+              <span className="text-sm font-medium">
+                {currentMode.mode_info?.name || 'Unknown Mode'} 
+                {currentMode.demo_mode && ' (Demo)'}
+              </span>
+            </div>
+          )}
+          
           <p className="text-lg text-gray-600 dark:text-gray-300">
             AI-Powered Peptide Architect • Generate Novel Analogues with Advanced Chemistry
           </p>
