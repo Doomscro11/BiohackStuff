@@ -204,6 +204,17 @@ class PeptideProcessor:
         
         return modifications
 
+def generate_vault_id(sequence: str, modifications: List[str]) -> str:
+    """Generate unique Vault ID from sequence and modifications"""
+    # Create hash from sequence + modifications
+    content = f"{sequence}{''.join(modifications)}"
+    hash_obj = hashlib.sha256(content.encode())
+    hash_hex = hash_obj.hexdigest()
+    
+    # Take first 7 characters and make uppercase
+    hash7 = hash_hex[:7].upper()
+    return f"PMNC-{hash7}"
+
 # Initialize LLM Chat
 async def get_llm_chat():
     return LlmChat(
