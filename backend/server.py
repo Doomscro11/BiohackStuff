@@ -438,7 +438,7 @@ RETURN FORMAT (for each analogue):
 
 ---
 
-**🧪 Bioactivity Profile**  
+**Bioactivity Profile**  
 - Binding Affinity: [ΔG value] kcal/mol  
 - Predicted Half-Life: [days] days  
 - Synthesis Complexity: [1-5] / 5  
