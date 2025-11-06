@@ -18,7 +18,6 @@ from fpdf import FPDF
 import json
 from io import BytesIO
 import tempfile
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 # Import admin routes
@@ -465,7 +464,7 @@ RETURN FORMAT (for each analogue):
 - Binding Affinity: [ΔG value] kcal/mol  
 - Predicted Half-Life: [days] days  
 - Synthesis Complexity: [1-5] / 5  
-{f"- Estimated Cost: $[amount] CAD/mg" if request.include_cost else ""}
+{"- Estimated Cost: $[amount] CAD/mg" if request.include_cost else ""}
 - Notes: [DPP-4 resistance, albumin binding, synthetic challenges]
 
 ---
