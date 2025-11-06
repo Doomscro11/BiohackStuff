@@ -133,11 +133,11 @@ async def update_admin_settings(
 
 @admin_router.get("/settings/history")
 async def get_settings_history(
-    limit: int = 50,
-    user: Dict[str, Any] = Depends(get_current_user)
+    request: Request,
+    limit: int = 50
 ):
     """Get settings change audit history"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     try:
         if limit > 200:
@@ -156,14 +156,12 @@ async def get_settings_history(
         )
 
 @admin_router.post("/settings/reset")
-async def reset_settings(
-    user: Dict[str, Any] = Depends(get_current_user)
-):
+async def reset_settings(request: Request):
     """Reset all settings to defaults"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     try:
-        actor_info = f"{user.get('name', 'admin')} ({user.get('id', 'unknown')})"
+        actor_info = f"{user.get('email', 'admin')} ({user.get('id', 'unknown')})"
         default_settings = await reset_settings_to_defaults(actor_info)
         
         logger.warning(f"Settings reset to defaults by {actor_info}")
@@ -181,11 +179,9 @@ async def reset_settings(
         )
 
 @admin_router.get("/settings/export")
-async def export_settings(
-    user: Dict[str, Any] = Depends(get_current_user)
-):
+async def export_settings(request: Request):
     """Export settings backup"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     try:
         backup = await export_settings_backup()
@@ -198,14 +194,14 @@ async def export_settings(
         )
 
 @admin_router.get("/health")
-async def admin_health_check(user: Dict[str, Any] = Depends(get_current_user)):
+async def admin_health_check(request: Request):
     """Admin health check endpoint"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "admin_user": user.get("name", "Unknown"),
+        "admin_user": user.get("email", "Unknown"),
         "features": {
             "settings_management": True,
             "audit_trail": True,
