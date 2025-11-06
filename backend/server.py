@@ -372,16 +372,37 @@ async def get_generation_history():
 
 @api_router.get("/validate-sequence/{sequence}")
 async def validate_peptide_sequence(sequence: str):
-    """Validate amino acid sequence format"""
+    """Validate amino acid sequence format with enhanced error handling"""
     processor = PeptideProcessor()
-    is_valid = processor.validate_sequence(sequence)
     
-    return {
-        "sequence": sequence,
-        "is_valid": is_valid,
-        "length": len(sequence),
-        "composition": {aa: sequence.count(aa) for aa in set(sequence) if aa.isalpha()}
-    }
+    # Handle empty sequence case
+    if not sequence or sequence.strip() == "":
+        return {
+            "sequence": "",
+            "is_valid": False,
+            "error": "Empty sequence provided",
+            "length": 0,
+            "composition": {}
+        }
+    
+    validation_result = processor.validate_sequence(sequence)
+    
+    if validation_result["is_valid"]:
+        return {
+            "sequence": validation_result["clean_sequence"],
+            "is_valid": True,
+            "length": validation_result["length"],
+            "composition": validation_result["composition"]
+        }
+    else:
+        return {
+            "sequence": sequence,
+            "is_valid": False,
+            "error": validation_result["error"],
+            "error_code": validation_result["error_code"],
+            "length": len(sequence.strip()) if sequence else 0,
+            "composition": {}
+        }
 
 # Include the router in the main app
 app.include_router(api_router)
