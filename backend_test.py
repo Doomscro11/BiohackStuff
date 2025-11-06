@@ -226,7 +226,7 @@ class PeptimancerAPITester:
         )
 
     def test_edge_case_special_characters(self):
-        """Test with special characters in sequence"""
+        """Test with special characters in sequence - HOTFIX VALIDATION"""
         test_data = {
             "base_molecule": "HAE-GTF@TSD#VSS",
             "allowed_mods": "substitution",
@@ -236,7 +236,7 @@ class PeptimancerAPITester:
         }
         
         return self.run_test(
-            "Edge Case: Special Characters", 
+            "HOTFIX: Special Characters Return 400", 
             "POST", 
             "generate-analogues", 
             400, 
