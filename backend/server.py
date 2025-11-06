@@ -35,10 +35,25 @@ class PeptideAnalogue(BaseModel):
     modified_sequence: str
     modifications_applied: List[str]
     modification_positions: List[str]
-    ip_risk_score: float = Field(..., ge=0, le=10)
-    novelty_score: float = Field(..., ge=0, le=10)
-    affinity_estimate: str
-    pk_estimate: str
+    
+    # Enhanced Vault-grade fields
+    patent_similarity_risk: str = Field(..., description="Low/Medium/High patent risk")
+    novelty_score: float = Field(..., ge=0, le=100, description="Novelty percentage 0-100")
+    ip_notes: str = Field(..., description="IP analysis notes")
+    
+    binding_affinity: float = Field(..., description="GLP-1R binding affinity (ΔG kcal/mol)")
+    predicted_half_life: float = Field(..., description="Predicted half-life in days")
+    synthesis_complexity: int = Field(..., ge=1, le=5, description="Synthesis complexity 1-5")
+    synthesis_cost: Optional[float] = Field(None, description="Cost estimate CAD/mg")
+    bioactivity_notes: str = Field(..., description="Bioactivity analysis notes")
+    
+    vault_id: str = Field(..., description="Unique Vault identifier")
+    
+    # Legacy compatibility fields (deprecated but maintained)
+    ip_risk_score: float = Field(default=0.0, ge=0, le=10, description="Legacy IP risk score")
+    novelty_score_legacy: float = Field(default=0.0, ge=0, le=10, description="Legacy novelty score") 
+    affinity_estimate: str = Field(default="", description="Legacy affinity estimate")
+    pk_estimate: str = Field(default="", description="Legacy PK estimate")
 
 class PeptideGenerationRequest(BaseModel):
     base_molecule: str = Field(..., description="1-letter amino acid sequence")
