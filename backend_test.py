@@ -80,6 +80,23 @@ class PeptimancerAPITester:
             200
         )
 
+    def test_valid_sequence_still_works(self):
+        """Test that valid sequences still work correctly after hotfixes"""
+        test_sequence = "HAEGTFTSDVSSYLEG"
+        success, response = self.run_test(
+            "HOTFIX: Valid Sequences Still Work", 
+            "GET", 
+            f"validate-sequence/{test_sequence}", 
+            200
+        )
+        
+        if success and response.get('is_valid') == True:
+            self.log_test("Valid Sequence Processing", True, f"Sequence correctly validated as valid")
+            return True, response
+        else:
+            self.log_test("Valid Sequence Processing", False, f"Valid sequence not properly validated")
+            return False, response
+
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
         test_sequence = "HAEGTFTSDVSSYLEGXZ"  # X and Z are not standard amino acids
