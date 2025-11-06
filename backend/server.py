@@ -332,6 +332,17 @@ async def root():
 async def create_peptide_analogues(request: PeptideGenerationRequest):
     """Generate novel peptide analogues using AI-powered design"""
     try:
+        # Validate sequence first to get clean sequence
+        processor = PeptideProcessor()
+        validation_result = processor.validate_sequence(request.base_molecule)
+        if not validation_result["is_valid"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid base molecule sequence: {validation_result['error']}"
+            )
+        
+        clean_sequence = validation_result["clean_sequence"]
+        
         # Generate analogues
         analogues = await generate_peptide_analogues(request)
         
