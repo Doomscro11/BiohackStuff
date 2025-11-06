@@ -1,0 +1,92 @@
+{
+  "tests_run": 10,
+  "tests_passed": 7,
+  "success_rate": 70.0,
+  "critical_failures": [
+    "Vault Ledger Integrity: Vault ledger failed: HTTP 500"
+  ],
+  "commercial_ready": false,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "status": "PASS",
+      "details": "API Version: 1.0.0",
+      "error": "",
+      "critical": true,
+      "timestamp": "2025-11-06T17:36:34.570790"
+    },
+    {
+      "test_name": "Sequence Validation System",
+      "status": "PASS",
+      "details": "Valid seq: True, Invalid seq: True",
+      "error": "",
+      "critical": false,
+      "timestamp": "2025-11-06T17:36:34.650940"
+    },
+    {
+      "test_name": "Analogue Generation (Enterprise)",
+      "status": "PASS",
+      "details": "Generated 3 analogues, Generation ID: f734731e-758f-4e69-acf0-8f4b14c5be76",
+      "error": "",
+      "critical": true,
+      "timestamp": "2025-11-06T17:37:01.958844"
+    },
+    {
+      "test_name": "PDF Export System",
+      "status": "PASS",
+      "details": "PDF generated, Size: 3904 bytes, Content-Type: application/pdf",
+      "error": "",
+      "critical": true,
+      "timestamp": "2025-11-06T17:37:02.036844"
+    },
+    {
+      "test_name": "CRO Integration System",
+      "status": "PASS",
+      "details": "Partner Ref: SYN-4f2ddb41, Status: submitted",
+      "error": "",
+      "critical": false,
+      "timestamp": "2025-11-06T17:37:02.080706"
+    },
+    {
+      "test_name": "Token Management System",
+      "status": "PASS",
+      "details": "Token ID: 40279415-0c7b-43e0-9e16-facaa2270f4d, Tier: enterprise, Credits: 1000",
+      "error": "",
+      "critical": true,
+      "timestamp": "2025-11-06T17:37:02.159944"
+    },
+    {
+      "test_name": "Vault Ledger Integrity",
+      "status": "FAIL",
+      "details": "HTTP 500",
+      "error": "Vault ledger failed: HTTP 500",
+      "critical": true,
+      "timestamp": "2025-11-06T17:37:02.200639"
+    },
+    {
+      "test_name": "Generation History System",
+      "status": "FAIL",
+      "details": "HTTP 500",
+      "error": "History retrieval failed: HTTP 500",
+      "critical": false,
+      "timestamp": "2025-11-06T17:37:02.241285"
+    },
+    {
+      "test_name": "Error Resilience & HTTP Status Codes",
+      "status": "PASS",
+      "details": "Export: 404, Vault: 404, Token: 404",
+      "error": "",
+      "critical": false,
+      "timestamp": "2025-11-06T17:37:02.356819"
+    },
+    {
+      "test_name": "Load Testing (Concurrent Users)",
+      "status": "FAIL",
+      "details": "Concurrent requests: 3, Successful: 0",
+      "error": "Load testing failed",
+      "critical": false,
+      "timestamp": "2025-11-06T17:38:02.610779"
+    }
+  ],
+  "validation_timestamp": "2025-11-06T17:38:02.610844"
+}
