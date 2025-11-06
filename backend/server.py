@@ -405,11 +405,6 @@ async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[
     if not request.target_use.strip():
         raise HTTPException(status_code=400, detail="Target therapeutic use cannot be empty")
     
-    # Get modification suggestions using clean sequence
-    modifications = processor.get_modification_suggestions(
-        clean_sequence, request.allowed_mods, request.exclusions
-    )
-
     # Get runtime settings for mode-aware prompt generation
     settings = await get_settings()
     
