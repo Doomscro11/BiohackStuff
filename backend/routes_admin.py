@@ -69,9 +69,9 @@ def require_admin_role(user: Dict[str, Any]):
 
 # Admin endpoints
 @admin_router.get("/settings")
-async def get_admin_settings(user: Dict[str, Any] = Depends(get_current_user)):
+async def get_admin_settings(request: Request):
     """Get current runtime settings"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     try:
         settings_info = await get_settings_info()
