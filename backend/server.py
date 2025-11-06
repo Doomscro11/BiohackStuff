@@ -1064,6 +1064,12 @@ app.include_router(api_router)
 # Include admin routes
 app.include_router(admin_router)
 
+# Include auth routes
+app.include_router(auth_router)
+
+# Add authentication middleware
+app.add_middleware(AuthMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
