@@ -464,7 +464,7 @@ def parse_analogue_response(ai_response: str, base_molecule: str, include_cost: 
     analogues = []
     
     # Split response into individual analogues using the ### marker
-    analogue_sections = re.split(r'### 🧬 Analogue:', ai_response)
+    analogue_sections = re.split(r'### Analogue:', ai_response)
     
     for i, section in enumerate(analogue_sections):
         if i == 0 or not section.strip():  # Skip empty first section
