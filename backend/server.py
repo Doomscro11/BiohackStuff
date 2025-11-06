@@ -240,10 +240,10 @@ async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[
         clean_sequence, request.allowed_mods, request.exclusions
     )
     
-    # Prepare AI prompt
+    # Prepare AI prompt using clean sequence
     prompt = f"""Design {request.num_analogues} novel peptide analogues based on:
 
-Base Molecule: {request.base_molecule}
+Base Molecule: {clean_sequence}
 Allowed Modifications: {request.allowed_mods}
 Exclusion Clauses: {request.exclusions}  
 Target Use: {request.target_use}
