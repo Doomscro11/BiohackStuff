@@ -30,6 +30,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [sequenceValidation, setSequenceValidation] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [synthesisLoading, setSynthesisLoading] = useState(null);
 
   // Validate sequence on change
   useEffect(() => {
