@@ -1,34 +1,111 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom styles for Peptimancer */
+.peptide-sequence {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  letter-spacing: 1px;
+  word-break: break-all;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Animation for loading states */
+@keyframes pulse-blue {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .7;
+  }
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.animate-pulse-blue {
+  animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.App-link {
-    color: #61dafb;
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Scientific data styling */
+.analogue-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.analogue-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Badge color utilities */
+.risk-badge-low {
+  @apply bg-green-500 text-white;
+}
+
+.risk-badge-medium {
+  @apply bg-yellow-500 text-white;
+}
+
+.risk-badge-high {
+  @apply bg-red-500 text-white;
+}
+
+.novelty-badge-high {
+  @apply bg-blue-500 text-white;
+}
+
+.novelty-badge-medium {
+  @apply bg-purple-500 text-white;
+}
+
+.novelty-badge-low {
+  @apply bg-gray-500 text-white;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* Focus states for accessibility */
+.focus-ring:focus {
+  @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-white;
+}
+
+.dark .focus-ring:focus {
+  @apply ring-offset-gray-900;
 }
