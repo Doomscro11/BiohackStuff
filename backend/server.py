@@ -79,9 +79,50 @@ class PeptideProcessor:
             ('D', 'K'): 'lactam'
         }
 
-    def validate_sequence(self, sequence: str) -> bool:
-        """Validate that the sequence contains only valid amino acid codes"""
-        return all(aa.upper() in self.amino_acids for aa in sequence if aa.isalpha())
+    def validate_sequence(self, sequence: str) -> dict:
+        """Enhanced validation with detailed error information"""
+        if not sequence or len(sequence.strip()) == 0:
+            return {
+                "is_valid": False,
+                "error": "Empty sequence provided",
+                "error_code": "EMPTY_SEQUENCE"
+            }
+        
+        # Clean sequence and convert to uppercase
+        clean_sequence = sequence.strip().upper()
+        
+        # Check for non-alphabetic characters (except spaces which are removed)
+        non_alpha_chars = [char for char in clean_sequence if not char.isalpha()]
+        if non_alpha_chars:
+            return {
+                "is_valid": False,
+                "error": f"Invalid characters found: {', '.join(set(non_alpha_chars))}",
+                "error_code": "INVALID_CHARACTERS"
+            }
+        
+        # Check for invalid amino acids
+        invalid_aas = [aa for aa in clean_sequence if aa not in self.amino_acids]
+        if invalid_aas:
+            return {
+                "is_valid": False,
+                "error": f"Invalid amino acids: {', '.join(set(invalid_aas))}. Valid amino acids: {', '.join(sorted(self.amino_acids.keys()))}",
+                "error_code": "INVALID_AMINO_ACIDS"
+            }
+        
+        # Check sequence length (reasonable bounds)
+        if len(clean_sequence) > 1000:
+            return {
+                "is_valid": False,
+                "error": f"Sequence too long ({len(clean_sequence)} amino acids). Maximum allowed: 1000",
+                "error_code": "SEQUENCE_TOO_LONG"
+            }
+        
+        return {
+            "is_valid": True,
+            "clean_sequence": clean_sequence,
+            "length": len(clean_sequence),
+            "composition": {aa: clean_sequence.count(aa) for aa in set(clean_sequence)}
+        }
 
     def get_modification_suggestions(self, sequence: str, allowed_mods: str, exclusions: str) -> List[dict]:
         """Generate intelligent modification suggestions based on sequence analysis"""
