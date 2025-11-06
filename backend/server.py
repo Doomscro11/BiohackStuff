@@ -269,36 +269,53 @@ async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[
         clean_sequence, request.allowed_mods, request.exclusions
     )
     
-    # Prepare AI prompt using clean sequence
-    prompt = f"""Design {request.num_analogues} novel peptide analogues based on:
+    # Prepare AI prompt using clean sequence with enhanced Vault-grade format
+    prompt = f"""You are Peptimancer, an AI-powered peptide architect. Generate {request.num_analogues} scientifically valid, patent-aware peptide analogues.
 
+BASE PARAMETERS:
 Base Molecule: {clean_sequence}
 Allowed Modifications: {request.allowed_mods}
-Exclusion Clauses: {request.exclusions}  
+Exclusions: {request.exclusions}  
 Target Use: {request.target_use}
+Include Cost: {request.include_cost}
 
-Available modification options: {len(modifications)} possibilities including substitutions, D-isomers, lipidation, and cyclization.
-
-For each analogue, apply up to 3 modifications that:
+INSTRUCTIONS:
+For each analogue, apply up to 3 scientific modifications that:
 - Preserve or enhance function for {request.target_use}
 - Avoid excluded residues/modifications  
-- Result in biologically plausible and patent-differentiated peptides
+- Result in biologically plausible peptides similar to GLP-1 therapeutics
+- Are patent-differentiated from existing compounds
 
-Return EXACTLY this format for each analogue:
+RETURN FORMAT (for each analogue):
 
-**Analogue Name**: [unique short name]
-**Modified Sequence**: [1-letter amino acid chain with modifications noted inline]
-**Modifications Applied**:
-- [Brief description of change #1]
-- [Brief description of change #2]  
-- [Brief description of change #3]
-**Modification Positions**: [e.g., Position 8: Aib → D-Ser, Position 26: Lys lipidated, etc.]
-**IP Risk Score**: [0-10]
-**Novelty Score**: [0-10]
-**Affinity Estimate**: [High/Medium/Low maintained/enhanced]
-**PK Estimate**: [Improved/Similar/Reduced half-life, stability]
+### 🧬 Analogue: [unique descriptive name]
 
----"""
+**Sequence:**  
+`[modified sequence with inline notation, e.g., D-Ser, [PEG3-C18]]`
+**Modifications Applied:**  
+- [modification 1 with position]
+- [modification 2 with position]  
+- [modification 3 with position]
+
+---
+
+**📜 IP Risk Profile**  
+- Patent Similarity Risk: [Low/Medium/High]
+- Novelty Score: [0-100]%  
+- Notes: [analysis of potential patent overlaps, uniqueness factors]
+
+---
+
+**🧪 Bioactivity Profile**  
+- Binding Affinity: [ΔG value] kcal/mol  
+- Predicted Half-Life: [days] days  
+- Synthesis Complexity: [1-5] / 5  
+{f"- Estimated Cost: $[amount] CAD/mg" if request.include_cost else ""}
+- Notes: [DPP-4 resistance, albumin binding, synthetic challenges]
+
+---
+
+Generate all {request.num_analogues} analogues in this exact format."""
     
     # Get AI response
     chat = await get_llm_chat()
