@@ -1,53 +1,602 @@
-import requests
-import sys
-import json
-from datetime import datetime
-import time
+#!/usr/bin/env python3
+"""
+Phase VI Production Enterprise Launch - Backend API Testing
+Comprehensive validation for Peptimancer enterprise deployment
+"""
 
-class PeptimancerAPITester:
-    def __init__(self, base_url="https://peptide-architect-1.preview.emergentagent.com"):
-        self.base_url = base_url
-        self.api_url = f"{base_url}/api"
+import requests
+import json
+import time
+import asyncio
+import aiohttp
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
+
+# Use production endpoint from frontend .env
+BACKEND_URL = "https://peptide-architect-1.preview.emergentagent.com"
+API_BASE = f"{BACKEND_URL}/api"
+
+class PeptimancerEnterpriseTest:
+    def __init__(self):
         self.tests_run = 0
         self.tests_passed = 0
-        self.test_results = []
-
-    def log_test(self, name, success, details=""):
-        """Log test result"""
+        self.critical_failures = []
+        self.test_results = {}
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results with enterprise-grade detail"""
         self.tests_run += 1
         if success:
             self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
         
-        result = {
-            "test_name": name,
+        self.test_results[test_name] = {
             "success": success,
             "details": details,
+            "error": error_details,
             "timestamp": datetime.now().isoformat()
         }
-        self.test_results.append(result)
+        print()
+
+    def test_api_health(self):
+        """Test basic API connectivity and health"""
+        try:
+            response = requests.get(f"{API_BASE}/", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "API Health Check",
+                    True,
+                    f"Status: {response.status_code}, Version: {data.get('version', 'unknown')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "API Health Check",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "API Health Check",
+                False,
+                error_details=f"Connection failed: {str(e)}"
+            )
+            return False
+
+    def test_sequence_validation(self):
+        """Test peptide sequence validation system"""
+        test_cases = [
+            ("HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR", True, "Valid GLP-1 sequence"),
+            ("INVALID123", False, "Invalid characters"),
+            ("", False, "Empty sequence"),
+            ("ABCDEFGHIJKLMNOPQRSTUVWXYZ", False, "Invalid amino acids")
+        ]
         
-        status = "✅ PASSED" if success else "❌ FAILED"
-        print(f"{status} - {name}")
-        if details:
-            print(f"   Details: {details}")
+        all_passed = True
+        for sequence, should_be_valid, description in test_cases:
+            try:
+                if sequence:
+                    response = requests.get(f"{API_BASE}/validate-sequence/{sequence}", timeout=10)
+                else:
+                    response = requests.get(f"{API_BASE}/validate-sequence/", timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    is_valid = data.get('is_valid', False)
+                    
+                    if is_valid == should_be_valid:
+                        self.log_test(
+                            f"Sequence Validation - {description}",
+                            True,
+                            f"Correctly identified as {'valid' if is_valid else 'invalid'}"
+                        )
+                    else:
+                        self.log_test(
+                            f"Sequence Validation - {description}",
+                            False,
+                            error_details=f"Expected {should_be_valid}, got {is_valid}"
+                        )
+                        all_passed = False
+                else:
+                    self.log_test(
+                        f"Sequence Validation - {description}",
+                        False,
+                        error_details=f"HTTP {response.status_code}: {response.text}"
+                    )
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(
+                    f"Sequence Validation - {description}",
+                    False,
+                    error_details=f"Request failed: {str(e)}"
+                )
+                all_passed = False
+        
+        return all_passed
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30):
-        """Run a single API test"""
-        url = f"{self.api_url}/{endpoint}" if not endpoint.startswith('http') else endpoint
-        headers = {'Content-Type': 'application/json'}
-
-        print(f"\n🔍 Testing {name}...")
-        print(f"   URL: {url}")
+    def test_analogue_generation(self):
+        """Test enterprise-grade peptide analogue generation"""
+        payload = {
+            "base_molecule": "HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR",
+            "allowed_mods": "Substitution, Lipidation, Cyclization, D-isomers",
+            "exclusions": "No Aib or γ-Glu residues",
+            "target_use": "Enterprise GLP-1R Research",
+            "num_analogues": 3,
+            "include_cost": True
+        }
         
         try:
-            if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=timeout)
-            elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=timeout)
+            print("🧬 Generating enterprise analogues (may take 10-15 seconds)...")
+            response = requests.post(f"{API_BASE}/generate-analogues", json=payload, timeout=30)
             
-            success = response.status_code == expected_status
+            if response.status_code == 200:
+                data = response.json()
+                analogues = data.get('analogues', [])
+                
+                if len(analogues) == 3:
+                    # Validate enterprise fields
+                    enterprise_fields_valid = True
+                    for i, analogue in enumerate(analogues):
+                        required_fields = [
+                            'vault_id', 'analogue_name', 'modified_sequence',
+                            'patent_similarity_risk', 'novelty_score', 'ip_notes',
+                            'binding_affinity', 'predicted_half_life', 'synthesis_complexity'
+                        ]
+                        
+                        missing_fields = [field for field in required_fields if not analogue.get(field)]
+                        if missing_fields:
+                            enterprise_fields_valid = False
+                            print(f"   Analogue {i+1} missing fields: {missing_fields}")
+                    
+                    if enterprise_fields_valid:
+                        self.log_test(
+                            "Enterprise Analogue Generation",
+                            True,
+                            f"Generated {len(analogues)} analogues with all enterprise fields"
+                        )
+                        
+                        # Store generation ID for later tests
+                        self.generation_id = data.get('request_id')
+                        self.vault_ids = [a.get('vault_id') for a in analogues if a.get('vault_id')]
+                        return True
+                    else:
+                        self.log_test(
+                            "Enterprise Analogue Generation",
+                            False,
+                            error_details="Missing required enterprise fields in analogues"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Enterprise Analogue Generation",
+                        False,
+                        error_details=f"Expected 3 analogues, got {len(analogues)}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Enterprise Analogue Generation",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Enterprise Analogue Generation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_vault_ledger_system(self):
+        """Test vault ledger/IP registry system - CRITICAL for enterprise"""
+        try:
+            response = requests.get(f"{API_BASE}/vault-ledger?limit=10", timeout=10)
             
-            if success:
+            if response.status_code == 200:
+                data = response.json()
+                ledger_entries = data.get('ledger_entries', [])
+                
+                self.log_test(
+                    "Vault Ledger System",
+                    True,
+                    f"Retrieved {len(ledger_entries)} ledger entries, status: {data.get('registry_status')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Vault Ledger System",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Vault Ledger System",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_generation_history(self):
+        """Test generation history/audit trail system - CRITICAL for enterprise"""
+        try:
+            response = requests.get(f"{API_BASE}/generation-history?limit=10", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                history = data.get('history', [])
+                
+                self.log_test(
+                    "Generation History System",
+                    True,
+                    f"Retrieved {len(history)} history entries, status: {data.get('status')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Generation History System",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Generation History System",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_pdf_export_system(self):
+        """Test PDF export functionality"""
+        if not hasattr(self, 'generation_id') or not self.generation_id:
+            self.log_test(
+                "PDF Export System",
+                False,
+                error_details="No generation ID available (analogue generation must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {
+                "generation_id": self.generation_id,
+                "format": "pdf",
+                "include_cost": True,
+                "include_ip_analysis": True,
+                "watermark": True
+            }
+            
+            response = requests.post(f"{API_BASE}/export-report", json=payload, timeout=15)
+            
+            if response.status_code == 200:
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if 'pdf' in content_type.lower() and content_length > 1000:
+                    self.log_test(
+                        "PDF Export System",
+                        True,
+                        f"Generated PDF: {content_length} bytes, content-type: {content_type}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "PDF Export System",
+                        False,
+                        error_details=f"Invalid PDF: {content_length} bytes, type: {content_type}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "PDF Export System",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "PDF Export System",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_cro_integration(self):
+        """Test CRO synthesis partner integration"""
+        if not hasattr(self, 'vault_ids') or not self.vault_ids:
+            self.log_test(
+                "CRO Integration System",
+                False,
+                error_details="No vault IDs available (analogue generation must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {
+                "vault_id": self.vault_ids[0],
+                "partner_name": "Enterprise CRO Partners",
+                "quantity_mg": 500.0,
+                "purity_requirement": 98.0,
+                "timeline_days": 21,
+                "contact_email": "enterprise@test.com",
+                "additional_notes": "Phase VI enterprise validation"
+            }
+            
+            response = requests.post(f"{API_BASE}/request-synthesis", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                partner_ref = data.get('partner_response', {}).get('partner_reference', '')
+                
+                if partner_ref.startswith('SYN-'):
+                    self.log_test(
+                        "CRO Integration System",
+                        True,
+                        f"Partner reference: {partner_ref}, status: {data.get('status')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "CRO Integration System",
+                        False,
+                        error_details=f"Invalid partner reference: {partner_ref}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "CRO Integration System",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "CRO Integration System",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_token_management(self):
+        """Test Pro Vault token management system"""
+        try:
+            # Create enterprise token
+            response = requests.post(
+                f"{API_BASE}/vault-tokens/create?user_id=enterprise_test&tier=enterprise&credits=5000",
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                token_id = data.get('token_id')
+                
+                if token_id:
+                    # Check token status
+                    status_response = requests.get(f"{API_BASE}/vault-tokens/{token_id}", timeout=10)
+                    
+                    if status_response.status_code == 200:
+                        status_data = status_response.json()
+                        self.log_test(
+                            "Token Management System",
+                            True,
+                            f"Created token: {token_id}, tier: {status_data.get('tier')}, credits: {status_data.get('credits')}"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Token Management System",
+                            False,
+                            error_details=f"Token status check failed: HTTP {status_response.status_code}"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Token Management System",
+                        False,
+                        error_details="No token ID returned from creation"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Token Management System",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Token Management System",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_concurrent_load(self):
+        """Test concurrent user handling - CRITICAL for enterprise deployment"""
+        def make_analogue_request(request_id):
+            """Make a single analogue generation request"""
+            payload = {
+                "base_molecule": "HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR",
+                "allowed_mods": "Substitution, D-isomers",
+                "exclusions": "No modifications",
+                "target_use": f"Concurrent Test {request_id}",
+                "num_analogues": 2,
+                "include_cost": False
+            }
+            
+            try:
+                response = requests.post(f"{API_BASE}/generate-analogues", json=payload, timeout=45)
+                return {
+                    "request_id": request_id,
+                    "success": response.status_code == 200,
+                    "status_code": response.status_code,
+                    "response_size": len(response.content) if response.content else 0
+                }
+            except Exception as e:
+                return {
+                    "request_id": request_id,
+                    "success": False,
+                    "error": str(e)
+                }
+        
+        print("🚀 Testing concurrent load (5 simultaneous requests)...")
+        
+        # Execute 5 concurrent requests
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(make_analogue_request, i+1) for i in range(5)]
+            results = [future.result() for future in as_completed(futures)]
+        
+        successful_requests = sum(1 for r in results if r.get('success', False))
+        total_requests = len(results)
+        
+        if successful_requests >= 3:  # At least 60% success rate for enterprise
+            self.log_test(
+                "Concurrent Load Handling",
+                True,
+                f"Successfully handled {successful_requests}/{total_requests} concurrent requests"
+            )
+            return True
+        else:
+            error_details = f"Only {successful_requests}/{total_requests} requests succeeded. "
+            error_details += "Failures: " + ", ".join([
+                f"Req{r['request_id']}: {r.get('error', f'HTTP {r.get(\"status_code\", \"unknown\")}')} "
+                for r in results if not r.get('success', False)
+            ])
+            
+            self.log_test(
+                "Concurrent Load Handling",
+                False,
+                error_details=error_details
+            )
+            return False
+
+    def test_error_resilience(self):
+        """Test error handling and resilience"""
+        test_cases = [
+            ("Invalid Generation ID Export", f"{API_BASE}/export-report", {"generation_id": "invalid-id"}, 404),
+            ("Invalid Vault ID Lookup", f"{API_BASE}/vault-ledger/invalid-vault-id", None, 404),
+            ("Invalid Token Lookup", f"{API_BASE}/vault-tokens/invalid-token", None, 404),
+        ]
+        
+        all_passed = True
+        for test_name, url, payload, expected_status in test_cases:
+            try:
+                if payload:
+                    response = requests.post(url, json=payload, timeout=10)
+                else:
+                    response = requests.get(url, timeout=10)
+                
+                if response.status_code == expected_status:
+                    self.log_test(
+                        f"Error Resilience - {test_name}",
+                        True,
+                        f"Correctly returned HTTP {response.status_code}"
+                    )
+                else:
+                    self.log_test(
+                        f"Error Resilience - {test_name}",
+                        False,
+                        error_details=f"Expected HTTP {expected_status}, got {response.status_code}"
+                    )
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(
+                    f"Error Resilience - {test_name}",
+                    False,
+                    error_details=f"Request failed: {str(e)}"
+                )
+                all_passed = False
+        
+        return all_passed
+
+    def run_comprehensive_test(self):
+        """Run complete enterprise validation test suite"""
+        print("=" * 80)
+        print("🧬 PEPTIMANCER PHASE VI PRODUCTION ENTERPRISE VALIDATION")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Core functionality tests
+        print("📋 CORE FUNCTIONALITY TESTS")
+        print("-" * 40)
+        self.test_api_health()
+        self.test_sequence_validation()
+        self.test_analogue_generation()
+        
+        print("\n📊 ENTERPRISE FEATURE TESTS")
+        print("-" * 40)
+        self.test_vault_ledger_system()
+        self.test_generation_history()
+        self.test_pdf_export_system()
+        self.test_cro_integration()
+        self.test_token_management()
+        
+        print("\n🚀 SCALABILITY & RESILIENCE TESTS")
+        print("-" * 40)
+        self.test_concurrent_load()
+        self.test_error_resilience()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 PHASE VI ENTERPRISE VALIDATION SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        print(f"\nEnterprise Deployment Status: {'✅ READY' if self.tests_passed >= self.tests_run * 0.9 else '❌ NOT READY'}")
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "enterprise_ready": self.tests_passed >= self.tests_run * 0.9
+        }
+
+if __name__ == "__main__":
+    tester = PeptimancerEnterpriseTest()
+    results = tester.run_comprehensive_test()
+    
+    # Save results for analysis
+    with open('/app/phase6_enterprise_validation.json', 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    # Exit with appropriate code
+    sys.exit(0 if results['enterprise_ready'] else 1)
                 try:
                     response_data = response.json()
                     details = f"Status: {response.status_code}, Response keys: {list(response_data.keys()) if isinstance(response_data, dict) else 'Non-dict response'}"
