@@ -323,7 +323,7 @@ Generate all {request.num_analogues} analogues in this exact format."""
     response = await chat.send_message(user_message)
     
     # Parse AI response into structured analogues
-    analogues = parse_analogue_response(response, request.base_molecule)
+    analogues = parse_analogue_response(response, clean_sequence, request.include_cost)
     
     return analogues
 
