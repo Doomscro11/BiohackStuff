@@ -990,6 +990,9 @@ async def get_vault_entry(vault_id: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include admin routes
+app.include_router(admin_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
