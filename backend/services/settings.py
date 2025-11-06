@@ -130,7 +130,7 @@ async def get_settings_info() -> Dict[str, Any]:
     settings = await get_settings()
     
     # Get mode information
-    from .config_dynamic import get_mode_display
+    from config_dynamic import get_mode_display
     mode_info = get_mode_display(settings["integrationsMode"])
     
     # Get last update info
