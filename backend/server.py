@@ -489,7 +489,7 @@ def parse_analogue_response(ai_response: str, base_molecule: str, include_cost: 
             # Extract IP Risk Profile
             ip_risk_match = re.search(r'- Patent Similarity Risk: ([^\n]+)', section)
             novelty_match = re.search(r'- Novelty Score: (\d+(?:\.\d+)?)%', section)
-            ip_notes_match = re.search(r'📜 IP Risk Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
+            ip_notes_match = re.search(r'IP Risk Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
             
             patent_risk = ip_risk_match.group(1).strip() if ip_risk_match else "Medium"
             novelty_score = float(novelty_match.group(1)) if novelty_match else 50.0
