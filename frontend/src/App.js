@@ -70,16 +70,31 @@ function App() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const getRiskColor = (score) => {
-    if (score <= 3) return 'bg-green-500';
-    if (score <= 6) return 'bg-yellow-500';
+  const getRiskColor = (risk) => {
+    if (typeof risk === 'string') {
+      switch (risk.toLowerCase()) {
+        case 'low': return 'bg-green-500';
+        case 'medium': return 'bg-yellow-500';
+        case 'high': return 'bg-red-500';
+        default: return 'bg-gray-500';
+      }
+    }
+    // Legacy numeric handling
+    if (risk <= 3) return 'bg-green-500';
+    if (risk <= 6) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
   const getNoveltyColor = (score) => {
-    if (score >= 7) return 'bg-blue-500';
-    if (score >= 4) return 'bg-purple-500';
+    if (score >= 70) return 'bg-blue-500';
+    if (score >= 40) return 'bg-purple-500';
     return 'bg-gray-500';
+  };
+
+  const getComplexityColor = (complexity) => {
+    if (complexity <= 2) return 'bg-green-500';
+    if (complexity <= 3) return 'bg-yellow-500';
+    return 'bg-red-500';
   };
 
   return (
