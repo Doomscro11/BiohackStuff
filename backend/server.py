@@ -829,33 +829,51 @@ async def get_vault_token_status(token_id: str):
 # Phase III: Vault Ledger / IP Registry
 @api_router.get("/vault-ledger")
 async def get_vault_ledger(limit: int = 50):
-    """Get vault ledger entries for IP tracking"""
+    """Get vault ledger entries for IP tracking with enhanced error handling"""
     try:
-        # Get raw documents from database
-        cursor = db.vault_ledger.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit)
-        ledger_entries = []
+        # Use aggregation pipeline to ensure proper data serialization
+        pipeline = [
+            {"$sort": {"timestamp": -1}},
+            {"$limit": limit},
+            {"$project": {"_id": 0}}  # Explicitly exclude _id field
+        ]
         
-        async for entry in cursor:
+        ledger_entries = []
+        async for entry in db.vault_ledger.aggregate(pipeline):
             try:
-                # Convert timestamp if needed
-                if isinstance(entry.get('timestamp'), str):
-                    entry['timestamp'] = datetime.fromisoformat(entry['timestamp']).isoformat()
-                elif hasattr(entry.get('timestamp'), 'isoformat'):
-                    entry['timestamp'] = entry['timestamp'].isoformat()
+                # Clean up the entry for JSON serialization
+                clean_entry = {}
                 
-                # Ensure all nested data is JSON serializable
-                if 'analogue_data' in entry and isinstance(entry['analogue_data'], dict):
-                    analogue_data = entry['analogue_data']
-                    
-                    # Clean up any datetime objects in analogue_data
-                    for key, value in analogue_data.items():
-                        if hasattr(value, 'isoformat'):
-                            analogue_data[key] = value.isoformat()
-                        elif isinstance(value, list):
-                            # Handle lists that might contain datetime objects
-                            analogue_data[key] = [v.isoformat() if hasattr(v, 'isoformat') else v for v in value]
+                for key, value in entry.items():
+                    if key == "_id":  # Skip any _id that might slip through
+                        continue
+                    elif hasattr(value, 'isoformat'):  # datetime objects
+                        clean_entry[key] = value.isoformat()
+                    elif isinstance(value, dict):
+                        # Recursively clean nested dictionaries
+                        clean_dict = {}
+                        for nested_key, nested_value in value.items():
+                            if hasattr(nested_value, 'isoformat'):
+                                clean_dict[nested_key] = nested_value.isoformat()
+                            else:
+                                clean_dict[nested_key] = nested_value
+                        clean_entry[key] = clean_dict
+                    elif isinstance(value, list):
+                        # Clean list items
+                        clean_list = []
+                        for item in value:
+                            if hasattr(item, 'isoformat'):
+                                clean_list.append(item.isoformat())
+                            elif isinstance(item, dict):
+                                clean_item = {k: v.isoformat() if hasattr(v, 'isoformat') else v for k, v in item.items()}
+                                clean_list.append(clean_item)
+                            else:
+                                clean_list.append(item)
+                        clean_entry[key] = clean_list
+                    else:
+                        clean_entry[key] = value
                 
-                ledger_entries.append(entry)
+                ledger_entries.append(clean_entry)
                 
             except Exception as e:
                 logging.warning(f"Skipping problematic ledger entry: {e}")
@@ -869,7 +887,13 @@ async def get_vault_ledger(limit: int = 50):
         
     except Exception as e:
         logging.error(f"Vault ledger retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Vault ledger retrieval failed: {str(e)}")
+        # Return empty but valid response instead of error
+        return {
+            "ledger_entries": [],
+            "total_entries": 0,
+            "registry_status": "error",
+            "error_message": str(e)
+        }
 
 @api_router.get("/vault-ledger/{vault_id}")
 async def get_vault_entry(vault_id: str):
