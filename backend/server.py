@@ -335,9 +335,9 @@ async def create_peptide_analogues(request: PeptideGenerationRequest):
         # Generate analogues
         analogues = await generate_peptide_analogues(request)
         
-        # Create response
+        # Create response using clean sequence
         response = PeptideGenerationResponse(
-            base_molecule=request.base_molecule,
+            base_molecule=clean_sequence,
             analogues=analogues
         )
         
