@@ -410,6 +410,16 @@ async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[
     modifications = processor.get_modification_suggestions(
         clean_sequence, request.allowed_mods, request.exclusions
     )
+
+    # Get runtime settings for mode-aware prompt generation
+    settings = await get_settings()
+    
+    # Prepare mode-aware instructions
+    mode_instructions = ""
+    if settings.get("integrationsMode") == "mock":
+        mode_instructions = "\n\nNOTE: Generate consistent mock data for testing purposes."
+    elif settings.get("integrationsMode") == "sandbox":
+        mode_instructions = "\n\nNOTE: This is sandbox mode - use test-appropriate data."
     
     # Prepare AI prompt using clean sequence with enhanced Vault-grade format
     prompt = f"""You are Peptimancer, an AI-powered peptide architect. Generate {request.num_analogues} scientifically valid, patent-aware peptide analogues.
@@ -420,6 +430,7 @@ Allowed Modifications: {request.allowed_mods}
 Exclusions: {request.exclusions}  
 Target Use: {request.target_use}
 Include Cost: {request.include_cost}
+Current Mode: {settings.get('integrationsMode', 'sandbox')}
 
 INSTRUCTIONS:
 For each analogue, apply up to 3 scientific modifications that:
@@ -427,6 +438,8 @@ For each analogue, apply up to 3 scientific modifications that:
 - Avoid excluded residues/modifications  
 - Result in biologically plausible peptides similar to GLP-1 therapeutics
 - Are patent-differentiated from existing compounds
+
+{mode_instructions}
 
 RETURN FORMAT (for each analogue):
 
