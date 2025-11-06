@@ -500,7 +500,7 @@ def parse_analogue_response(ai_response: str, base_molecule: str, include_cost: 
             half_life_match = re.search(r'- Predicted Half-Life: (\d+(?:\.\d+)?) days', section)
             complexity_match = re.search(r'- Synthesis Complexity: (\d+) / 5', section)
             cost_match = re.search(r'- Estimated Cost: \$(\d+(?:\.\d+)?) CAD/mg', section) if include_cost else None
-            bioactivity_notes_match = re.search(r'🧪 Bioactivity Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
+            bioactivity_notes_match = re.search(r'Bioactivity Profile.*?- Notes: ([^\n]+)', section, re.DOTALL)
             
             binding_affinity = float(binding_match.group(1)) if binding_match else -8.5
             predicted_half_life = float(half_life_match.group(1)) if half_life_match else 2.1
