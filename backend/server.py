@@ -271,7 +271,7 @@ class VaultPDFGenerator:
         
         # Header
         pdf.set_font('Arial', 'B', 20)
-        pdf.cell(0, 15, '🧬 Peptimancer Vault Report', ln=True, align='C')
+        pdf.cell(0, 15, 'Peptimancer Vault Report', ln=True, align='C')
         
         if watermark:
             pdf.set_font('Arial', 'I', 8)
