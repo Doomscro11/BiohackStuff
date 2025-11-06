@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from typing import Dict, Any, Optional, List
-from .config_dynamic import DEFAULTS, validate_config_update
+from ..config_dynamic import DEFAULTS, validate_config_update
 
 # Database connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
