@@ -86,11 +86,10 @@ async def get_admin_settings(request: Request):
 @admin_router.put("/settings")
 async def update_admin_settings(
     request: Request,
-    body: SettingsUpdate,
-    user: Dict[str, Any] = Depends(get_current_user)
+    body: SettingsUpdate
 ):
     """Update runtime settings"""
-    require_admin_role(user)
+    user = get_current_user(request)
     
     try:
         # Extract updates (exclude None values and confirmation)
@@ -106,7 +105,7 @@ async def update_admin_settings(
             )
         
         # Add request metadata for audit trail
-        actor_info = f"{user.get('name', 'admin')} ({user.get('id', 'unknown')})"
+        actor_info = f"{user.get('email', 'admin')} ({user.get('id', 'unknown')})"
         
         # Update settings
         new_settings = await set_settings(updates, actor_info)
