@@ -217,13 +217,27 @@ async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[
     """Generate peptide analogues using AI-powered design"""
     processor = PeptideProcessor()
     
-    # Validate base sequence
-    if not processor.validate_sequence(request.base_molecule):
-        raise HTTPException(status_code=400, detail="Invalid amino acid sequence")
+    # Enhanced validation with detailed error reporting
+    validation_result = processor.validate_sequence(request.base_molecule)
+    if not validation_result["is_valid"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid base molecule sequence: {validation_result['error']}"
+        )
     
-    # Get modification suggestions
+    # Use clean sequence for processing
+    clean_sequence = validation_result["clean_sequence"]
+    
+    # Validate other required fields
+    if not request.allowed_mods.strip():
+        raise HTTPException(status_code=400, detail="Allowed modifications cannot be empty")
+    
+    if not request.target_use.strip():
+        raise HTTPException(status_code=400, detail="Target therapeutic use cannot be empty")
+    
+    # Get modification suggestions using clean sequence
     modifications = processor.get_modification_suggestions(
-        request.base_molecule, request.allowed_mods, request.exclusions
+        clean_sequence, request.allowed_mods, request.exclusions
     )
     
     # Prepare AI prompt
