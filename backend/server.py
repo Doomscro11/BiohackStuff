@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -20,6 +20,10 @@ from io import BytesIO
 import tempfile
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+
+# Import admin routes
+from .routes_admin import admin_router
+from .services.settings import get_settings, is_feature_enabled
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
