@@ -74,6 +74,42 @@ class PeptideGenerationResponse(BaseModel):
     base_molecule: str
     analogues: List[PeptideAnalogue]
 
+# Phase III Models
+class VaultLedgerEntry(BaseModel):
+    vault_id: str
+    generation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    base_molecule: str
+    analogue_data: Dict[str, Any]
+    user_id: Optional[str] = None
+    project_id: Optional[str] = None
+    export_count: int = Field(default=0)
+    synthesis_requests: List[Dict[str, Any]] = Field(default_factory=list)
+
+class SynthesisRequest(BaseModel):
+    vault_id: str
+    partner_name: str = Field(..., description="CRO/synthesis partner name")
+    quantity_mg: float = Field(..., description="Requested quantity in mg")
+    purity_requirement: float = Field(default=95.0, description="Required purity %")
+    timeline_days: int = Field(..., description="Requested timeline in days")
+    contact_email: str = Field(..., description="Contact email for quote")
+    additional_notes: Optional[str] = None
+
+class ExportRequest(BaseModel):
+    generation_id: str
+    format: str = Field(default="pdf", description="Export format: pdf, csv, json")
+    include_cost: bool = Field(default=True)
+    include_ip_analysis: bool = Field(default=True)
+    watermark: bool = Field(default=True)
+
+class ProVaultToken(BaseModel):
+    token_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    credits: int = Field(default=0)
+    tier: str = Field(default="basic", description="basic, pro, enterprise")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+
 
 # Advanced Peptide Chemistry Logic
 class PeptideProcessor:
