@@ -192,6 +192,20 @@ function App() {
                   </Select>
                 </div>
 
+                {/* Include Cost Estimates */}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="include_cost"
+                    checked={formData.include_cost}
+                    onCheckedChange={(checked) => handleInputChange('include_cost', checked)}
+                    data-testid="include-cost-switch"
+                  />
+                  <Label htmlFor="include_cost" className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Include Synthesis Cost Estimates
+                  </Label>
+                </div>
+
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
