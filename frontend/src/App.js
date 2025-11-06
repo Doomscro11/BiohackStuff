@@ -172,6 +172,12 @@ function App() {
     }
   };
 
+  const getComplexityColor = (complexity) => {
+    if (complexity <= 2) return 'bg-green-500';
+    if (complexity <= 3) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
