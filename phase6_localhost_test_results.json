@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-11-06T18:24:52.191700",
+  "tests": {
+    "api_health": {
+      "status": "PASS",
+      "details": "Version 1.0.0"
+    },
+    "sequence_validation": {
+      "status": "PASS",
+      "details": "Valid sequence"
+    },
+    "vault_ledger": {
+      "status": "PASS",
+      "details": "5 entries"
+    },
+    "generation_history": {
+      "status": "PASS",
+      "details": "5 entries"
+    },
+    "analogue_generation": {
+      "status": "PASS",
+      "details": "2 analogues with enterprise fields",
+      "generation_id": "91857a2d-23a4-479a-9de1-41c786a0898a",
+      "vault_ids": [
+        "PMNC-8058CCB",
+        "PMNC-DE4471D"
+      ]
+    },
+    "pdf_export": {
+      "status": "PASS",
+      "details": "3270 bytes PDF"
+    },
+    "token_management": {
+      "status": "PASS",
+      "details": "Token: f31b7791-d9e5-411c-a413-09eba1df9f6c"
+    }
+  },
+  "summary": {
+    "tests_passed": 7,
+    "tests_partial": 0,
+    "tests_total": 7,
+    "success_rate": 100.0,
+    "critical_issues_from_iteration_5": {
+      "vault_ledger_fixed": true,
+      "generation_history_fixed": true,
+      "pdf_export_still_working": true
+    }
+  }
+}
