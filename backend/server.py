@@ -431,7 +431,7 @@ RETURN FORMAT (for each analogue):
 
 ---
 
-**📜 IP Risk Profile**  
+**IP Risk Profile**  
 - Patent Similarity Risk: [Low/Medium/High]
 - Novelty Score: [0-100]%  
 - Notes: [analysis of potential patent overlaps, uniqueness factors]
