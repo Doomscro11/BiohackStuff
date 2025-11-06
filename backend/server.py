@@ -831,14 +831,35 @@ async def get_vault_token_status(token_id: str):
 async def get_vault_ledger(limit: int = 50):
     """Get vault ledger entries for IP tracking"""
     try:
-        ledger_entries = await db.vault_ledger.find(
-            {}, {"_id": 0}
-        ).sort("timestamp", -1).limit(limit).to_list(limit)
+        # Get raw documents from database
+        cursor = db.vault_ledger.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit)
+        ledger_entries = []
         
-        # Convert timestamps and ensure proper serialization
-        for entry in ledger_entries:
-            if isinstance(entry.get('timestamp'), str):
-                entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
+        async for entry in cursor:
+            try:
+                # Convert timestamp if needed
+                if isinstance(entry.get('timestamp'), str):
+                    entry['timestamp'] = datetime.fromisoformat(entry['timestamp']).isoformat()
+                elif hasattr(entry.get('timestamp'), 'isoformat'):
+                    entry['timestamp'] = entry['timestamp'].isoformat()
+                
+                # Ensure all nested data is JSON serializable
+                if 'analogue_data' in entry and isinstance(entry['analogue_data'], dict):
+                    analogue_data = entry['analogue_data']
+                    
+                    # Clean up any datetime objects in analogue_data
+                    for key, value in analogue_data.items():
+                        if hasattr(value, 'isoformat'):
+                            analogue_data[key] = value.isoformat()
+                        elif isinstance(value, list):
+                            # Handle lists that might contain datetime objects
+                            analogue_data[key] = [v.isoformat() if hasattr(v, 'isoformat') else v for v in value]
+                
+                ledger_entries.append(entry)
+                
+            except Exception as e:
+                logging.warning(f"Skipping problematic ledger entry: {e}")
+                continue
         
         return {
             "ledger_entries": ledger_entries,
