@@ -607,7 +607,7 @@ async def get_generation_history():
         return history
     except Exception as e:
         logging.error(f"Error fetching generation history: {e}")
-        return []
+        raise HTTPException(status_code=500, detail=f"Failed to fetch generation history: {str(e)}")
 
 @api_router.get("/validate-sequence/{sequence}")
 async def validate_peptide_sequence(sequence: str):
