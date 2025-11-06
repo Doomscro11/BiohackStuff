@@ -480,10 +480,12 @@ class PeptimancerEnterpriseTest:
             return True
         else:
             error_details = f"Only {successful_requests}/{total_requests} requests succeeded. "
-            error_details += "Failures: " + ", ".join([
-                f"Req{r['request_id']}: {r.get('error', f'HTTP {r.get(\"status_code\", \"unknown\")}')} "
-                for r in results if not r.get('success', False)
-            ])
+            failures = []
+            for r in results:
+                if not r.get('success', False):
+                    error_msg = r.get('error', f"HTTP {r.get('status_code', 'unknown')}")
+                    failures.append(f"Req{r['request_id']}: {error_msg}")
+            error_details += "Failures: " + ", ".join(failures)
             
             self.log_test(
                 "Concurrent Load Handling",
