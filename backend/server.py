@@ -404,6 +404,18 @@ async def validate_peptide_sequence(sequence: str):
             "composition": {}
         }
 
+@api_router.get("/validate-sequence/")
+async def validate_empty_sequence():
+    """Handle empty sequence validation endpoint"""
+    return {
+        "sequence": "",
+        "is_valid": False,
+        "error": "No sequence provided for validation",
+        "error_code": "NO_SEQUENCE",
+        "length": 0,
+        "composition": {}
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
