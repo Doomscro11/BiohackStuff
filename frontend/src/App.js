@@ -194,7 +194,7 @@ function App() {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={loading || !sequenceValidation?.is_valid}
+                  disabled={loading || !sequenceValidation?.is_valid || !formData.base_molecule.trim()}
                   data-testid="generate-analogues-button"
                 >
                   {loading ? (
