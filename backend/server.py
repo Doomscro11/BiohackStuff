@@ -561,8 +561,27 @@ async def root():
 
 @api_router.post("/generate-analogues", response_model=PeptideGenerationResponse)
 async def create_peptide_analogues(request: PeptideGenerationRequest):
-    """Generate novel peptide analogues using AI-powered design"""
+    """Generate novel peptide analogues using AI-powered design with dynamic settings"""
     try:
+        # Check runtime settings
+        settings = await get_settings()
+        
+        # Apply rate limiting based on current mode
+        max_analogues = settings.get("maxAnalogues", 10)
+        if request.num_analogues > max_analogues:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Maximum {max_analogues} analogues allowed in current mode"
+            )
+        
+        # Check if demo mode affects cost estimation
+        if settings.get("demoMode", False) and request.include_cost:
+            logging.info("Demo mode: Using mock cost estimation")
+        
+        # Enhanced validation with dynamic settings
+        if not request.generation_id or not request.generation_id.strip():
+            raise HTTPException(status_code=400, detail="Generation ID is required")
+        
         # Generate analogues (validation happens inside this function)
         analogues = await generate_peptide_analogues(request)
         
