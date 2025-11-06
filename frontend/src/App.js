@@ -31,8 +31,10 @@ function App() {
 
   // Validate sequence on change
   useEffect(() => {
-    if (formData.base_molecule && formData.base_molecule.length > 0) {
+    if (formData.base_molecule && formData.base_molecule.trim().length > 0) {
       validateSequence(formData.base_molecule);
+    } else {
+      setSequenceValidation({ is_valid: false, error: "Empty sequence" });
     }
   }, [formData.base_molecule]);
 
