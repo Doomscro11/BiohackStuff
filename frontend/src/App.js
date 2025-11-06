@@ -34,6 +34,19 @@ function App() {
   const [synthesisLoading, setSynthesisLoading] = useState(null);
   const [currentMode, setCurrentMode] = useState(null);
 
+  // Load current mode on component mount
+  useEffect(() => {
+    const loadCurrentMode = async () => {
+      try {
+        const response = await axios.get(`${API}/mode`);
+        setCurrentMode(response.data);
+      } catch (error) {
+        console.error('Failed to load current mode:', error);
+      }
+    };
+    loadCurrentMode();
+  }, []);
+
   // Validate sequence on change
   useEffect(() => {
     if (formData.base_molecule && formData.base_molecule.trim().length > 0) {
