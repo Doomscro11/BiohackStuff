@@ -169,6 +169,235 @@ class PeptimancerAPITester:
             timeout=90  # More analogues = more time
         )
 
+    def test_edge_case_empty_sequence(self):
+        """Test with empty sequence"""
+        test_data = {
+            "base_molecule": "",
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "test",
+            "num_analogues": 1
+        }
+        
+        return self.run_test(
+            "Edge Case: Empty Sequence", 
+            "POST", 
+            "generate-analogues", 
+            400, 
+            data=test_data
+        )
+
+    def test_edge_case_very_long_sequence(self):
+        """Test with very long sequence (100+ amino acids)"""
+        long_sequence = "HAEGTFTSDVSSYLEG" * 7  # 112 amino acids
+        test_data = {
+            "base_molecule": long_sequence,
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "long peptide test",
+            "num_analogues": 1
+        }
+        
+        return self.run_test(
+            "Edge Case: Very Long Sequence", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=120
+        )
+
+    def test_edge_case_single_amino_acid(self):
+        """Test with single amino acid"""
+        test_data = {
+            "base_molecule": "A",
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "minimal peptide",
+            "num_analogues": 1
+        }
+        
+        return self.run_test(
+            "Edge Case: Single Amino Acid", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data
+        )
+
+    def test_edge_case_special_characters(self):
+        """Test with special characters in sequence"""
+        test_data = {
+            "base_molecule": "HAE-GTF@TSD#VSS",
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "test",
+            "num_analogues": 1
+        }
+        
+        return self.run_test(
+            "Edge Case: Special Characters", 
+            "POST", 
+            "generate-analogues", 
+            400, 
+            data=test_data
+        )
+
+    def test_edge_case_lowercase_sequence(self):
+        """Test with lowercase amino acids"""
+        test_data = {
+            "base_molecule": "haegtftsdvssyleg",
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "lowercase test",
+            "num_analogues": 1
+        }
+        
+        return self.run_test(
+            "Edge Case: Lowercase Sequence", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data
+        )
+
+    def test_edge_case_max_analogues_boundary(self):
+        """Test with maximum allowed analogues (10)"""
+        test_data = {
+            "base_molecule": "HAEGTFTSDVSSYLEG",
+            "allowed_mods": "substitution, D-isomers, lipidation, cyclization",
+            "exclusions": "none",
+            "target_use": "boundary test",
+            "num_analogues": 10
+        }
+        
+        return self.run_test(
+            "Edge Case: Max Analogues (10)", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=150
+        )
+
+    def test_edge_case_zero_analogues(self):
+        """Test with zero analogues requested"""
+        test_data = {
+            "base_molecule": "HAEGTFTSDVSSYLEG",
+            "allowed_mods": "substitution",
+            "exclusions": "none",
+            "target_use": "zero test",
+            "num_analogues": 0
+        }
+        
+        return self.run_test(
+            "Edge Case: Zero Analogues", 
+            "POST", 
+            "generate-analogues", 
+            422,  # Validation error expected
+            data=test_data
+        )
+
+    def test_advanced_modifications_d_isomers(self):
+        """Test D-isomer modifications specifically"""
+        test_data = {
+            "base_molecule": "AFLVIPWY",  # Amino acids that have D-isomer support
+            "allowed_mods": "D-isomers",
+            "exclusions": "none",
+            "target_use": "D-isomer testing",
+            "num_analogues": 2
+        }
+        
+        return self.run_test(
+            "Advanced: D-Isomer Modifications", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=90
+        )
+
+    def test_advanced_modifications_lipidation(self):
+        """Test lipidation modifications specifically"""
+        test_data = {
+            "base_molecule": "HKNCGTFTSDVSSYLEG",  # Contains K, N, C for lipidation
+            "allowed_mods": "lipidation",
+            "exclusions": "none",
+            "target_use": "lipidation testing",
+            "num_analogues": 2
+        }
+        
+        return self.run_test(
+            "Advanced: Lipidation Modifications", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=90
+        )
+
+    def test_advanced_modifications_cyclization(self):
+        """Test cyclization modifications specifically"""
+        test_data = {
+            "base_molecule": "HCAEGTFTSDVSSYLECG",  # Contains C-C for disulfide, K-E for lactam
+            "allowed_mods": "cyclization",
+            "exclusions": "none",
+            "target_use": "cyclization testing",
+            "num_analogues": 2
+        }
+        
+        return self.run_test(
+            "Advanced: Cyclization Modifications", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=90
+        )
+
+    def test_complex_exclusions(self):
+        """Test complex exclusion patterns"""
+        test_data = {
+            "base_molecule": "HAEGTFTSDVSSYLEG",
+            "allowed_mods": "substitution, D-isomers, lipidation, cyclization",
+            "exclusions": "proline substitution, N-terminal modifications, C-terminal lipidation, position 1-3 modifications",
+            "target_use": "complex exclusion testing",
+            "num_analogues": 3
+        }
+        
+        return self.run_test(
+            "Complex Exclusions Test", 
+            "POST", 
+            "generate-analogues", 
+            200, 
+            data=test_data,
+            timeout=90
+        )
+
+    def test_sequence_validation_edge_cases(self):
+        """Test sequence validation with various edge cases"""
+        edge_cases = [
+            ("", "Empty sequence"),
+            ("X", "Invalid amino acid X"),
+            ("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "All letters including invalid"),
+            ("123456", "Numbers only"),
+            ("A" * 1000, "Very long sequence"),
+            ("a", "Single lowercase"),
+            ("AcDeFg", "Mixed case")
+        ]
+        
+        results = []
+        for sequence, description in edge_cases:
+            success, response = self.run_test(
+                f"Validation Edge Case: {description}", 
+                "GET", 
+                f"validate-sequence/{sequence}", 
+                200
+            )
+            results.append((success, response, description))
+        
+        return results
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("🧪 Starting Peptimancer Backend API Tests")
