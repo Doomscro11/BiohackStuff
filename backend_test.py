@@ -400,8 +400,8 @@ class PeptimancerAPITester:
 
     def run_all_tests(self):
         """Run all backend API tests"""
-        print("🧪 Starting Peptimancer Backend API Tests")
-        print("=" * 50)
+        print("🧪 Starting Peptimancer Backend API Tests - Iteration 2 (Edge Cases)")
+        print("=" * 70)
         
         # Basic connectivity tests
         self.test_root_endpoint()
@@ -421,8 +421,35 @@ class PeptimancerAPITester:
         self.test_generation_history()
         self.test_generate_analogues_max_count()
         
+        print("\n🔬 Running Edge Case Tests...")
+        print("-" * 40)
+        
+        # Edge case tests
+        self.test_edge_case_empty_sequence()
+        self.test_edge_case_very_long_sequence()
+        self.test_edge_case_single_amino_acid()
+        self.test_edge_case_special_characters()
+        self.test_edge_case_lowercase_sequence()
+        self.test_edge_case_max_analogues_boundary()
+        self.test_edge_case_zero_analogues()
+        
+        print("\n🧬 Running Advanced Modification Tests...")
+        print("-" * 40)
+        
+        # Advanced modification tests
+        self.test_advanced_modifications_d_isomers()
+        self.test_advanced_modifications_lipidation()
+        self.test_advanced_modifications_cyclization()
+        self.test_complex_exclusions()
+        
+        print("\n🔍 Running Sequence Validation Edge Cases...")
+        print("-" * 40)
+        
+        # Sequence validation edge cases
+        self.test_sequence_validation_edge_cases()
+        
         # Print summary
-        print("\n" + "=" * 50)
+        print("\n" + "=" * 70)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
         
         if self.tests_passed == self.tests_run:
