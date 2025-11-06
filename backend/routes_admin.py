@@ -55,26 +55,12 @@ class SettingsUpdate(BaseModel):
             raise ValueError("Max analogues must be between 1 and 20")
         return v
 
-# Simple admin authentication (in production, use proper OAuth/JWT)
+# Simple admin authentication (using new auth middleware)
+from middleware.auth import require_admin
+
 def get_current_user(request: Request):
-    """Extract user info from request - simplified for demo"""
-    # In production, implement proper JWT/OAuth validation
-    auth_header = request.headers.get("Authorization")
-    if not auth_header:
-        # For demo, allow requests without auth but log warning
-        logger.warning("Admin request without authentication header")
-        return {"id": "demo_admin", "role": "admin", "name": "Demo Admin"}
-    
-    # Simple bearer token check (replace with proper JWT validation)
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-        # In production, validate JWT token
-        return {"id": "admin_user", "role": "admin", "name": "Admin User"}
-    
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid authentication"
-    )
+    """Get current authenticated user"""
+    return require_admin(request)
 
 def require_admin_role(user: Dict[str, Any]):
     """Ensure user has admin role"""
