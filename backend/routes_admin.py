@@ -100,8 +100,9 @@ async def update_admin_settings(
     request: Request,
     body: SettingsUpdate
 ):
-    """Update runtime settings"""
+    """Update runtime settings (requires 2FA)"""
     user = get_current_user(request)
+    require_2fa(request)  # Phase 7.1: Require 2FA
     
     try:
         # Extract updates (exclude None values and confirmation)
