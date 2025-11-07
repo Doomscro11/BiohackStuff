@@ -116,6 +116,18 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating _login_attempts indexes: {str(e)}")
 
+# Phase 7.1: Errors collection indexes
+print("\nCreating errors indexes...")
+try:
+    db.errors.create_index("ts", name="timestamp_idx")
+    print("  ✓ ts (timestamp)")
+    
+    db.errors.create_index("kind", name="kind_idx")
+    print("  ✓ kind")
+    
+except Exception as e:
+    print(f"  ✗ Error creating errors indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes
