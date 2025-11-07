@@ -1070,6 +1070,10 @@ app.include_router(admin_router)
 # Include auth routes
 app.include_router(auth_router)
 
+# Include Phase VII admin enhancement routes
+app.include_router(admin_health_router)
+app.include_router(admin_users_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
