@@ -21,10 +21,17 @@ router = APIRouter(prefix="/api/admin/health", tags=["admin-health"])
 async def get_system_health(request: Request):
     """
     Get system health metrics and status
-    Requires: admin role
+    Requires: admin role + 2FA
     """
     # RBAC check
     user = require_admin(request)
+    
+    # Phase 7.1: Require 2FA for admin endpoints
+    if not getattr(request.state, "admin2fa", False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="2FA verification required"
+        )
     
     try:
         # Get current settings
