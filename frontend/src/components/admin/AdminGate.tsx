@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Mail, Lock, AlertCircle, CheckCircle, Clock, LogOut } from 'lucide-react';
 
-import AdminModeSwitch from './AdminModeSwitch';
+import AdminModeSwitch from './AdminModeSwitch.tsx';
 import { 
   requestMagicCode, 
   verifyMagicCode, 
@@ -20,7 +20,7 @@ import {
   formatTimeRemaining,
   type UserInfo,
   type AuthResponse 
-} from '@/lib/auth';
+} from '../../lib/auth.ts';
 
 interface AdminStatus {
   admin_emails_configured: boolean;
