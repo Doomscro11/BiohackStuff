@@ -614,9 +614,34 @@ async def get_current_mode():
         }
 
 @api_router.post("/generate-analogues", response_model=PeptideGenerationResponse)
-async def create_peptide_analogues(request: PeptideGenerationRequest):
+async def create_peptide_analogues(request: PeptideGenerationRequest, http_request: Request):
     """Generate novel peptide analogues using AI-powered design with dynamic settings"""
     try:
+        # Phase VIII: Credit enforcement
+        from middleware.auth import get_current_user
+        from billing.service import consume_credits
+        
+        user = get_current_user(http_request)
+        if user:
+            # Calculate credit cost
+            CREDITS_PER_ANALOGUE = 1
+            cost = CREDITS_PER_ANALOGUE * request.num_analogues
+            
+            try:
+                new_balance = await consume_credits(
+                    user["id"],
+                    cost,
+                    f"Analogue generation x{request.num_analogues}"
+                )
+                logging.info(f"Credits consumed: {cost}, new balance: {new_balance}")
+            except ValueError as e:
+                if "INSUFFICIENT_CREDITS" in str(e):
+                    raise HTTPException(
+                        status_code=402,  # Payment Required
+                        detail="Out of credits. Upgrade or purchase credits to continue."
+                    )
+                raise
+        
         # Check runtime settings
         settings = await get_settings()
         
