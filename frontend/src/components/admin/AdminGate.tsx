@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Mail, Lock, AlertCircle, CheckCircle, Clock, LogOut } from 'lucide-react';
 
 import AdminModeSwitch from './AdminModeSwitch.tsx';
+import AdminHealthCard from './AdminHealthCard.tsx';
+import AdminUsersPanel from './AdminUsersPanel.tsx';
 import { 
   requestMagicCode, 
   verifyMagicCode, 
