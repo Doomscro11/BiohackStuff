@@ -128,6 +128,21 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating errors indexes: {str(e)}")
 
+# Phase VIII: Billing collection indexes
+print("\nCreating billing indexes...")
+try:
+    db.plans.create_index("code", unique=True, name="code_unique_idx")
+    print("  ✓ plans.code (unique)")
+    
+    db.subscriptions.create_index("userId", unique=True, name="userId_unique_idx")
+    print("  ✓ subscriptions.userId (unique)")
+    
+    db.subscriptions.create_index("renewsAt", name="renewsAt_idx")
+    print("  ✓ subscriptions.renewsAt")
+    
+except Exception as e:
+    print(f"  ✗ Error creating billing indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes
