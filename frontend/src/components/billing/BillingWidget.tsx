@@ -1,6 +1,7 @@
-// User Billing Widget Component
-import React, { useEffect, useState } from 'react';
+// User Billing Widget Component - Auth-aware with credit refresh
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchBillingState, startCheckout } from '../../lib/billing.ts';
+import { redirectToLogin } from '../../lib/http.ts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,25 +10,74 @@ import { CreditCard, Coins, TrendingUp, Clock, AlertCircle, CheckCircle } from '
 export default function BillingWidget() {
   const [state, setState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [authError, setAuthError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-
-  useEffect(() => {
-    reload();
-  }, []);
+  const prevCredits = useRef<number | null>(null);
 
   const reload = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const data = await fetchBillingState();
-      setState(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load billing information');
-    } finally {
+    setLoading(true);
+    const result = await fetchBillingState();
+    
+    if (!result.ok) {
+      if (result.status === 401) {
+        setAuthError(true);
+      }
       setLoading(false);
+      return;
     }
+    
+    setAuthError(false);
+    setState(result.data);
+    setLoading(false);
   };
+
+  // Initial load + post-checkout polling for credit refresh
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cameFromCheckout = params.get('success') === '1';
+    
+    let timer: any = null;
+    let tries = 0;
+    
+    const poll = async () => {
+      await reload();
+      tries++;
+      
+      const currentCredits = state?.credits;
+      if (prevCredits.current == null) {
+        prevCredits.current = currentCredits ?? null;
+      }
+      
+      const creditsChanged = 
+        prevCredits.current != null && 
+        currentCredits != null && 
+        currentCredits !== prevCredits.current;
+      
+      // Stop polling if credits changed, not from checkout, or max tries
+      if (creditsChanged || !cameFromCheckout || tries > 6) {
+        if (creditsChanged) {
+          // Dispatch credit update event for header badge
+          window.dispatchEvent(
+            new CustomEvent('credits:update', { 
+              detail: { credits: currentCredits } 
+            })
+          );
+          prevCredits.current = currentCredits;
+        }
+        return;
+      }
+      
+      // Continue polling (5 second intervals, max 30 seconds)
+      timer = setTimeout(poll, 5000);
+    };
+    
+    poll();
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const upgrade = async (plan: 'pro' | 'enterprise') => {
     try {
