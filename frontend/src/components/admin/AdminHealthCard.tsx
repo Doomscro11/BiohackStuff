@@ -41,9 +41,14 @@ export default function AdminHealthCard() {
   const loadHealth = async () => {
     try {
       const data = await getHealth();
+      // Ensure required fields exist
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid health data received');
+      }
       setHealth(data);
       setError('');
     } catch (err: any) {
+      console.error('Health check failed:', err);
       setError(err.message || 'Failed to load health metrics');
     } finally {
       setLoading(false);
