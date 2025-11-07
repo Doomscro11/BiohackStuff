@@ -17,7 +17,8 @@ function MainApp() {
             <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
               🧬 Peptimancer
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <CreditBadge />
               <Link to="/billing">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
