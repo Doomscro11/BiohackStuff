@@ -2,10 +2,10 @@
 import os
 import logging
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
-from middleware.auth import get_current_user, require_role
+from middleware.auth import require_admin
 from models import AdjustCreditsBody, SetTierBody, UserSummary
 
 logger = logging.getLogger(__name__)
