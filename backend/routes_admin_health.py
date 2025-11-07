@@ -24,7 +24,7 @@ async def get_system_health(request: Request):
     Requires: admin role
     """
     # RBAC check
-    require_role(user, ["admin"])
+    user = require_admin(request)
     
     try:
         # Get current settings
