@@ -110,8 +110,9 @@ async def adjust_credits(request: Request, body: AdjustCreditsBody):
         
         new_balance = int(result.get("credits", 0))
         
-        # Log to credits ledger
-        await credits_ledger_collection.insert_one({
+        # Log to credits ledger (immutable audit trail)
+        from audit_immutability import insert_strict
+        await insert_strict(credits_ledger_collection, {
             "userId": str(oid),
             "delta": body.delta,
             "reason": body.reason,
