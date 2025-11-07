@@ -80,25 +80,29 @@ export default function BillingWidget() {
   }, []);
 
   const upgrade = async (plan: 'pro' | 'enterprise') => {
-    try {
-      setActionLoading(true);
-      const res = await startCheckout({ plan });
-      window.location.href = res.url;
-    } catch (err: any) {
-      alert(`Failed to start checkout: ${err.message}`);
+    setActionLoading(true);
+    const result = await startCheckout({ plan });
+    
+    if (!result.ok) {
+      alert(`Failed to start checkout: ${result.text || 'Unknown error'}`);
       setActionLoading(false);
+      return;
     }
+    
+    window.location.href = (result as any).data.url;
   };
 
   const buyCredits = async (credits: number) => {
-    try {
-      setActionLoading(true);
-      const res = await startCheckout({ purchase_credits: credits });
-      window.location.href = res.url;
-    } catch (err: any) {
-      alert(`Failed to start checkout: ${err.message}`);
+    setActionLoading(true);
+    const result = await startCheckout({ purchase_credits: credits });
+    
+    if (!result.ok) {
+      alert(`Failed to start checkout: ${result.text || 'Unknown error'}`);
       setActionLoading(false);
+      return;
     }
+    
+    window.location.href = (result as any).data.url;
   };
 
   if (loading) {
@@ -114,15 +118,24 @@ export default function BillingWidget() {
     );
   }
 
-  if (error) {
+  // Show sign-in prompt for unauthenticated users
+  if (authError) {
     return (
-      <Card>
+      <Card className="border-amber-200 bg-amber-50">
         <CardContent className="pt-6">
-          <div className="text-center text-red-600">
-            <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-            <p>{error}</p>
-            <Button onClick={reload} className="mt-4" variant="outline" size="sm">
-              Retry
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-3 text-amber-600" />
+            <h3 className="font-semibold text-lg text-amber-900 mb-2">
+              Sign in required
+            </h3>
+            <p className="text-sm text-amber-800 mb-4">
+              Please sign in to view your plan, credits, and purchase options.
+            </p>
+            <Button
+              onClick={() => redirectToLogin('/billing')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Sign in to continue
             </Button>
           </div>
         </CardContent>
