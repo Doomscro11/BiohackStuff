@@ -190,17 +190,13 @@ export default function AdminGate() {
           </Button>
         </div>
 
-        {/* Phase 7.1: Admin 2FA Required */}
+        {/* Phase 7.1: Admin 2FA Gate - Always show this first */}
         <Admin2FA />
 
-        {/* Phase VII: System Health Monitoring */}
-        <AdminHealthCard />
-
-        {/* Admin Mode Switch Component */}
-        <AdminModeSwitch />
-
-        {/* Phase VII: User & Tier Management */}
-        <AdminUsersPanel />
+        {/* 
+          Phase 7.1: Admin panels load ONLY after 2FA verification
+          The Admin2FA component will auto-refresh the page after successful verification
+        */}
       </div>
     );
   }
