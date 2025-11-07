@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 from pydantic import BaseModel, Field, validator
 from typing import Optional, Dict, Any, List
 import logging
+import os
 from datetime import datetime
 
 # Import settings service
