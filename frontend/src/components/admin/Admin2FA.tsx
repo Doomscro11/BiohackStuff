@@ -88,11 +88,7 @@ export default function Admin2FA() {
 
       setVerified(true);
       setCode('');
-      
-      // Reload the page to show admin panels
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // No need to reload - state change will show admin panels
     } catch (err: any) {
       setError(err.message || 'Verification failed');
     } finally {
