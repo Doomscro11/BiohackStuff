@@ -167,7 +167,7 @@ export default function AdminGate() {
   // Show admin panel if user is authenticated and is admin
   if (user?.is_admin) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* User info header */}
         <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center gap-3">
@@ -189,8 +189,14 @@ export default function AdminGate() {
           </Button>
         </div>
 
+        {/* Phase VII: System Health Monitoring */}
+        <AdminHealthCard />
+
         {/* Admin Mode Switch Component */}
         <AdminModeSwitch />
+
+        {/* Phase VII: User & Tier Management */}
+        <AdminUsersPanel />
       </div>
     );
   }
