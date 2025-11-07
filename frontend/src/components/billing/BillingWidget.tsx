@@ -142,6 +142,19 @@ export default function BillingWidget() {
     );
   }
 
+  // State not loaded yet
+  if (!state) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-4">
+            Loading...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'basic': return 'bg-gray-100 text-gray-700';
