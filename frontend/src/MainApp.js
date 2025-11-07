@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import App from './App';
-import AdminGate from './components/admin/AdminGate';
+import AdminGate from './components/admin/AdminGate.tsx';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
