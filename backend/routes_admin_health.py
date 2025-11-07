@@ -2,9 +2,9 @@
 import os
 import time
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorClient
-from middleware.auth import get_current_user, require_role
+from middleware.auth import require_admin
 from services.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
 router = APIRouter(prefix="/api/admin/health", tags=["admin-health"])
 
 @router.get("")
-async def get_system_health(user=Depends(get_current_user)):
+async def get_system_health(request: Request):
     """
     Get system health metrics and status
     Requires: admin role
