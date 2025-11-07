@@ -1,23 +1,20 @@
 // Billing API Helpers for Peptimancer
+import { fetchJSON } from './http.ts';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export async function fetchBillingState() {
-  const response = await fetch(`${BACKEND_URL}/api/billing/state`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/billing/state`, {
     credentials: 'include'
   });
-  
-  if (!response.ok) {
-    throw new Error(await response.text() || 'Failed to fetch billing state');
-  }
-  
-  return response.json();
+  return result;
 }
 
 export async function startCheckout(payload: {
   plan?: 'basic' | 'pro' | 'enterprise';
   purchase_credits?: number;
 }) {
-  const response = await fetch(`${BACKEND_URL}/api/billing/checkout`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/billing/checkout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -25,12 +22,7 @@ export async function startCheckout(payload: {
     credentials: 'include',
     body: JSON.stringify(payload)
   });
-  
-  if (!response.ok) {
-    throw new Error(await response.text() || 'Failed to start checkout');
-  }
-  
-  return response.json();
+  return result;
 }
 
 export async function getPlans() {
