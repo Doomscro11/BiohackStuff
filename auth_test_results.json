@@ -1,0 +1,123 @@
+{
+  "tests_run": 13,
+  "tests_passed": 6,
+  "success_rate": 46.15384615384615,
+  "critical_failures": [
+    {
+      "test": "Magic Code Verification (Admin)",
+      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
+      "timestamp": "2025-11-07T13:11:20.781621"
+    },
+    {
+      "test": "Magic Code Verification (Non-Admin)",
+      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
+      "timestamp": "2025-11-07T13:11:20.827322"
+    },
+    {
+      "test": "Get Current User (Admin)",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827966"
+    },
+    {
+      "test": "Get Current User (Non-Admin)",
+      "error": "No non-admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827981"
+    },
+    {
+      "test": "Admin Settings Access (Admin User)",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827997"
+    },
+    {
+      "test": "Admin Settings Access (Non-Admin User - Should Fail)",
+      "error": "No non-admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.828008"
+    },
+    {
+      "test": "Admin Settings Update",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.828020"
+    }
+  ],
+  "test_results": {
+    "Magic Code Request (Admin Email)": {
+      "success": true,
+      "details": "OTP: 459174, expires in 10 minutes",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.691878"
+    },
+    "Magic Code Request (Non-Admin Email)": {
+      "success": true,
+      "details": "OTP: 180571, expires in 10 minutes",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.732814"
+    },
+    "Magic Code Verification (Admin)": {
+      "success": false,
+      "details": "",
+      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
+      "timestamp": "2025-11-07T13:11:20.781627"
+    },
+    "Magic Code Verification (Non-Admin)": {
+      "success": false,
+      "details": "",
+      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
+      "timestamp": "2025-11-07T13:11:20.827329"
+    },
+    "Get Current User (Admin)": {
+      "success": false,
+      "details": "",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827972"
+    },
+    "Get Current User (Non-Admin)": {
+      "success": false,
+      "details": "",
+      "error": "No non-admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827983"
+    },
+    "Admin Settings Access (Admin User)": {
+      "success": false,
+      "details": "",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.827998"
+    },
+    "Admin Settings Access (Non-Admin User - Should Fail)": {
+      "success": false,
+      "details": "",
+      "error": "No non-admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.828009"
+    },
+    "Admin Settings Update": {
+      "success": false,
+      "details": "",
+      "error": "No admin JWT cookie available",
+      "timestamp": "2025-11-07T13:11:20.828021"
+    },
+    "Logout": {
+      "success": true,
+      "details": "Successfully logged out",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.859577"
+    },
+    "Invalid OTP Code": {
+      "success": true,
+      "details": "Correctly returned 401 Unauthorized for invalid OTP",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.900301"
+    },
+    "Invalid Email Format": {
+      "success": true,
+      "details": "Correctly returned 422 for invalid email format",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.951562"
+    },
+    "Missing JWT Cookie": {
+      "success": true,
+      "details": "Correctly returned 401 Unauthorized without JWT",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:20.990382"
+    }
+  },
+  "auth_working": false
+}
