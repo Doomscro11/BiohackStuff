@@ -7,6 +7,7 @@ import { Shield, Key, CheckCircle, AlertCircle, QrCode } from 'lucide-react';
 import AdminHealthCard from './AdminHealthCard.tsx';
 import AdminModeSwitch from './AdminModeSwitch.tsx';
 import AdminUsersPanel from './AdminUsersPanel.tsx';
+import AdminPlansPanel from './AdminPlansPanel.tsx';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
