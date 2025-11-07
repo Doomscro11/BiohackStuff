@@ -81,8 +81,9 @@ def require_admin_role(user: Dict[str, Any]):
 # Admin endpoints
 @admin_router.get("/settings")
 async def get_admin_settings(request: Request):
-    """Get current runtime settings"""
+    """Get current runtime settings (requires 2FA)"""
     user = get_current_user(request)
+    require_2fa(request)  # Phase 7.1: Require 2FA
     
     try:
         settings_info = await get_settings_info()
