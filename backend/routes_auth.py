@@ -219,7 +219,6 @@ async def verify_magic_code(request: Request, response: Response, body: VerifyRe
                 "$setOnInsert": {
                     "email": email,
                     "created_at": now,
-                    "role": role,
                     "org_id": "default"
                 },
                 "$set": {
