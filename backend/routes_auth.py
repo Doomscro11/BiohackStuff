@@ -308,3 +308,92 @@ async def get_admin_status():
         "max_login_attempts": MAX_LOGIN_ATTEMPTS,
         "lockout_duration_minutes": LOCKOUT_DURATION_MINUTES
     }
+
+
+# ==================== Phase 7.1: Admin 2FA (TOTP) ====================
+
+class TwoFAVerifyBody(BaseModel):
+    code: str
+
+@auth_router.post("/2fa/start")
+async def twofa_start(request: Request):
+    """
+    Start 2FA setup for admin users
+    Returns TOTP secret and OTP Auth URI for QR code
+    """
+    from middleware.auth import get_current_user
+    from auth.totp import ensure_totp_secret, get_otpauth_uri
+    
+    user = get_current_user(request)
+    if not user or user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    # Generate or retrieve TOTP secret
+    secret = await ensure_totp_secret(user["id"])
+    uri = get_otpauth_uri(user["email"], secret)
+    
+    return {
+        "ok": True,
+        "otpauth": uri,
+        "email": user["email"]
+    }
+
+@auth_router.post("/2fa/verify")
+async def twofa_verify(body: TwoFAVerifyBody, response: Response, request: Request):
+    """
+    Verify 2FA code and issue admin2fa cookie
+    This cookie grants elevated admin access for 30 minutes
+    """
+    from middleware.auth import get_current_user
+    from auth.totp import verify_totp
+    from observability import log_error
+    
+    user = get_current_user(request)
+    if not user or user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    # Verify TOTP code
+    is_valid = await verify_totp(user["id"], body.code)
+    
+    if not is_valid:
+        await log_error("2fa_failed", {
+            "userId": user["id"],
+            "email": user["email"],
+            "timestamp": datetime.utcnow().isoformat()
+        })
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid 2FA code"
+        )
+    
+    # Issue elevated admin2fa cookie (30 minutes)
+    token = sign_jwt({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": "admin",
+        "org_id": user.get("org_id", "default"),
+        "scope": "admin2fa"
+    })
+    
+    response.set_cookie(
+        "pmnc_admin2fa",
+        token,
+        httponly=True,
+        samesite="Strict",
+        max_age=60 * 30,  # 30 minutes
+        path="/"
+    )
+    
+    logger.info(f"2FA verified successfully for admin: {user['email']}")
+    
+    return {
+        "ok": True,
+        "message": "2FA verified successfully",
+        "expires_in": 1800  # 30 minutes in seconds
+    }
