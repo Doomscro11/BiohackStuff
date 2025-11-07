@@ -98,12 +98,13 @@ export async function getCurrentUser(): Promise<UserInfo | null> {
     });
 
     if (!response.ok) {
+      // Silently return null for unauthorized requests
       return null;
     }
 
     return response.json();
   } catch (error) {
-    console.error('Failed to get current user:', error);
+    // Silently handle errors - expected when not authenticated
     return null;
   }
 }
