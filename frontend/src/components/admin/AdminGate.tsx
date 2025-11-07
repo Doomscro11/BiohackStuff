@@ -190,6 +190,9 @@ export default function AdminGate() {
           </Button>
         </div>
 
+        {/* Phase 7.1: Admin 2FA Required */}
+        <Admin2FA />
+
         {/* Phase VII: System Health Monitoring */}
         <AdminHealthCard />
 
