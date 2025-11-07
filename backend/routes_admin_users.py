@@ -140,10 +140,17 @@ async def adjust_credits(request: Request, body: AdjustCreditsBody):
 async def set_tier(request: Request, body: SetTierBody):
     """
     Set user tier (basic, pro, enterprise, admin)
-    Requires: admin role
+    Requires: admin role + 2FA
     """
     # RBAC check
     user = require_admin(request)
+    
+    # Phase 7.1: Require 2FA
+    if not getattr(request.state, "admin2fa", False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="2FA verification required"
+        )
     
     # Validate tier
     if body.tier not in {"basic", "pro", "enterprise", "admin"}:
