@@ -34,13 +34,13 @@ def _to_user_summary(doc) -> dict:
     }
 
 @router.get("")
-async def list_users(user=Depends(get_current_user)):
+async def list_users(request: Request):
     """
     List all users with their tier and credits information
     Requires: admin role
     """
     # RBAC check
-    require_role(user, ["admin"])
+    user = require_admin(request)
     
     try:
         # Fetch users (limited to 200 for performance)
