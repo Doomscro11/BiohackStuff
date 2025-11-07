@@ -210,6 +210,7 @@ async def verify_magic_code(request: Request, response: Response, body: VerifyRe
         
         # Determine user role
         role = "admin" if email in ADMIN_EMAILS else "researcher"
+        logger.info(f"Role determination: email={email}, ADMIN_EMAILS={ADMIN_EMAILS}, role={role}")
         
         # Create or update user
         now = datetime.utcnow()
