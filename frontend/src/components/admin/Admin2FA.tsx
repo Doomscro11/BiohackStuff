@@ -98,17 +98,24 @@ export default function Admin2FA() {
 
   if (verified) {
     return (
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="h-6 w-6 text-green-600" />
-            <div>
-              <p className="font-medium text-green-800">2FA Verified</p>
-              <p className="text-sm text-green-600">You have elevated admin access for 30 minutes</p>
+      <>
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              <div>
+                <p className="font-medium text-green-800">2FA Verified</p>
+                <p className="text-sm text-green-600">You have elevated admin access for 30 minutes</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Phase VII & 7.1: Admin Panels - Only shown after 2FA */}
+        <AdminHealthCard />
+        <AdminModeSwitch />
+        <AdminUsersPanel />
+      </>
     );
   }
 
