@@ -79,16 +79,74 @@ async def export_day(day: str = None) -> dict:
     
     logger.info(f"Audit export complete: {file_path}")
     
-    # TODO: Upload to S3/GCS when credentials are configured
-    # Example:
-    # if os.getenv("AWS_ACCESS_KEY_ID"):
-    #     upload_to_s3(file_path, f"audits/{dt.isoformat()}.json")
+    # Upload to cloud storage
+    remote_meta = _upload_to_cloud(file_path)
     
     return {
         "ok": True,
         "file": file_path,
         "date": dt.isoformat(),
-        "counts": export_data["counts"]
+        "counts": export_data["counts"],
+        "remote": remote_meta
+    }
+
+def _upload_to_cloud(path: str) -> dict:
+    """
+    Upload audit file to S3 or GCS based on configuration
+    Returns metadata about the upload
+    """
+    provider = os.getenv("AUDIT_PROVIDER", "").lower()
+    bucket = os.getenv("AUDIT_BUCKET")
+    prefix = os.getenv("AUDIT_PREFIX", "peptimancer/audits")
+    
+    if provider == "s3" and bucket:
+        try:
+            import boto3
+            s3 = boto3.client("s3", region_name=os.getenv("AWS_REGION", "us-east-1"))
+            key = f"{prefix}/{os.path.basename(path)}"
+            
+            s3.upload_file(
+                path, 
+                bucket, 
+                key,
+                ExtraArgs={"ServerSideEncryption": "AES256"}
+            )
+            
+            logger.info(f"Uploaded audit to S3: s3://{bucket}/{key}")
+            return {
+                "provider": "s3",
+                "uri": f"s3://{bucket}/{key}",
+                "bucket": bucket,
+                "key": key
+            }
+        except Exception as e:
+            logger.error(f"Failed to upload to S3: {e}")
+            return {"provider": "local", "uri": path, "error": str(e)}
+    
+    elif provider == "gcs" and bucket:
+        try:
+            from google.cloud import storage
+            client = storage.Client()
+            b = client.bucket(bucket)
+            key = f"{prefix}/{os.path.basename(path)}"
+            blob = b.blob(key)
+            blob.upload_from_filename(path)
+            
+            logger.info(f"Uploaded audit to GCS: gs://{bucket}/{key}")
+            return {
+                "provider": "gcs",
+                "uri": f"gs://{bucket}/{key}",
+                "bucket": bucket,
+                "key": key
+            }
+        except Exception as e:
+            logger.error(f"Failed to upload to GCS: {e}")
+            return {"provider": "local", "uri": path, "error": str(e)}
+    
+    # No cloud provider configured - local only
+    return {
+        "provider": "local",
+        "uri": path
     }
 
 # CLI entry point
