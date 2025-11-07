@@ -116,6 +116,9 @@ async def admin_get_plans(request: Request):
 @router.put("/admin/plans")
 async def admin_upsert_plan(body: PlanUpsert, request: Request):
     """Update or create billing plan (admin only)"""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
     user = require_admin(request)
     
     # Phase 7.1: Require 2FA
@@ -125,8 +128,46 @@ async def admin_upsert_plan(body: PlanUpsert, request: Request):
             detail="2FA verification required"
         )
     
+    # Validate inputs
+    if body.price < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Price must be >= 0"
+        )
+    
+    if body.credits < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credits must be >= 0"
+        )
+    
+    # Get old plan for audit trail
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
+    
+    old_plan = await db.plans.find_one({"code": body.code})
+    
+    # Update plan
     await upsert_plan(body.code, body.price, body.credits)
     
-    logger.info(f"Admin {user['email']} updated plan: {body.code}")
+    # Write to settings history for audit
+    from audit_immutability import insert_strict
+    await insert_strict(db._settings_history, {
+        "type": "plan_update",
+        "plan_code": body.code,
+        "before": {
+            "price": old_plan.get("price") if old_plan else None,
+            "credits": old_plan.get("credits") if old_plan else None
+        },
+        "after": {
+            "price": body.price,
+            "credits": body.credits
+        },
+        "user": user.get("email"),
+        "ts": datetime.utcnow()
+    })
+    
+    logger.info(f"Admin {user['email']} updated plan: {body.code} (price={body.price}, credits={body.credits})")
     
     return {"ok": True}
