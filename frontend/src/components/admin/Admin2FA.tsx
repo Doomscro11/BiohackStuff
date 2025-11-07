@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Key, CheckCircle, AlertCircle, QrCode } from 'lucide-react';
+import AdminHealthCard from './AdminHealthCard.tsx';
+import AdminModeSwitch from './AdminModeSwitch.tsx';
+import AdminUsersPanel from './AdminUsersPanel.tsx';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
