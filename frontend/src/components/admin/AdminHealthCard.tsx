@@ -151,19 +151,19 @@ export default function AdminHealthCard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="flex items-center justify-between p-2 border rounded">
               <span className="text-xs">Generate API</span>
-              <StatusBadge ok={health.services.generateApi} />
+              <StatusBadge ok={health.services?.generateApi || false} />
             </div>
             <div className="flex items-center justify-between p-2 border rounded">
               <span className="text-xs">Export API</span>
-              <StatusBadge ok={health.services.exportApi} />
+              <StatusBadge ok={health.services?.exportApi || false} />
             </div>
             <div className="flex items-center justify-between p-2 border rounded">
               <span className="text-xs">CRO Webhook</span>
-              <StatusBadge ok={health.services.croWebhook} />
+              <StatusBadge ok={health.services?.croWebhook || false} />
             </div>
             <div className="flex items-center justify-between p-2 border rounded">
               <span className="text-xs">Billing</span>
-              <StatusBadge ok={health.services.billing} />
+              <StatusBadge ok={health.services?.billing || false} />
             </div>
           </div>
         </div>
