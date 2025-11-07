@@ -49,11 +49,11 @@ async def export_day(day: str = None) -> dict:
     logger.info(f"Exporting audit data for {dt.isoformat()}")
     
     # Query audit collections
-    settings_history = await db._settings_history.find({
+    settings_history = await db.get_collection("_settings_history").find({
         "ts": {"$gte": start, "$lte": end}
     }).to_list(length=None)
     
-    credits_ledger = await db.credits_ledger.find({
+    credits_ledger = await db.get_collection("credits_ledger").find({
         "timestamp": {"$gte": start, "$lte": end}
     }).to_list(length=None)
     
