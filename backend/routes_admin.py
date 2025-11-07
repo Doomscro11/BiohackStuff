@@ -104,6 +104,13 @@ async def update_admin_settings(
     user = get_current_user(request)
     require_2fa(request)  # Phase 7.1: Require 2FA
     
+    # Phase 7.1: Emergency freeze mode - block all settings changes
+    if os.getenv("ADMIN_FREEZE", "false").lower() == "true":
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail="Admin operations are frozen due to emergency lockdown. Contact system administrator."
+        )
+    
     try:
         # Extract updates (exclude None values and confirmation)
         updates = {
