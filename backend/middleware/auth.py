@@ -59,6 +59,21 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.is_authenticated = user is not None
         request.state.is_admin = user.get("role") == "admin" if user else False
         
+        # Phase 7.1: Check admin2fa cookie for elevated access
+        request.state.admin2fa = False
+        admin2fa_token = request.cookies.get("pmnc_admin2fa")
+        if admin2fa_token and user:
+            try:
+                admin2fa_payload = verify_jwt(admin2fa_token)
+                # Verify it's the same user and has admin2fa scope
+                if (admin2fa_payload.get("scope") == "admin2fa" and 
+                    admin2fa_payload.get("sub") == user.get("id")):
+                    request.state.admin2fa = True
+                    logger.debug(f"Admin 2FA validated for: {user['email']}")
+            except Exception as e:
+                logger.warning(f"Invalid admin2fa token: {e}")
+                request.state.admin2fa = False
+        
         # Log authentication for audit trail
         if request.url.path.startswith("/api/admin") and user:
             logger.info(f"Admin access: {user['email']} accessing {request.url.path}")
