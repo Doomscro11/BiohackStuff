@@ -1,122 +1,107 @@
 {
   "tests_run": 13,
-  "tests_passed": 6,
-  "success_rate": 46.15384615384615,
+  "tests_passed": 9,
+  "success_rate": 69.23076923076923,
   "critical_failures": [
     {
       "test": "Magic Code Verification (Admin)",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-07T13:11:20.781621"
-    },
-    {
-      "test": "Magic Code Verification (Non-Admin)",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-07T13:11:20.827322"
+      "error": "Expected role 'admin', got 'researcher'",
+      "timestamp": "2025-11-07T13:11:58.626735"
     },
     {
       "test": "Get Current User (Admin)",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827966"
-    },
-    {
-      "test": "Get Current User (Non-Admin)",
-      "error": "No non-admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827981"
+      "error": "Expected is_admin=true, got {'id': '690df01e4aecc08231ea9dd3', 'email': 'founder@peptologic.ai', 'role': 'researcher', 'org_id': 'default', 'is_admin': False}",
+      "timestamp": "2025-11-07T13:11:58.709185"
     },
     {
       "test": "Admin Settings Access (Admin User)",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827997"
-    },
-    {
-      "test": "Admin Settings Access (Non-Admin User - Should Fail)",
-      "error": "No non-admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.828008"
+      "error": "HTTP 403: {\"detail\":\"Admin role required\"}",
+      "timestamp": "2025-11-07T13:11:58.790309"
     },
     {
       "test": "Admin Settings Update",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.828020"
+      "error": "HTTP 403: {\"detail\":\"Admin role required\"}",
+      "timestamp": "2025-11-07T13:11:58.859055"
     }
   ],
   "test_results": {
     "Magic Code Request (Admin Email)": {
       "success": true,
-      "details": "OTP: 459174, expires in 10 minutes",
+      "details": "OTP: 088967, expires in 10 minutes",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.691878"
+      "timestamp": "2025-11-07T13:11:58.538208"
     },
     "Magic Code Request (Non-Admin Email)": {
       "success": true,
-      "details": "OTP: 180571, expires in 10 minutes",
+      "details": "OTP: 449683, expires in 10 minutes",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.732814"
+      "timestamp": "2025-11-07T13:11:58.578149"
     },
     "Magic Code Verification (Admin)": {
       "success": false,
       "details": "",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-07T13:11:20.781627"
+      "error": "Expected role 'admin', got 'researcher'",
+      "timestamp": "2025-11-07T13:11:58.626742"
     },
     "Magic Code Verification (Non-Admin)": {
-      "success": false,
-      "details": "",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-07T13:11:20.827329"
+      "success": true,
+      "details": "JWT cookie set, role: researcher, email: user@example.com",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:58.673059"
     },
     "Get Current User (Admin)": {
       "success": false,
       "details": "",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827972"
+      "error": "Expected is_admin=true, got {'id': '690df01e4aecc08231ea9dd3', 'email': 'founder@peptologic.ai', 'role': 'researcher', 'org_id': 'default', 'is_admin': False}",
+      "timestamp": "2025-11-07T13:11:58.709193"
     },
     "Get Current User (Non-Admin)": {
-      "success": false,
-      "details": "",
-      "error": "No non-admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827983"
+      "success": true,
+      "details": "User info: user@example.com, role: researcher, is_admin: False",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:58.744291"
     },
     "Admin Settings Access (Admin User)": {
       "success": false,
       "details": "",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.827998"
+      "error": "HTTP 403: {\"detail\":\"Admin role required\"}",
+      "timestamp": "2025-11-07T13:11:58.790317"
     },
     "Admin Settings Access (Non-Admin User - Should Fail)": {
-      "success": false,
-      "details": "",
-      "error": "No non-admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.828009"
+      "success": true,
+      "details": "Correctly returned 403 Forbidden for non-admin user",
+      "error": "",
+      "timestamp": "2025-11-07T13:11:58.824471"
     },
     "Admin Settings Update": {
       "success": false,
       "details": "",
-      "error": "No admin JWT cookie available",
-      "timestamp": "2025-11-07T13:11:20.828021"
+      "error": "HTTP 403: {\"detail\":\"Admin role required\"}",
+      "timestamp": "2025-11-07T13:11:58.859060"
     },
     "Logout": {
       "success": true,
       "details": "Successfully logged out",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.859577"
+      "timestamp": "2025-11-07T13:11:58.895181"
     },
     "Invalid OTP Code": {
       "success": true,
       "details": "Correctly returned 401 Unauthorized for invalid OTP",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.900301"
+      "timestamp": "2025-11-07T13:11:58.938461"
     },
     "Invalid Email Format": {
       "success": true,
       "details": "Correctly returned 422 for invalid email format",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.951562"
+      "timestamp": "2025-11-07T13:11:58.973185"
     },
     "Missing JWT Cookie": {
       "success": true,
       "details": "Correctly returned 401 Unauthorized without JWT",
       "error": "",
-      "timestamp": "2025-11-07T13:11:20.990382"
+      "timestamp": "2025-11-07T13:11:59.012692"
     }
   },
   "auth_working": false
