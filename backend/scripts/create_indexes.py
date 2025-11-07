@@ -91,14 +91,15 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating synthesis_requests indexes: {str(e)}")
 
-# Magic codes indexes (for auth)
+# Magic codes indexes (for auth) with TTL
 print("\nCreating _magic_codes indexes...")
 try:
     db._magic_codes.create_index("email", name="email_idx")
     print("  ✓ email")
     
-    db._magic_codes.create_index("expires", name="expires_idx")
-    print("  ✓ expires")
+    # TTL index for automatic expiration
+    db._magic_codes.create_index("expires", name="expires_ttl_idx", expireAfterSeconds=0)
+    print("  ✓ expires (TTL)")
     
 except Exception as e:
     print(f"  ✗ Error creating _magic_codes indexes: {str(e)}")
