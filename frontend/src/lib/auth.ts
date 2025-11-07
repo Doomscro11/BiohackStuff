@@ -36,8 +36,20 @@ export async function requestMagicCode(email: string): Promise<AuthResponse> {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Failed to request magic code');
+    let errorMessage = 'Failed to request magic code';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (e) {
+      // If JSON parsing fails, try text
+      try {
+        errorMessage = await response.text() || errorMessage;
+      } catch (textError) {
+        // If both fail, use default message
+        errorMessage = `Request failed with status ${response.status}`;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
