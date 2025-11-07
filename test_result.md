@@ -101,3 +101,122 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Implement secure Admin Mode Switch with Email OTP authentication and RBAC for runtime configuration. Admin users should be able to log in via magic code (OTP), access the AdminModeSwitch, and change runtime settings (mock/sandbox/live modes). System includes JWT authentication, audit trails, and RBAC protection on admin endpoints."
+
+backend:
+  - task: "JWT Authentication System"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/auth/jwt.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created JWT signing and verification functions using configurable JWT_SECRET, JWT_ISSUER, and JWT_EXPIRES_HOURS from .env"
+
+  - task: "Authentication Middleware"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/middleware/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented AuthMiddleware to extract JWT from cookies/headers, verify, and attach user to request state"
+
+  - task: "Magic Code Authentication Endpoints"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/routes_auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created /api/auth/magic/request (send OTP) and /api/auth/magic/verify (validate OTP, set JWT cookie). Supports demo mode with ENABLE_DEMO_OTP=true"
+
+  - task: "Admin RBAC Protection"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/routes_admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated admin routes to use get_current_user and require_role(['admin']). Protected /api/admin/settings GET and PUT endpoints"
+
+  - task: "Admin Configuration"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/.env"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added ADMIN_EMAILS=founder@peptologic.ai,cto@peptologic.ai, JWT_SECRET, JWT_ISSUER, JWT_EXPIRES_HOURS=72 to .env"
+
+frontend:
+  - task: "Admin Authentication UI (AdminGate)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/admin/AdminGate.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created AdminGate component with email input, OTP verification, role checking, and conditional rendering of AdminModeSwitch"
+
+  - task: "Authentication API Library"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/lib/auth.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created auth utility functions: requestMagicCode, verifyMagicCode, getCurrentUser, logout, getAdminStatus"
+
+  - task: "Routing Setup for Admin Panel"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/MainApp.js, /app/frontend/src/index.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created MainApp.js with React Router setup. Mounted AdminGate at /admin route. Updated index.js to render MainApp"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Magic Code Authentication Endpoints"
+    - "Admin RBAC Protection"
+    - "JWT Authentication System"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Completed Phase 1 integration. Backend authentication system with JWT, OTP magic codes, and RBAC is implemented. Frontend AdminGate component with routing is ready. ADMIN_EMAILS configured for founder@peptologic.ai and cto@peptologic.ai. Both services restarted successfully. Ready for backend testing of authentication flow."
