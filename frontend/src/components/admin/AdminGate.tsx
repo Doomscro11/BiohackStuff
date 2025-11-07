@@ -11,6 +11,7 @@ import { Shield, Mail, Lock, AlertCircle, CheckCircle, Clock, LogOut } from 'luc
 import AdminModeSwitch from './AdminModeSwitch.tsx';
 import AdminHealthCard from './AdminHealthCard.tsx';
 import AdminUsersPanel from './AdminUsersPanel.tsx';
+import Admin2FA from './Admin2FA.tsx';
 import { 
   requestMagicCode, 
   verifyMagicCode, 
