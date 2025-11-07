@@ -6,6 +6,20 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 logger = logging.getLogger("peptimancer")
 
+# Phase 7.1: Initialize Sentry for error tracking (optional)
+try:
+    import sentry_sdk
+    sentry_dsn = os.getenv("SENTRY_DSN")
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            traces_sample_rate=0.1,
+            environment=os.getenv("ENV", "production")
+        )
+        logger.info("Sentry error tracking initialized")
+except ImportError:
+    logger.debug("Sentry SDK not installed - skipping error tracking")
+
 # Database connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
