@@ -123,13 +123,13 @@ async def adjust_credits(request: Request, body: AdjustCreditsBody):
         )
 
 @router.post("/set-tier")
-async def set_tier(body: SetTierBody, user=Depends(get_current_user)):
+async def set_tier(request: Request, body: SetTierBody):
     """
     Set user tier (basic, pro, enterprise, admin)
     Requires: admin role
     """
     # RBAC check
-    require_role(user, ["admin"])
+    user = require_admin(request)
     
     # Validate tier
     if body.tier not in {"basic", "pro", "enterprise", "admin"}:
