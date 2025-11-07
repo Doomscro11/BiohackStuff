@@ -589,16 +589,654 @@ class PeptimancerEnterpriseTest:
             "enterprise_ready": self.tests_passed >= self.tests_run * 0.9
         }
 
-if __name__ == "__main__":
-    tester = PeptimancerEnterpriseTest()
-    results = tester.run_comprehensive_test()
+class AuthenticationTest:
+    """Test Admin Authentication with Email OTP and RBAC"""
     
-    # Save results for analysis
-    with open('/app/phase6_enterprise_validation.json', 'w') as f:
-        json.dump(results, f, indent=2)
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.jwt_cookie = None
+        self.admin_email = "founder@peptologic.ai"
+        self.non_admin_email = "user@example.com"
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+    
+    def test_magic_code_request_admin(self):
+        """Test magic code request with admin email"""
+        try:
+            payload = {"email": self.admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "demo_code" in data:
+                    self.demo_code_admin = data["demo_code"]
+                    self.log_test(
+                        "Magic Code Request (Admin Email)",
+                        True,
+                        f"OTP: {self.demo_code_admin}, expires in {data.get('expires_in_minutes')} minutes"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Magic Code Request (Admin Email)",
+                        False,
+                        error_details="Response missing demo_code or success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Magic Code Request (Admin Email)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Magic Code Request (Admin Email)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_magic_code_request_non_admin(self):
+        """Test magic code request with non-admin email"""
+        try:
+            payload = {"email": self.non_admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "demo_code" in data:
+                    self.demo_code_non_admin = data["demo_code"]
+                    self.log_test(
+                        "Magic Code Request (Non-Admin Email)",
+                        True,
+                        f"OTP: {self.demo_code_non_admin}, expires in {data.get('expires_in_minutes')} minutes"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Magic Code Request (Non-Admin Email)",
+                        False,
+                        error_details="Response missing demo_code or success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Magic Code Request (Non-Admin Email)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Magic Code Request (Non-Admin Email)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_magic_code_verify_admin(self):
+        """Test magic code verification with admin email"""
+        if not hasattr(self, 'demo_code_admin'):
+            self.log_test(
+                "Magic Code Verification (Admin)",
+                False,
+                error_details="No demo code available (request must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {"email": self.admin_email, "code": self.demo_code_admin}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check for JWT cookie
+                cookies = response.cookies
+                if "pmnc_jwt" in cookies:
+                    self.admin_jwt_cookie = cookies["pmnc_jwt"]
+                    if data.get("role") == "admin":
+                        self.log_test(
+                            "Magic Code Verification (Admin)",
+                            True,
+                            f"JWT cookie set, role: {data.get('role')}, email: {data.get('email')}"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Magic Code Verification (Admin)",
+                            False,
+                            error_details=f"Expected role 'admin', got '{data.get('role')}'"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Magic Code Verification (Admin)",
+                        False,
+                        error_details="JWT cookie not set in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Magic Code Verification (Admin)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Magic Code Verification (Admin)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_magic_code_verify_non_admin(self):
+        """Test magic code verification with non-admin email"""
+        if not hasattr(self, 'demo_code_non_admin'):
+            self.log_test(
+                "Magic Code Verification (Non-Admin)",
+                False,
+                error_details="No demo code available (request must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {"email": self.non_admin_email, "code": self.demo_code_non_admin}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check for JWT cookie
+                cookies = response.cookies
+                if "pmnc_jwt" in cookies:
+                    self.non_admin_jwt_cookie = cookies["pmnc_jwt"]
+                    if data.get("role") == "researcher":
+                        self.log_test(
+                            "Magic Code Verification (Non-Admin)",
+                            True,
+                            f"JWT cookie set, role: {data.get('role')}, email: {data.get('email')}"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Magic Code Verification (Non-Admin)",
+                            False,
+                            error_details=f"Expected role 'researcher', got '{data.get('role')}'"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Magic Code Verification (Non-Admin)",
+                        False,
+                        error_details="JWT cookie not set in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Magic Code Verification (Non-Admin)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Magic Code Verification (Non-Admin)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_get_current_user_admin(self):
+        """Test /auth/me endpoint with admin JWT"""
+        if not hasattr(self, 'admin_jwt_cookie'):
+            self.log_test(
+                "Get Current User (Admin)",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/me", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("is_admin") and data.get("email") == self.admin_email:
+                    self.log_test(
+                        "Get Current User (Admin)",
+                        True,
+                        f"User info: {data.get('email')}, role: {data.get('role')}, is_admin: {data.get('is_admin')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Get Current User (Admin)",
+                        False,
+                        error_details=f"Expected is_admin=true, got {data}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Get Current User (Admin)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Get Current User (Admin)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_get_current_user_non_admin(self):
+        """Test /auth/me endpoint with non-admin JWT"""
+        if not hasattr(self, 'non_admin_jwt_cookie'):
+            self.log_test(
+                "Get Current User (Non-Admin)",
+                False,
+                error_details="No non-admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.non_admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/me", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if not data.get("is_admin") and data.get("email") == self.non_admin_email:
+                    self.log_test(
+                        "Get Current User (Non-Admin)",
+                        True,
+                        f"User info: {data.get('email')}, role: {data.get('role')}, is_admin: {data.get('is_admin')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Get Current User (Non-Admin)",
+                        False,
+                        error_details=f"Expected is_admin=false, got {data}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Get Current User (Non-Admin)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Get Current User (Non-Admin)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_admin_settings_access_with_admin(self):
+        """Test admin settings access with admin JWT"""
+        if not hasattr(self, 'admin_jwt_cookie'):
+            self.log_test(
+                "Admin Settings Access (Admin User)",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/settings", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Admin Settings Access (Admin User)",
+                    True,
+                    f"Settings retrieved: mode={data.get('settings', {}).get('integrationsMode')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Settings Access (Admin User)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Settings Access (Admin User)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_admin_settings_access_with_non_admin(self):
+        """Test admin settings access with non-admin JWT (should fail)"""
+        if not hasattr(self, 'non_admin_jwt_cookie'):
+            self.log_test(
+                "Admin Settings Access (Non-Admin User - Should Fail)",
+                False,
+                error_details="No non-admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.non_admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/settings", cookies=cookies, timeout=10)
+            
+            if response.status_code == 403:
+                self.log_test(
+                    "Admin Settings Access (Non-Admin User - Should Fail)",
+                    True,
+                    "Correctly returned 403 Forbidden for non-admin user"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Settings Access (Non-Admin User - Should Fail)",
+                    False,
+                    error_details=f"Expected HTTP 403, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Settings Access (Non-Admin User - Should Fail)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_admin_settings_update(self):
+        """Test admin settings update with admin JWT"""
+        if not hasattr(self, 'admin_jwt_cookie'):
+            self.log_test(
+                "Admin Settings Update",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            payload = {
+                "confirm": "SWITCH",
+                "integrationsMode": "sandbox"
+            }
+            response = requests.put(f"{API_BASE}/admin/settings", json=payload, cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test(
+                        "Admin Settings Update",
+                        True,
+                        f"Settings updated: {data.get('updated_fields')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Admin Settings Update",
+                        False,
+                        error_details="Response missing success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Admin Settings Update",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Settings Update",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_logout(self):
+        """Test logout endpoint"""
+        try:
+            response = requests.post(f"{API_BASE}/auth/logout", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check if cookie is cleared
+                cookies = response.cookies
+                if data.get("success"):
+                    self.log_test(
+                        "Logout",
+                        True,
+                        "Successfully logged out"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Logout",
+                        False,
+                        error_details="Response missing success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Logout",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Logout",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_invalid_otp(self):
+        """Test with invalid OTP code"""
+        try:
+            payload = {"email": self.admin_email, "code": "000000"}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Invalid OTP Code",
+                    True,
+                    "Correctly returned 401 Unauthorized for invalid OTP"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Invalid OTP Code",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Invalid OTP Code",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_invalid_email_format(self):
+        """Test with invalid email format"""
+        try:
+            payload = {"email": "not-an-email"}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code == 422:
+                self.log_test(
+                    "Invalid Email Format",
+                    True,
+                    "Correctly returned 422 for invalid email format"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Invalid Email Format",
+                    False,
+                    error_details=f"Expected HTTP 422, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Invalid Email Format",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_missing_jwt_cookie(self):
+        """Test admin endpoint without JWT cookie"""
+        try:
+            response = requests.get(f"{API_BASE}/admin/settings", timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Missing JWT Cookie",
+                    True,
+                    "Correctly returned 401 Unauthorized without JWT"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Missing JWT Cookie",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Missing JWT Cookie",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def run_all_tests(self):
+        """Run all authentication tests"""
+        print("=" * 80)
+        print("🔐 PEPTIMANCER ADMIN AUTHENTICATION & RBAC TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Admin Email: {self.admin_email}")
+        print(f"Non-Admin Email: {self.non_admin_email}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Test 1: Magic Code Request
+        print("📋 MAGIC CODE REQUEST TESTS")
+        print("-" * 40)
+        self.test_magic_code_request_admin()
+        self.test_magic_code_request_non_admin()
+        
+        # Test 2: Magic Code Verification
+        print("\n🔑 MAGIC CODE VERIFICATION TESTS")
+        print("-" * 40)
+        self.test_magic_code_verify_admin()
+        self.test_magic_code_verify_non_admin()
+        
+        # Test 3: Get Current User
+        print("\n👤 GET CURRENT USER TESTS")
+        print("-" * 40)
+        self.test_get_current_user_admin()
+        self.test_get_current_user_non_admin()
+        
+        # Test 4: Admin Settings Access (RBAC)
+        print("\n🛡️ RBAC PROTECTION TESTS")
+        print("-" * 40)
+        self.test_admin_settings_access_with_admin()
+        self.test_admin_settings_access_with_non_admin()
+        
+        # Test 5: Admin Settings Update
+        print("\n⚙️ ADMIN SETTINGS UPDATE TESTS")
+        print("-" * 40)
+        self.test_admin_settings_update()
+        
+        # Test 6: Logout
+        print("\n🚪 LOGOUT TESTS")
+        print("-" * 40)
+        self.test_logout()
+        
+        # Test 7: Edge Cases
+        print("\n🔬 EDGE CASE TESTS")
+        print("-" * 40)
+        self.test_invalid_otp()
+        self.test_invalid_email_format()
+        self.test_missing_jwt_cookie()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 AUTHENTICATION & RBAC TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        print(f"\nAuthentication System Status: {'✅ WORKING' if self.tests_passed >= self.tests_run * 0.85 else '❌ ISSUES DETECTED'}")
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "auth_working": self.tests_passed >= self.tests_run * 0.85
+        }
+
+if __name__ == "__main__":
+    # Run authentication tests
+    auth_tester = AuthenticationTest()
+    auth_results = auth_tester.run_all_tests()
+    
+    # Save results
+    with open('/app/auth_test_results.json', 'w') as f:
+        json.dump(auth_results, f, indent=2)
     
     # Exit with appropriate code
-    sys.exit(0 if results['enterprise_ready'] else 1)
+    sys.exit(0 if auth_results['auth_working'] else 1)
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
