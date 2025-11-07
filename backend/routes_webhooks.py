@@ -112,35 +112,46 @@ async def stripe_webhook(request: Request):
 @router.get("/billing/mock/success")
 async def mock_success(request: Request):
     """
-    Mock billing success page - simulates Stripe webhook in mock mode
+    Mock billing success page - simulates Stripe webhook and redirects
+    Usage:
+      /api/webhooks/billing/mock/success?uid=<USER_ID>&plan=pro
+      /api/webhooks/billing/mock/success?uid=<USER_ID>&credits=100
     """
-    # Simulate webhook processing
+    import os
+    from fastapi.responses import RedirectResponse
+    
+    # Extract parameters
     user_id = request.query_params.get("uid")
     plan = request.query_params.get("plan")
-    credits = int(request.query_params.get("credits", "0"))
+    credits = int(request.query_params.get("credits", "0") or "0")
     
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Missing user_id"
+            detail="Missing uid parameter"
         )
     
     try:
+        # Process subscription
         if plan and plan in ["basic", "pro", "enterprise"]:
             await create_subscription(user_id, plan, "mock", f"mock_sub_{user_id}")
             logger.info(f"Mock subscription created: user={user_id}, plan={plan}")
         
+        # Process credit purchase
         if credits > 0:
             await apply_credit_purchase(user_id, credits, "mock", f"mock_tx_{user_id}")
             logger.info(f"Mock credits purchased: user={user_id}, credits={credits}")
         
-        return {
-            "ok": True,
-            "message": "Mock payment successful",
-            "plan": plan,
-            "credits": credits,
-            "redirect": "/app/settings/billing?success=1"
-        }
+        # Redirect to billing page with success flag
+        app_url = os.getenv("APP_URL", "http://localhost:3000")
+        redirect_url = f"{app_url}/billing?success=1"
+        
+        logger.info(f"Mock payment complete, redirecting to: {redirect_url}")
+        
+        return RedirectResponse(
+            url=redirect_url,
+            status_code=302
+        )
     
     except Exception as e:
         logger.error(f"Mock payment processing failed: {e}")
