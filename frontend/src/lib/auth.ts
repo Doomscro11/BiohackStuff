@@ -69,8 +69,20 @@ export async function verifyMagicCode(email: string, code: string): Promise<Veri
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Failed to verify magic code');
+    let errorMessage = 'Failed to verify magic code';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (e) {
+      // If JSON parsing fails, try text
+      try {
+        errorMessage = await response.text() || errorMessage;
+      } catch (textError) {
+        // If both fail, use default message
+        errorMessage = `Verification failed with status ${response.status}`;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
