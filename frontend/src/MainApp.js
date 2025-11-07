@@ -16,18 +16,27 @@ function MainApp() {
             <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
               🧬 Peptimancer
             </Link>
-            <Link to="/admin">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/billing">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Billing & Credits
+                </Button>
+              </Link>
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            </div>
           </div>
         </nav>
 
         {/* Routes */}
         <Routes>
           <Route path="/" element={<App />} />
+          <Route path="/billing" element={<BillingPage />} />
           <Route path="/admin" element={<AdminGate />} />
         </Routes>
       </div>
