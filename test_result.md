@@ -107,63 +107,78 @@ user_problem_statement: "Implement secure Admin Mode Switch with Email OTP authe
 backend:
   - task: "JWT Authentication System"
     implemented: true
-    working: "NA"
-    file: "/app/backend/app/auth/jwt.py"
+    working: true
+    file: "/app/backend/auth/jwt.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created JWT signing and verification functions using configurable JWT_SECRET, JWT_ISSUER, and JWT_EXPIRES_HOURS from .env"
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: JWT tokens are correctly signed and verified. Tokens include proper claims (iss, iat, exp, nbf). Token expiry validation working correctly. Admin and researcher roles properly encoded in JWT."
 
   - task: "Authentication Middleware"
     implemented: true
-    working: "NA"
-    file: "/app/backend/app/middleware/auth.py"
+    working: true
+    file: "/app/backend/middleware/auth.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented AuthMiddleware to extract JWT from cookies/headers, verify, and attach user to request state"
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Middleware correctly extracts JWT from cookies, verifies tokens, and attaches user info to request.state. Security headers properly added. Admin access logging working."
 
   - task: "Magic Code Authentication Endpoints"
     implemented: true
-    working: "NA"
-    file: "/app/backend/app/routes_auth.py"
-    stuck_count: 0
+    working: true
+    file: "/app/backend/routes_auth.py"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created /api/auth/magic/request (send OTP) and /api/auth/magic/verify (validate OTP, set JWT cookie). Supports demo mode with ENABLE_DEMO_OTP=true"
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING (after fix): All magic code endpoints working correctly. POST /api/auth/magic/request returns OTP codes in demo mode. POST /api/auth/magic/verify validates OTP and sets JWT cookie. GET /api/auth/me returns user info with correct role. POST /api/auth/logout clears JWT cookie. Edge cases tested: invalid OTP (401), invalid email format (422). FIXED: MongoDB update conflict resolved by removing role from $setOnInsert. FIXED: Environment variable loading order - moved load_dotenv() before route imports in server.py to ensure ADMIN_EMAILS is populated."
 
   - task: "Admin RBAC Protection"
     implemented: true
-    working: "NA"
-    file: "/app/backend/app/routes_admin.py"
+    working: true
+    file: "/app/backend/routes_admin.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated admin routes to use get_current_user and require_role(['admin']). Protected /api/admin/settings GET and PUT endpoints"
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: RBAC protection working correctly. Admin users (founder@peptologic.ai, cto@peptologic.ai) can access /api/admin/settings (GET & PUT). Non-admin users correctly receive 403 Forbidden. Unauthenticated requests receive 401 Unauthorized. Settings update with audit trail working."
 
   - task: "Admin Configuration"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/.env"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added ADMIN_EMAILS=founder@peptologic.ai,cto@peptologic.ai, JWT_SECRET, JWT_ISSUER, JWT_EXPIRES_HOURS=72 to .env"
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: All environment variables correctly configured and loaded. ADMIN_EMAILS properly parsed and used for role determination. JWT settings (secret, issuer, expiry) working as expected. Demo OTP mode enabled for testing."
 
 frontend:
   - task: "Admin Authentication UI (AdminGate)"
