@@ -26,7 +26,9 @@ load_dotenv(ROOT_DIR / '.env')
 
 # Import admin routes and auth system (after loading .env)
 from routes_admin import admin_router
-from routes_auth import auth_router  
+from routes_auth import auth_router
+from routes_admin_health import router as admin_health_router
+from routes_admin_users import router as admin_users_router
 from services.settings import get_settings, is_feature_enabled
 from middleware.auth import AuthMiddleware
 
