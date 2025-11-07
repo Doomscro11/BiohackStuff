@@ -20,14 +20,15 @@ from io import BytesIO
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
-# Import admin routes and auth system
+# Load environment variables BEFORE importing routes
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
+# Import admin routes and auth system (after loading .env)
 from routes_admin import admin_router
 from routes_auth import auth_router  
 from services.settings import get_settings, is_feature_enabled
 from middleware.auth import AuthMiddleware
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
 
 # Thread pool for concurrent operations
 thread_pool = ThreadPoolExecutor(max_workers=10)
