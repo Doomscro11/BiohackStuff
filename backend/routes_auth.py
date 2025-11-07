@@ -272,8 +272,9 @@ async def verify_magic_code(request: Request, response: Response, body: VerifyRe
 
 @auth_router.post("/logout")
 async def logout(response: Response):
-    """Logout user by clearing session cookie"""
+    """Logout user by clearing session cookie and 2FA cookie"""
     response.delete_cookie("pmnc_jwt", path="/")
+    response.delete_cookie("pmnc_admin2fa", path="/")
     return {"success": True, "message": "Logged out successfully"}
 
 @auth_router.get("/me")
