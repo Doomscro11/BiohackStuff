@@ -17,6 +17,17 @@ logger = logging.getLogger(__name__)
 # Create admin router
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
+
+# Phase 7.1: Helper function to require 2FA
+def require_2fa(request: Request):
+    """Require 2FA verification for admin endpoints"""
+    if not getattr(request.state, "admin2fa", False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="2FA verification required for admin operations"
+        )
+
+
 # Admin request models
 class SettingsUpdate(BaseModel):
     integrationsMode: Optional[str] = None
