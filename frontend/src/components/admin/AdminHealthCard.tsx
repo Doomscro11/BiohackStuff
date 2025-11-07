@@ -176,15 +176,15 @@ export default function AdminHealthCard() {
           </h4>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 border rounded">
-              <div className="text-2xl font-bold text-blue-600">{health.metrics.runs}</div>
+              <div className="text-2xl font-bold text-blue-600">{health.metrics?.runs || 0}</div>
               <div className="text-xs text-gray-500 mt-1">Total Runs</div>
             </div>
             <div className="text-center p-3 border rounded">
-              <div className="text-2xl font-bold text-amber-600">{health.metrics.quotesBacklog}</div>
+              <div className="text-2xl font-bold text-amber-600">{health.metrics?.quotesBacklog || 0}</div>
               <div className="text-xs text-gray-500 mt-1">Quotes Backlog</div>
             </div>
             <div className="text-center p-3 border rounded">
-              <div className="text-2xl font-bold text-red-600">{health.metrics.errors24h}</div>
+              <div className="text-2xl font-bold text-red-600">{health.metrics?.errors24h || 0}</div>
               <div className="text-xs text-gray-500 mt-1">Errors (24h)</div>
             </div>
           </div>
