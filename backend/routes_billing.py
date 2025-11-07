@@ -38,6 +38,9 @@ async def billing_checkout(body: CheckoutBody, request: Request):
     Create checkout session for plan subscription or credit purchase
     Redirects user to Stripe Checkout (or mock page in mock mode)
     """
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
     user = get_current_user(request)
     if not user:
         raise HTTPException(
@@ -60,6 +63,21 @@ async def billing_checkout(body: CheckoutBody, request: Request):
             plan=body.plan,
             purchase_credits=body.purchase_credits
         )
+        
+        # Phase VIII: Persist session→user mapping for webhook resolution
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
+        
+        await db.checkout_sessions.insert_one({
+            "session_id": result.session_id,
+            "user_id": user["id"],
+            "email": user["email"],
+            "plan": body.plan,
+            "purchase_credits": body.purchase_credits,
+            "provider": result.provider,
+            "created_at": datetime.utcnow()
+        })
         
         logger.info(f"Checkout session created for user {user['id']}: {result.session_id}")
         
