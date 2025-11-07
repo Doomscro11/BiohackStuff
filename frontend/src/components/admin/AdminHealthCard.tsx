@@ -111,7 +111,7 @@ export default function AdminHealthCard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg">
           <div>
             <div className="text-xs text-gray-500 mb-1">Mode</div>
-            <div className="font-semibold text-sm">{health.mode.toUpperCase()}</div>
+            <div className="font-semibold text-sm">{health.mode ? health.mode.toUpperCase() : 'UNKNOWN'}</div>
             {health.demo && (
               <Badge className="mt-1 bg-yellow-100 text-yellow-700 text-xs">DEMO</Badge>
             )}
