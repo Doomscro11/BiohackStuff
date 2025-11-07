@@ -174,17 +174,17 @@ export default function AdminModeSwitch() {
 
   if (loading) {
     return (
-      <div className=\"flex items-center justify-center p-8\">
-        <div className=\"animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600\" />
-        <span className=\"ml-2\">Loading admin panel...</span>
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <span className="ml-2">Loading admin panel...</span>
       </div>
     );
   }
 
   if (!settingsInfo) {
     return (
-      <Alert variant=\"destructive\">
-        <AlertCircle className=\"h-4 w-4\" />
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Failed to load admin settings. Check your permissions and try again.
         </AlertDescription>
@@ -193,35 +193,35 @@ export default function AdminModeSwitch() {
   }
 
   return (
-    <div className=\"space-y-6 p-6 max-w-4xl mx-auto\">
+    <div className="space-y-6 p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className=\"text-center mb-8\">
-        <div className=\"flex items-center justify-center gap-3 mb-2\">
-          <Shield className=\"h-6 w-6 text-blue-600\" />
-          <h1 className=\"text-2xl font-bold text-gray-900\">Admin Control Panel</h1>
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <Shield className="h-6 w-6 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Admin Control Panel</h1>
         </div>
-        <p className=\"text-gray-600\">Runtime configuration and mode switching for Peptimancer Enterprise</p>
+        <p className="text-gray-600">Runtime configuration and mode switching for Peptimancer Enterprise</p>
       </div>
 
       {/* Current Mode Status */}
       <Card>
         <CardHeader>
-          <CardTitle className=\"flex items-center gap-2\">
-            <Settings className=\"h-5 w-5\" />
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
             Current System Mode
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className={`p-4 rounded-lg border-2 ${getModeColor(settingsInfo.mode_info.color)}`}>
-            <div className=\"flex items-center justify-between mb-2\">
-              <h3 className=\"font-semibold text-lg\">{settingsInfo.mode_info.name}</h3>
-              <Badge variant=\"outline\">{settingsInfo.settings.integrationsMode.toUpperCase()}</Badge>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-lg">{settingsInfo.mode_info.name}</h3>
+              <Badge variant="outline">{settingsInfo.settings.integrationsMode.toUpperCase()}</Badge>
             </div>
-            <p className=\"mb-3\">{settingsInfo.mode_info.description}</p>
-            <div className=\"grid grid-cols-1 md:grid-cols-3 gap-2 text-sm\">
+            <p className="mb-3">{settingsInfo.mode_info.description}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
               {settingsInfo.mode_info.features.map((feature, idx) => (
-                <div key={idx} className=\"flex items-center gap-1\">
-                  <span className=\"w-1.5 h-1.5 bg-current rounded-full\" />
+                <div key={idx} className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-current rounded-full" />
                   {feature}
                 </div>
               ))}
@@ -238,115 +238,115 @@ export default function AdminModeSwitch() {
             Modify system behavior without redeployment. Changes take effect immediately.
           </CardDescription>
         </CardHeader>
-        <CardContent className=\"space-y-6\">
+        <CardContent className="space-y-6">
           {/* Integration Mode */}
-          <div className=\"space-y-2\">
-            <Label htmlFor=\"integrations-mode\">Integration Mode</Label>
+          <div className="space-y-2">
+            <Label htmlFor="integrations-mode">Integration Mode</Label>
             <Select
               value={settingsInfo.settings.integrationsMode}
               onValueChange={(value) => updateSetting('integrationsMode', value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder=\"Select mode\" />
+                <SelectValue placeholder="Select mode" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value=\"mock\">Mock - Safe Development</SelectItem>
-                <SelectItem value=\"sandbox\">Sandbox - Test Environment</SelectItem>
-                <SelectItem value=\"live\">Live - Production</SelectItem>
+                <SelectItem value="mock">Mock - Safe Development</SelectItem>
+                <SelectItem value="sandbox">Sandbox - Test Environment</SelectItem>
+                <SelectItem value="live">Live - Production</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Feature Toggles */}
-          <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
-            <div className=\"flex items-center space-x-2\">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"demo-mode\"
+                id="demo-mode"
                 checked={settingsInfo.settings.demoMode}
                 onCheckedChange={(checked) => updateSetting('demoMode', checked)}
               />
-              <Label htmlFor=\"demo-mode\">Demo Mode</Label>
+              <Label htmlFor="demo-mode">Demo Mode</Label>
             </div>
 
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"watermark-exports\"
+                id="watermark-exports"
                 checked={settingsInfo.settings.watermarkExports}
                 onCheckedChange={(checked) => updateSetting('watermarkExports', checked)}
               />
-              <Label htmlFor=\"watermark-exports\">Watermark Exports</Label>
+              <Label htmlFor="watermark-exports">Watermark Exports</Label>
             </div>
 
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"cro-enabled\"
+                id="cro-enabled"
                 checked={settingsInfo.settings.croEnabled}
                 onCheckedChange={(checked) => updateSetting('croEnabled', checked)}
               />
-              <Label htmlFor=\"cro-enabled\">CRO Integration</Label>
+              <Label htmlFor="cro-enabled">CRO Integration</Label>
             </div>
 
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"billing-enabled\"
+                id="billing-enabled"
                 checked={settingsInfo.settings.billingEnabled}
                 onCheckedChange={(checked) => updateSetting('billingEnabled', checked)}
               />
-              <Label htmlFor=\"billing-enabled\">Billing System</Label>
+              <Label htmlFor="billing-enabled">Billing System</Label>
             </div>
 
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"enterprise-features\"
+                id="enterprise-features"
                 checked={settingsInfo.settings.enterpriseFeatures}
                 onCheckedChange={(checked) => updateSetting('enterpriseFeatures', checked)}
               />
-              <Label htmlFor=\"enterprise-features\">Enterprise Features</Label>
+              <Label htmlFor="enterprise-features">Enterprise Features</Label>
             </div>
 
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2">
               <Switch
-                id=\"audit-logging\"
+                id="audit-logging"
                 checked={settingsInfo.settings.auditLogging}
                 onCheckedChange={(checked) => updateSetting('auditLogging', checked)}
               />
-              <Label htmlFor=\"audit-logging\">Audit Logging</Label>
+              <Label htmlFor="audit-logging">Audit Logging</Label>
             </div>
           </div>
 
           {/* Numeric Settings */}
-          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-4\">
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"rate-limit-demo\">Demo Rate Limit</Label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="rate-limit-demo">Demo Rate Limit</Label>
               <Input
-                id=\"rate-limit-demo\"
-                type=\"number\"
-                min=\"1\"
-                max=\"1000\"
+                id="rate-limit-demo"
+                type="number"
+                min="1"
+                max="1000"
                 value={settingsInfo.settings.rateLimitDemo}
                 onChange={(e) => updateSetting('rateLimitDemo', parseInt(e.target.value))}
               />
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"rate-limit-live\">Live Rate Limit</Label>
+            <div className="space-y-2">
+              <Label htmlFor="rate-limit-live">Live Rate Limit</Label>
               <Input
-                id=\"rate-limit-live\"
-                type=\"number\"
-                min=\"1\"
-                max=\"10000\"
+                id="rate-limit-live"
+                type="number"
+                min="1"
+                max="10000"
                 value={settingsInfo.settings.rateLimitLive}
                 onChange={(e) => updateSetting('rateLimitLive', parseInt(e.target.value))}
               />
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"max-analogues\">Max Analogues</Label>
+            <div className="space-y-2">
+              <Label htmlFor="max-analogues">Max Analogues</Label>
               <Input
-                id=\"max-analogues\"
-                type=\"number\"
-                min=\"1\"
-                max=\"20\"
+                id="max-analogues"
+                type="number"
+                min="1"
+                max="20"
                 value={settingsInfo.settings.maxAnalogues}
                 onChange={(e) => updateSetting('maxAnalogues', parseInt(e.target.value))}
               />
@@ -354,23 +354,23 @@ export default function AdminModeSwitch() {
           </div>
 
           {/* Confirmation and Actions */}
-          <div className=\"border-t pt-6 space-y-4\">
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"confirm\">Type \"SWITCH\" to confirm changes</Label>
+          <div className="border-t pt-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="confirm">Type "SWITCH" to confirm changes</Label>
               <Input
-                id=\"confirm\"
+                id="confirm"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                placeholder=\"SWITCH\"
-                className=\"max-w-xs\"
+                placeholder="SWITCH"
+                className="max-w-xs"
               />
             </div>
 
-            <div className=\"flex gap-3\">
+            <div className="flex gap-3">
               <Button
                 onClick={saveSettings}
                 disabled={saving || confirm !== 'SWITCH'}
-                className=\"bg-emerald-600 hover:bg-emerald-700\"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {saving ? 'Applying...' : 'Apply Changes'}
               </Button>
@@ -378,23 +378,23 @@ export default function AdminModeSwitch() {
               <Button
                 onClick={resetSettings}
                 disabled={saving || confirm !== 'SWITCH'}
-                variant=\"outline\"
-                className=\"text-orange-600 border-orange-300 hover:bg-orange-50\"
+                variant="outline"
+                className="text-orange-600 border-orange-300 hover:bg-orange-50"
               >
                 Reset to Defaults
               </Button>
             </div>
 
             {success && (
-              <Alert className=\"border-green-200 bg-green-50\">
-                <TrendingUp className=\"h-4 w-4 text-green-600\" />
-                <AlertDescription className=\"text-green-800\">{success}</AlertDescription>
+              <Alert className="border-green-200 bg-green-50">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">{success}</AlertDescription>
               </Alert>
             )}
 
             {error && (
-              <Alert variant=\"destructive\">
-                <AlertCircle className=\"h-4 w-4\" />
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -405,8 +405,8 @@ export default function AdminModeSwitch() {
       {/* Audit History */}
       <Card>
         <CardHeader>
-          <CardTitle className=\"flex items-center gap-2\">
-            <Clock className=\"h-5 w-5\" />
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
             Change History
           </CardTitle>
           <CardDescription>
@@ -414,19 +414,19 @@ export default function AdminModeSwitch() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className=\"max-h-64 overflow-auto space-y-2\">
+          <div className="max-h-64 overflow-auto space-y-2">
             {history.length === 0 ? (
-              <p className=\"text-gray-500 text-sm\">No configuration changes recorded</p>
+              <p className="text-gray-500 text-sm">No configuration changes recorded</p>
             ) : (
               history.map((record) => (
-                <div key={record._id} className=\"border-l-4 border-blue-200 pl-4 py-2 text-sm\">
-                  <div className=\"flex items-center justify-between mb-1\">
-                    <span className=\"font-medium\">{record.actor}</span>
-                    <span className=\"text-gray-500\">
+                <div key={record._id} className="border-l-4 border-blue-200 pl-4 py-2 text-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium">{record.actor}</span>
+                    <span className="text-gray-500">
                       {new Date(record.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <div className=\"text-gray-700\">
+                  <div className="text-gray-700">
                     {record.action === 'settings_update' && (
                       <>Updated: {Object.keys(record.changes).join(', ')}</>
                     )}
@@ -434,7 +434,7 @@ export default function AdminModeSwitch() {
                     {record.action === 'settings_reset' && <>Settings reset to defaults</>}
                   </div>
                   {record.action === 'settings_update' && (
-                    <div className=\"text-xs text-gray-500 mt-1\">
+                    <div className="text-xs text-gray-500 mt-1">
                       Mode: {record.before.integrationsMode} → {record.after.integrationsMode}
                     </div>
                   )}
