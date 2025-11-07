@@ -1074,6 +1074,12 @@ app.include_router(auth_router)
 app.include_router(admin_health_router)
 app.include_router(admin_users_router)
 
+# Include Phase VIII billing routes
+from routes_billing import router as billing_router
+from routes_webhooks import router as webhooks_router
+app.include_router(billing_router)
+app.include_router(webhooks_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
