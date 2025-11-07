@@ -48,28 +48,51 @@ async def stripe_webhook(request: Request):
     
     try:
         if event_type == "checkout.session.completed":
-            # Extract user ID from metadata or query params
-            user_id = request.query_params.get("uid")
+            # Phase VIII: Resolve user from session_id
+            from motor.motor_asyncio import AsyncIOMotorClient
+            import os
             
-            if data.get("metadata"):
-                user_id = data["metadata"].get("user_id", user_id)
+            mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+            client = AsyncIOMotorClient(mongo_url)
+            db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
+            
+            # Try to get session_id
+            session_id = data.get("id") or request.query_params.get("sid")
+            
+            if session_id:
+                # Look up user from session mapping
+                session_doc = await db.checkout_sessions.find_one({"session_id": session_id})
+                if session_doc:
+                    user_id = session_doc["user_id"]
+                    plan = session_doc.get("plan")
+                    credits = session_doc.get("purchase_credits", 0)
+                else:
+                    # Fallback: try query params or metadata
+                    user_id = request.query_params.get("uid")
+                    if data.get("metadata"):
+                        user_id = data["metadata"].get("user_id", user_id)
+                        plan = data["metadata"].get("plan")
+                        credits = int(data["metadata"].get("credits", 0))
+                    else:
+                        plan = None
+                        credits = 0
+            else:
+                user_id = None
             
             if not user_id:
                 logger.warning("Checkout completed but no user_id found")
                 return {"ok": True, "warning": "No user_id"}
             
             # Process plan subscription
-            plan = data.get("plan") or (data.get("metadata", {}).get("plan") if data.get("metadata") else None)
             if plan and plan in ["basic", "pro", "enterprise"]:
                 provider_id = data.get("id", "demo_sub")
                 await create_subscription(user_id, plan, "stripe", provider_id)
                 logger.info(f"Subscription created for user {user_id}: plan={plan}")
             
             # Process credit purchase
-            credits = int(data.get("credits") or (data.get("metadata", {}).get("credits", 0) if data.get("metadata") else 0))
-            if credits > 0:
+            if credits and credits > 0:
                 provider_id = data.get("id", "demo_tx")
-                await apply_credit_purchase(user_id, credits, "stripe", provider_id)
+                await apply_credit_purchase(user_id, int(credits), "stripe", provider_id)
                 logger.info(f"Credits purchased for user {user_id}: credits={credits}")
         
         elif event_type == "customer.subscription.deleted":
