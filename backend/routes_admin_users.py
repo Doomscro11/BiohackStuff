@@ -63,13 +63,13 @@ async def list_users(request: Request):
         )
 
 @router.post("/adjust-credits")
-async def adjust_credits(body: AdjustCreditsBody, user=Depends(get_current_user)):
+async def adjust_credits(request: Request, body: AdjustCreditsBody):
     """
     Adjust user credits (add or subtract)
     Requires: admin role
     """
     # RBAC check
-    require_role(user, ["admin"])
+    user = require_admin(request)
     
     # Validate userId
     try:
