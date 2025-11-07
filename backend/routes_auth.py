@@ -381,12 +381,16 @@ async def twofa_verify(body: TwoFAVerifyBody, response: Response, request: Reque
         "scope": "admin2fa"
     })
     
+    # Phase 7.1: Secure cookie settings (20 min session, Secure flag in prod)
+    is_production = os.getenv("ENV", "development") == "production"
+    
     response.set_cookie(
         "pmnc_admin2fa",
         token,
         httponly=True,
+        secure=is_production,  # HTTPS only in production
         samesite="Strict",
-        max_age=60 * 30,  # 30 minutes
+        max_age=60 * 20,  # 20 minutes for tighter security
         path="/"
     )
     
