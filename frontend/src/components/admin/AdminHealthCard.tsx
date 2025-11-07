@@ -126,9 +126,9 @@ export default function AdminHealthCard() {
             <div className="text-xs text-gray-500 mb-1">DB Latency</div>
             <div className="font-semibold text-sm flex items-center gap-2">
               <Database className="h-4 w-4" />
-              {health.db.latencyMs} ms
+              {health.db?.latencyMs || 'N/A'} ms
             </div>
-            <StatusBadge ok={health.db.ok} />
+            <StatusBadge ok={health.db?.ok || false} />
           </div>
           
           <div>
