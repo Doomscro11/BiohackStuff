@@ -76,7 +76,6 @@ export default function BillingWidget() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const upgrade = async (plan: 'pro' | 'enterprise') => {
