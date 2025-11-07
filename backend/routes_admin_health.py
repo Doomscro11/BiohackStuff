@@ -74,6 +74,10 @@ async def get_system_health(request: Request):
         except:
             uptime = "unknown"
         
+        # Get error statistics
+        from observability import get_error_stats
+        error_stats = await get_error_stats()
+        
         return {
             "mode": settings.get("integrationsMode", "sandbox"),
             "demo": settings.get("demoMode", False),
@@ -91,6 +95,11 @@ async def get_system_health(request: Request):
                 "runs": runs_count,
                 "quotesBacklog": quotes_backlog,
                 "errors24h": errors_recent
+            },
+            "errors": {
+                "lastKind": error_stats.get("lastKind"),
+                "lastTs": error_stats.get("lastTs"),
+                "count24h": error_stats.get("count24h", 0)
             },
             "uptime": uptime
         }
