@@ -112,9 +112,10 @@ export default function Admin2FA() {
           </CardContent>
         </Card>
 
-        {/* Phase VII & 7.1: Admin Panels - Only shown after 2FA */}
+        {/* Phase VII & 7.1 & VIII: Admin Panels - Only shown after 2FA */}
         <AdminHealthCard />
         <AdminModeSwitch />
+        <AdminPlansPanel />
         <AdminUsersPanel />
       </>
     );
