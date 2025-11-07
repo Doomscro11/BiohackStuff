@@ -32,13 +32,20 @@ export default function CreditBadge() {
     // Refresh every 30 seconds
     const interval = setInterval(fetchCredits, 30000);
     
-    // Listen for credit updates (custom event)
-    const handleCreditUpdate = () => fetchCredits();
-    window.addEventListener('creditUpdate', handleCreditUpdate);
+    // Listen for credit updates from billing widget
+    const handleCreditUpdate = (event) => {
+      if (event.detail && typeof event.detail.credits === 'number') {
+        setCredits(event.detail.credits);
+      } else {
+        fetchCredits();
+      }
+    };
+    
+    window.addEventListener('credits:update', handleCreditUpdate);
     
     return () => {
       clearInterval(interval);
-      window.removeEventListener('creditUpdate', handleCreditUpdate);
+      window.removeEventListener('credits:update', handleCreditUpdate);
     };
   }, []);
 
