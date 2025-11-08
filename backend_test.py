@@ -1226,6 +1226,744 @@ class AuthenticationTest:
             "auth_working": self.tests_passed >= self.tests_run * 0.85
         }
 
+class Phase82BillingTest:
+    """Test Phase 8.2: Billing Widget Stability + Mock Pro Upgrade"""
+    
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.admin_jwt_cookie = None
+        self.user_id = None
+        self.admin_email = "founder@peptologic.ai"
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+    
+    def authenticate_admin_user(self):
+        """Authenticate as admin user and get user_id"""
+        try:
+            # Step 1: Request magic code
+            payload = {"email": self.admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Admin Authentication Setup - Magic Code Request",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            data = response.json()
+            if not data.get("success") or "demo_code" not in data:
+                self.log_test(
+                    "Admin Authentication Setup - Magic Code Request",
+                    False,
+                    error_details="Response missing demo_code or success flag"
+                )
+                return False
+            
+            demo_code = data["demo_code"]
+            
+            # Step 2: Verify magic code
+            payload = {"email": self.admin_email, "code": demo_code}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Admin Authentication Setup - Magic Code Verify",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Extract JWT cookie
+            cookies = response.cookies
+            if "pmnc_jwt" not in cookies:
+                self.log_test(
+                    "Admin Authentication Setup - JWT Cookie",
+                    False,
+                    error_details="JWT cookie not set in response"
+                )
+                return False
+            
+            self.admin_jwt_cookie = cookies["pmnc_jwt"]
+            
+            # Step 3: Get user info to extract user ID
+            cookies_dict = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/me", cookies=cookies_dict, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Admin Authentication Setup - Get User Info",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            user_data = response.json()
+            self.user_id = user_data.get("id")
+            
+            if not self.user_id:
+                self.log_test(
+                    "Admin Authentication Setup - Extract User ID",
+                    False,
+                    error_details="User ID not found in response"
+                )
+                return False
+            
+            self.log_test(
+                "Admin Authentication Setup",
+                True,
+                f"Authenticated as {self.admin_email}, user_id: {self.user_id}"
+            )
+            return True
+            
+        except Exception as e:
+            self.log_test(
+                "Admin Authentication Setup",
+                False,
+                error_details=f"Authentication failed: {str(e)}"
+            )
+            return False
+    
+    def test_session_endpoint(self):
+        """Test 1: Session Endpoint (Verify Still Working)"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Session Endpoint",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["email", "role", "tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Session Endpoint",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                if data.get("email") == self.admin_email and data.get("role") == "admin":
+                    self.log_test(
+                        "Session Endpoint",
+                        True,
+                        f"Email: {data.get('email')}, Role: {data.get('role')}, Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Session Endpoint",
+                        False,
+                        error_details=f"Unexpected user data: {data}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Session Endpoint",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Session Endpoint",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_billing_state_endpoint(self):
+        """Test 2: Billing State Endpoint (Authenticated User)"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Billing State Endpoint",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Billing State Endpoint",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                # Check for optional fields
+                optional_fields = ["renewsAt", "history"]
+                present_optional = [field for field in optional_fields if field in data]
+                
+                self.log_test(
+                    "Billing State Endpoint",
+                    True,
+                    f"Tier: {data.get('tier')}, Credits: {data.get('credits')}, Optional fields: {present_optional}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Billing State Endpoint",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing State Endpoint",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_mock_credit_purchase(self):
+        """Test 3: Mock Credit Purchase"""
+        if not self.user_id:
+            self.log_test(
+                "Mock Credit Purchase",
+                False,
+                error_details="No user ID available"
+            )
+            return False
+        
+        try:
+            # Get initial credits
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            initial_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            initial_credits = 0
+            if initial_response.status_code == 200:
+                initial_credits = initial_response.json().get("credits", 0)
+            
+            # Purchase 100 credits
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&credits=100"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302)
+            if response.status_code != 302:
+                self.log_test(
+                    "Mock Credit Purchase",
+                    False,
+                    error_details=f"Expected HTTP 302 redirect, got {response.status_code}"
+                )
+                return False
+            
+            # Check redirect URL
+            location = response.headers.get("location", "")
+            if "/billing?success=1" not in location:
+                self.log_test(
+                    "Mock Credit Purchase",
+                    False,
+                    error_details=f"Unexpected redirect location: {location}"
+                )
+                return False
+            
+            # Verify credits increased
+            time.sleep(1)  # Brief delay for processing
+            final_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if final_response.status_code == 200:
+                final_credits = final_response.json().get("credits", 0)
+                credits_added = final_credits - initial_credits
+                
+                if credits_added == 100:
+                    self.log_test(
+                        "Mock Credit Purchase",
+                        True,
+                        f"Credits increased from {initial_credits} to {final_credits} (+{credits_added})"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Mock Credit Purchase",
+                        False,
+                        error_details=f"Expected +100 credits, got +{credits_added}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Mock Credit Purchase",
+                    False,
+                    error_details=f"Failed to verify credits: HTTP {final_response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Mock Credit Purchase",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_mock_pro_plan_upgrade(self):
+        """Test 4: Mock Pro Plan Upgrade"""
+        if not self.user_id:
+            self.log_test(
+                "Mock Pro Plan Upgrade",
+                False,
+                error_details="No user ID available"
+            )
+            return False
+        
+        try:
+            # Get initial state
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            initial_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            initial_tier = "basic"
+            initial_credits = 0
+            if initial_response.status_code == 200:
+                data = initial_response.json()
+                initial_tier = data.get("tier", "basic")
+                initial_credits = data.get("credits", 0)
+            
+            # Upgrade to pro plan
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&plan=pro"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302)
+            if response.status_code != 302:
+                self.log_test(
+                    "Mock Pro Plan Upgrade",
+                    False,
+                    error_details=f"Expected HTTP 302 redirect, got {response.status_code}"
+                )
+                return False
+            
+            # Check redirect URL
+            location = response.headers.get("location", "")
+            if "/billing?success=1" not in location:
+                self.log_test(
+                    "Mock Pro Plan Upgrade",
+                    False,
+                    error_details=f"Unexpected redirect location: {location}"
+                )
+                return False
+            
+            # Verify tier and credits updated
+            time.sleep(1)  # Brief delay for processing
+            final_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if final_response.status_code == 200:
+                data = final_response.json()
+                final_tier = data.get("tier", "basic")
+                final_credits = data.get("credits", 0)
+                renewsAt = data.get("renewsAt")
+                
+                # Verify tier is pro
+                if final_tier != "pro":
+                    self.log_test(
+                        "Mock Pro Plan Upgrade",
+                        False,
+                        error_details=f"Expected tier 'pro', got '{final_tier}'"
+                    )
+                    return False
+                
+                # Verify 200 monthly credits granted (should be at least initial + 200)
+                expected_min_credits = initial_credits + 200
+                if final_credits < expected_min_credits:
+                    self.log_test(
+                        "Mock Pro Plan Upgrade",
+                        False,
+                        error_details=f"Expected at least {expected_min_credits} credits, got {final_credits}"
+                    )
+                    return False
+                
+                # Verify subscription created with renewsAt date
+                if not renewsAt:
+                    self.log_test(
+                        "Mock Pro Plan Upgrade",
+                        False,
+                        error_details="Missing renewsAt field in subscription"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Mock Pro Plan Upgrade",
+                    True,
+                    f"Tier: {initial_tier} → {final_tier}, Credits: {initial_credits} → {final_credits}, RenewsAt: {renewsAt}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Mock Pro Plan Upgrade",
+                    False,
+                    error_details=f"Failed to verify upgrade: HTTP {final_response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Mock Pro Plan Upgrade",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_chemistry_options_after_pro_upgrade(self):
+        """Test 5: Chemistry Options After Pro Upgrade"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Chemistry Options After Pro Upgrade",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/chemistry/options", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify tier is pro
+                if data.get("tier") != "pro":
+                    self.log_test(
+                        "Chemistry Options After Pro Upgrade",
+                        False,
+                        error_details=f"Expected tier 'pro', got '{data.get('tier')}'"
+                    )
+                    return False
+                
+                mods = data.get("mods", [])
+                
+                # Check for pro tier modifications (should have 8 total)
+                if len(mods) < 8:
+                    self.log_test(
+                        "Chemistry Options After Pro Upgrade",
+                        False,
+                        error_details=f"Expected at least 8 modifications, got {len(mods)}"
+                    )
+                    return False
+                
+                # Check for specific pro options
+                mod_keys = [mod.get("key") for mod in mods]
+                pro_options = ["pegylation", "lipidation", "n_methylation"]
+                missing_pro_options = [opt for opt in pro_options if opt not in mod_keys]
+                
+                if missing_pro_options:
+                    self.log_test(
+                        "Chemistry Options After Pro Upgrade",
+                        False,
+                        error_details=f"Missing pro tier options: {missing_pro_options}"
+                    )
+                    return False
+                
+                # Verify enterprise options are still excluded
+                enterprise_options = ["glycosylation", "peptoid", "stapling", "unnatural_aa"]
+                present_enterprise_options = [opt for opt in enterprise_options if opt in mod_keys]
+                
+                if present_enterprise_options:
+                    self.log_test(
+                        "Chemistry Options After Pro Upgrade",
+                        False,
+                        error_details=f"Enterprise options should not be present: {present_enterprise_options}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Chemistry Options After Pro Upgrade",
+                    True,
+                    f"Tier: {data.get('tier')}, Total mods: {len(mods)}, Pro options present: {[opt for opt in pro_options if opt in mod_keys]}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Chemistry Options After Pro Upgrade",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options After Pro Upgrade",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_mock_enterprise_upgrade(self):
+        """Test 6: Mock Enterprise Upgrade"""
+        if not self.user_id:
+            self.log_test(
+                "Mock Enterprise Upgrade",
+                False,
+                error_details="No user ID available"
+            )
+            return False
+        
+        try:
+            # Upgrade to enterprise plan
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&plan=enterprise"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302)
+            if response.status_code != 302:
+                self.log_test(
+                    "Mock Enterprise Upgrade",
+                    False,
+                    error_details=f"Expected HTTP 302 redirect, got {response.status_code}"
+                )
+                return False
+            
+            # Verify tier and credits updated
+            time.sleep(1)  # Brief delay for processing
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            final_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if final_response.status_code == 200:
+                data = final_response.json()
+                final_tier = data.get("tier", "basic")
+                final_credits = data.get("credits", 0)
+                
+                # Verify tier is enterprise
+                if final_tier != "enterprise":
+                    self.log_test(
+                        "Mock Enterprise Upgrade",
+                        False,
+                        error_details=f"Expected tier 'enterprise', got '{final_tier}'"
+                    )
+                    return False
+                
+                # Verify 5000 monthly credits granted (should be at least 5000)
+                if final_credits < 5000:
+                    self.log_test(
+                        "Mock Enterprise Upgrade",
+                        False,
+                        error_details=f"Expected at least 5000 credits, got {final_credits}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Mock Enterprise Upgrade",
+                    True,
+                    f"Tier: {final_tier}, Credits: {final_credits}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Mock Enterprise Upgrade",
+                    False,
+                    error_details=f"Failed to verify upgrade: HTTP {final_response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Mock Enterprise Upgrade",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_combined_plan_and_credits(self):
+        """Test 7: Combined Plan + Credits"""
+        if not self.user_id:
+            self.log_test(
+                "Combined Plan + Credits",
+                False,
+                error_details="No user ID available"
+            )
+            return False
+        
+        try:
+            # Get initial state
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            initial_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            initial_credits = 0
+            if initial_response.status_code == 200:
+                initial_credits = initial_response.json().get("credits", 0)
+            
+            # Upgrade to pro plan + 50 bonus credits
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&plan=pro&credits=50"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302)
+            if response.status_code != 302:
+                self.log_test(
+                    "Combined Plan + Credits",
+                    False,
+                    error_details=f"Expected HTTP 302 redirect, got {response.status_code}"
+                )
+                return False
+            
+            # Verify both plan upgrade and credits applied
+            time.sleep(1)  # Brief delay for processing
+            final_response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if final_response.status_code == 200:
+                data = final_response.json()
+                final_tier = data.get("tier", "basic")
+                final_credits = data.get("credits", 0)
+                
+                # Verify tier is pro
+                if final_tier != "pro":
+                    self.log_test(
+                        "Combined Plan + Credits",
+                        False,
+                        error_details=f"Expected tier 'pro', got '{final_tier}'"
+                    )
+                    return False
+                
+                # Verify credits include both plan credits (200) and bonus (50)
+                # Should be at least initial + 200 (pro plan) + 50 (bonus)
+                expected_min_credits = initial_credits + 200 + 50
+                if final_credits < expected_min_credits:
+                    self.log_test(
+                        "Combined Plan + Credits",
+                        False,
+                        error_details=f"Expected at least {expected_min_credits} credits, got {final_credits}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Combined Plan + Credits",
+                    True,
+                    f"Tier: {final_tier}, Credits: {initial_credits} → {final_credits} (expected +250)"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Combined Plan + Credits",
+                    False,
+                    error_details=f"Failed to verify upgrade: HTTP {final_response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Combined Plan + Credits",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def run_all_tests(self):
+        """Run all Phase 8.2 billing tests"""
+        print("=" * 80)
+        print("💳 PHASE 8.2: BILLING WIDGET STABILITY + MOCK PRO UPGRADE TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Admin Email: {self.admin_email}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Setup: Authenticate admin user
+        print("🔐 AUTHENTICATION SETUP")
+        print("-" * 40)
+        if not self.authenticate_admin_user():
+            print("❌ Authentication failed - cannot proceed with tests")
+            return self.get_summary()
+        
+        # Test 1: Session Endpoint
+        print("\n📋 SESSION ENDPOINT TEST")
+        print("-" * 40)
+        self.test_session_endpoint()
+        
+        # Test 2: Billing State Endpoint
+        print("\n💰 BILLING STATE ENDPOINT TEST")
+        print("-" * 40)
+        self.test_billing_state_endpoint()
+        
+        # Test 3: Mock Credit Purchase
+        print("\n🪙 MOCK CREDIT PURCHASE TEST")
+        print("-" * 40)
+        self.test_mock_credit_purchase()
+        
+        # Test 4: Mock Pro Plan Upgrade
+        print("\n⭐ MOCK PRO PLAN UPGRADE TEST")
+        print("-" * 40)
+        self.test_mock_pro_plan_upgrade()
+        
+        # Test 5: Chemistry Options After Pro Upgrade
+        print("\n🧪 CHEMISTRY OPTIONS AFTER PRO UPGRADE TEST")
+        print("-" * 40)
+        self.test_chemistry_options_after_pro_upgrade()
+        
+        # Test 6: Mock Enterprise Upgrade
+        print("\n🏢 MOCK ENTERPRISE UPGRADE TEST")
+        print("-" * 40)
+        self.test_mock_enterprise_upgrade()
+        
+        # Test 7: Combined Plan + Credits
+        print("\n🎯 COMBINED PLAN + CREDITS TEST")
+        print("-" * 40)
+        self.test_combined_plan_and_credits()
+        
+        return self.get_summary()
+    
+    def get_summary(self):
+        """Get test summary"""
+        print("\n" + "=" * 80)
+        print("📈 PHASE 8.2 BILLING TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "0.0%")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        billing_status = "✅ WORKING" if self.tests_passed >= self.tests_run * 0.85 else "❌ ISSUES DETECTED"
+        print(f"\nBilling System Status: {billing_status}")
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100 if self.tests_run > 0 else 0,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "billing_working": self.tests_passed >= self.tests_run * 0.85
+        }
+
 class Phase8ChemistryTest:
     """Test Phase 8 Final: PK-Aware Chemistry Options API"""
     
