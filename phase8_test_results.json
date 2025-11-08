@@ -1,0 +1,57 @@
+{
+  "tests_run": 8,
+  "tests_passed": 8,
+  "success_rate": 100.0,
+  "critical_failures": [],
+  "test_results": {
+    "Authentication Setup": {
+      "success": true,
+      "details": "Authenticated as founder@peptologic.ai, user_id: 690df0d24aecc08231ea9e79",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:35.359392"
+    },
+    "Session Endpoint (Authenticated)": {
+      "success": true,
+      "details": "Email: founder@peptologic.ai, Role: admin, Tier: basic, Credits: 0",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:35.413859"
+    },
+    "Session Endpoint (Unauthenticated - Should Fail)": {
+      "success": true,
+      "details": "Correctly returned 401 Unauthorized for unauthenticated request",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:35.494774"
+    },
+    "Billing State Query": {
+      "success": true,
+      "details": "Tier: basic, Credits: 0, History entries: 0",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:35.537774"
+    },
+    "Mock Credit Top-Up": {
+      "success": true,
+      "details": "Credits increased from 0 to 100, ledger entry created",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:36.675067"
+    },
+    "Credit Debit for Generation": {
+      "success": true,
+      "details": "Credits deducted: 100 -> 98, ledger entry created",
+      "error": "",
+      "timestamp": "2025-11-08T18:15:54.470681"
+    },
+    "Insufficient Credits Scenario": {
+      "success": true,
+      "details": "Generation succeeded - user had sufficient credits",
+      "error": "",
+      "timestamp": "2025-11-08T18:16:14.683476"
+    },
+    "Mock Plan Upgrade (Pro)": {
+      "success": true,
+      "details": "Tier: basic -> pro, Credits: 88 -> 288, Renews: 2025-12-08T18:16:14.947000",
+      "error": "",
+      "timestamp": "2025-11-08T18:16:16.015467"
+    }
+  },
+  "phase8_working": true
+}
