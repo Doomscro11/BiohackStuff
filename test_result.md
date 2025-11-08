@@ -231,6 +231,33 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Created MainApp.js with React Router setup. Mounted AdminGate at /admin route. Updated index.js to render MainApp"
+      - working: "NA"
+        agent: "main"
+        comment: "Phase 8 Patch 1: Added useEffect hook to MainApp.js to fetch session data on app bootstrap. Imports fetchSession from lib/session.ts."
+
+  - task: "Session Management Utility (Phase 8 Patch 1)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/lib/session.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created fetchSession utility that calls GET /api/auth/session and sets window.__USER_TIER__ for global access. Called on app bootstrap in MainApp.js."
+
+  - task: "Credits Badge Auto-Refresh (Phase 8 Patch 2)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/admin/AdminGate.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated AdminGate.tsx to call fetchSession after successful OTP verification and dispatch 'credits:update' event with credits payload. This ensures header badge auto-refreshes after login."
 
 metadata:
   created_by: "main_agent"
