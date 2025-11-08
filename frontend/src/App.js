@@ -205,6 +205,28 @@ function App() {
     return 'bg-red-500';
   };
 
+  // Group modifications by PK intent for better UX
+  const groupedMods = useMemo(() => {
+    if (!chemOptions) return {};
+    
+    const groupFor = (m) =>
+      (m.pk_intent?.includes('half_life_extension') || m.pk_intent?.includes('albumin_binding')) ? 'PK Extension' :
+      (m.pk_intent?.includes('protease_resistance')) ? 'Protease Resistance' :
+      (m.pk_intent?.includes('conformational_stability')) ? 'Conformational Stability' :
+      (m.pk_intent?.includes('exopeptidase_resistance')) ? 'Exopeptidase Protection' :
+      (m.pk_intent?.includes('solubility') || m.pk_intent?.includes('clearance_modulation')) ? 'Solubility/Clearance' :
+      (m.pk_intent?.includes('affinity_tuning')) ? 'Affinity Tuning' : 'Other';
+    
+    const groups = {};
+    chemOptions.mods.forEach((m) => {
+      const g = groupFor(m);
+      groups[g] = groups[g] || [];
+      groups[g].push(m);
+    });
+    
+    return groups;
+  }, [chemOptions]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-screen-2xl mx-auto px-4 py-8">
