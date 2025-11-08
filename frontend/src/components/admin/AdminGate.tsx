@@ -24,6 +24,7 @@ import {
   type UserInfo,
   type AuthResponse 
 } from '../../lib/auth.ts';
+import { fetchSession } from '../../lib/session.ts';
 
 interface AdminStatus {
   admin_emails_configured: boolean;
