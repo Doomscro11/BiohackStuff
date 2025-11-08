@@ -303,31 +303,75 @@ function App() {
                   )}
                 </div>
 
-                {/* Allowed Modifications */}
-                <div className="space-y-2">
-                  <Label htmlFor="allowed_mods">Allowed Modifications</Label>
-                  <Textarea
-                    id="allowed_mods"
-                    data-testid="allowed-mods-input"
-                    value={formData.allowed_mods}
-                    onChange={(e) => handleInputChange('allowed_mods', e.target.value)}
-                    placeholder="substitution, D-isomers, lipidation, cyclization"
-                    rows={2}
-                  />
-                </div>
+                {/* Allowed Modifications - PK-Aware */}
+                {chemOptions ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="allowed_mods">Allowed Modifications</Label>
+                      <div className="text-xs text-gray-500">
+                        Up to {MAX_MOD_CLASSES} classes · Tier: <b className="capitalize">{chemOptions.tier}</b>
+                      </div>
+                    </div>
 
-                {/* Exclusions */}
-                <div className="space-y-2">
-                  <Label htmlFor="exclusions">Exclusion Clauses</Label>
-                  <Textarea
-                    id="exclusions"
-                    data-testid="exclusions-input"
-                    value={formData.exclusions}
-                    onChange={(e) => handleInputChange('exclusions', e.target.value)}
-                    placeholder="proline substitution, N-terminal modifications"
-                    rows={2}
-                  />
-                </div>
+                    {conflictMsg && (
+                      <div className="mb-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-xs p-2">
+                        ⚠️ {conflictMsg}
+                      </div>
+                    )}
+
+                    <div className="grid md:grid-cols-1 gap-3">
+                      {Object.entries(groupedMods).map(([group, items]) => (
+                        <div key={group} className="border rounded p-3">
+                          <div className="text-xs font-semibold mb-2 text-gray-700">{group}</div>
+                          <MultiSelect
+                            options={items.map((m) => ({
+                              label: `${m.label}${m.pk_intent?.length ? ` • ${m.pk_intent.join(' / ')}` : ''}`,
+                              value: m.key
+                            }))}
+                            value={formData.allowed_mods.filter(v => items.some(m => m.key === v))}
+                            onChange={(vals) => {
+                              // Enforce total cap across groups
+                              const other = formData.allowed_mods.filter(v => !items.some(m => m.key === v));
+                              if (other.length + vals.length > MAX_MOD_CLASSES) return;
+                              handleInputChange('allowed_mods', [...other, ...vals]);
+                            }}
+                            max={MAX_MOD_CLASSES}
+                            placeholder="Select modifications..."
+                          />
+                          <ul className="mt-2 text-xs text-gray-500 list-disc pl-5 space-y-1">
+                            {items.map((m) => (
+                              <li key={m.key}>
+                                {m.notes || '—'}
+                                {m.typical_targets?.length ? ` (targets: ${m.typical_targets.join(', ')})` : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2 text-sm text-gray-500">Loading design options...</div>
+                )}
+
+                {/* Exclusions - PK-Aware */}
+                {chemOptions && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="exclusions">Exclusion Clauses</Label>
+                      <div className="text-xs text-gray-500">Up to {MAX_EXCLUSIONS}</div>
+                    </div>
+                    <MultiSelect
+                      options={chemOptions.exclusions.map((e) => ({ label: e.label, value: e.key }))}
+                      value={formData.exclusions}
+                      onChange={(vals) => {
+                        if (vals.length <= MAX_EXCLUSIONS) handleInputChange('exclusions', vals);
+                      }}
+                      max={MAX_EXCLUSIONS}
+                      placeholder="Choose exclusions..."
+                    />
+                  </div>
+                )}
 
                 {/* Target Use */}
                 <div className="space-y-2">
