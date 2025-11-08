@@ -168,6 +168,32 @@ export default function BillingWidget() {
     );
   }
 
+  // Show server error state
+  if (serverError) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-3 text-red-600" />
+            <h3 className="font-semibold text-lg text-red-900 mb-2">
+              Billing temporarily unavailable
+            </h3>
+            <p className="text-sm text-red-800 mb-4">
+              We're experiencing technical difficulties. Please try again in a few moments.
+            </p>
+            <Button
+              onClick={() => reload()}
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-100"
+            >
+              Try again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // State not loaded yet
   if (!state) {
     return (
