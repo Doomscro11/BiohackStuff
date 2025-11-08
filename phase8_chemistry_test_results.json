@@ -1,0 +1,39 @@
+{
+  "tests_run": 4,
+  "tests_passed": 3,
+  "success_rate": 75.0,
+  "critical_failures": [
+    {
+      "test": "Pro User Authentication Setup - Plan Upgrade",
+      "error": "Plan upgrade failed: HTTP 404: {\"detail\":\"Not Found\"}",
+      "timestamp": "2025-11-08T18:26:50.812682"
+    }
+  ],
+  "test_results": {
+    "Chemistry Options (Anonymous - Basic Tier)": {
+      "success": true,
+      "details": "Tier: basic, Basic mods: 5, Pro mods: 0, Enterprise mods: 0, Exclusions: 6",
+      "error": "",
+      "timestamp": "2025-11-08T18:26:50.424443"
+    },
+    "Chemistry Options Response Structure": {
+      "success": true,
+      "details": "Valid structure: 5 mods, 6 exclusions, PK intent categories present",
+      "error": "",
+      "timestamp": "2025-11-08T18:26:50.463893"
+    },
+    "Tier Filtering Logic": {
+      "success": true,
+      "details": "Tier hierarchy enforced correctly - Basic user has 5 options, no tier escalation",
+      "error": "",
+      "timestamp": "2025-11-08T18:26:50.506372"
+    },
+    "Pro User Authentication Setup - Plan Upgrade": {
+      "success": false,
+      "details": "",
+      "error": "Plan upgrade failed: HTTP 404: {\"detail\":\"Not Found\"}",
+      "timestamp": "2025-11-08T18:26:50.812691"
+    }
+  },
+  "chemistry_api_working": false
+}
