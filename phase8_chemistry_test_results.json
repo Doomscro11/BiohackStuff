@@ -1,45 +1,39 @@
 {
   "tests_run": 5,
-  "tests_passed": 4,
-  "success_rate": 80.0,
-  "critical_failures": [
-    {
-      "test": "Chemistry Options (Pro User)",
-      "error": "Expected tier 'pro', got 'basic'",
-      "timestamp": "2025-11-08T18:27:13.393869"
-    }
-  ],
+  "tests_passed": 5,
+  "success_rate": 100.0,
+  "critical_failures": [],
   "test_results": {
     "Chemistry Options (Anonymous - Basic Tier)": {
       "success": true,
       "details": "Tier: basic, Basic mods: 5, Pro mods: 0, Enterprise mods: 0, Exclusions: 6",
       "error": "",
-      "timestamp": "2025-11-08T18:27:12.061635"
+      "timestamp": "2025-11-08T18:27:41.909484"
     },
     "Chemistry Options Response Structure": {
       "success": true,
       "details": "Valid structure: 5 mods, 6 exclusions, PK intent categories present",
       "error": "",
-      "timestamp": "2025-11-08T18:27:12.099761"
+      "timestamp": "2025-11-08T18:27:41.944537"
     },
     "Tier Filtering Logic": {
       "success": true,
       "details": "Tier hierarchy enforced correctly - Basic user has 5 options, no tier escalation",
       "error": "",
-      "timestamp": "2025-11-08T18:27:12.137925"
+      "timestamp": "2025-11-08T18:27:41.988349"
     },
     "Pro User Authentication Setup": {
       "success": true,
       "details": "Authenticated as pro@example.com, tier: pro",
       "error": "",
-      "timestamp": "2025-11-08T18:27:13.354937"
+      "timestamp": "2025-11-08T18:27:43.279376"
     },
     "Chemistry Options (Pro User)": {
-      "success": false,
-      "details": "",
-      "error": "Expected tier 'pro', got 'basic'",
-      "timestamp": "2025-11-08T18:27:13.393876"
+      "success": true,
+      "details": "Tier: pro, Basic mods: 5, Pro mods: 3, Enterprise mods: 0, Exclusions: 9",
+      "error": "",
+      "timestamp": "2025-11-08T18:27:43.326015"
     }
   },
-  "chemistry_api_working": false
+  "chemistry_api_working": true
 }
