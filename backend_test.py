@@ -3600,8 +3600,36 @@ if __name__ == "__main__":
             return 1
 
 def main():
-    tester = PeptimancerAPITester()
-    return tester.run_all_tests()
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "auth":
+        # Run authentication tests
+        auth_test = AuthenticationTest()
+        results = auth_test.run_all_tests()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["auth_working"] else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "chemistry":
+        # Run chemistry tests
+        chemistry_test = Phase8ChemistryTest()
+        results = chemistry_test.run_all_tests()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["chemistry_working"] else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "billing":
+        # Run Phase 8.2 billing tests
+        billing_test = Phase82BillingTest()
+        results = billing_test.run_all_tests()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["billing_working"] else 1)
+    else:
+        # Run enterprise tests
+        test_runner = PeptimancerEnterpriseTest()
+        results = test_runner.run_comprehensive_test()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["enterprise_ready"] else 1)
 
 if __name__ == "__main__":
     sys.exit(main())
