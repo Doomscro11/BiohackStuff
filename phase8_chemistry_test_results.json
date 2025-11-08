@@ -1,12 +1,12 @@
 {
-  "tests_run": 4,
-  "tests_passed": 3,
-  "success_rate": 75.0,
+  "tests_run": 5,
+  "tests_passed": 4,
+  "success_rate": 80.0,
   "critical_failures": [
     {
-      "test": "Pro User Authentication Setup - Plan Upgrade",
-      "error": "Plan upgrade failed: HTTP 404: {\"detail\":\"Not Found\"}",
-      "timestamp": "2025-11-08T18:26:50.812682"
+      "test": "Chemistry Options (Pro User)",
+      "error": "Expected tier 'pro', got 'basic'",
+      "timestamp": "2025-11-08T18:27:13.393869"
     }
   ],
   "test_results": {
@@ -14,25 +14,31 @@
       "success": true,
       "details": "Tier: basic, Basic mods: 5, Pro mods: 0, Enterprise mods: 0, Exclusions: 6",
       "error": "",
-      "timestamp": "2025-11-08T18:26:50.424443"
+      "timestamp": "2025-11-08T18:27:12.061635"
     },
     "Chemistry Options Response Structure": {
       "success": true,
       "details": "Valid structure: 5 mods, 6 exclusions, PK intent categories present",
       "error": "",
-      "timestamp": "2025-11-08T18:26:50.463893"
+      "timestamp": "2025-11-08T18:27:12.099761"
     },
     "Tier Filtering Logic": {
       "success": true,
       "details": "Tier hierarchy enforced correctly - Basic user has 5 options, no tier escalation",
       "error": "",
-      "timestamp": "2025-11-08T18:26:50.506372"
+      "timestamp": "2025-11-08T18:27:12.137925"
     },
-    "Pro User Authentication Setup - Plan Upgrade": {
+    "Pro User Authentication Setup": {
+      "success": true,
+      "details": "Authenticated as pro@example.com, tier: pro",
+      "error": "",
+      "timestamp": "2025-11-08T18:27:13.354937"
+    },
+    "Chemistry Options (Pro User)": {
       "success": false,
       "details": "",
-      "error": "Plan upgrade failed: HTTP 404: {\"detail\":\"Not Found\"}",
-      "timestamp": "2025-11-08T18:26:50.812691"
+      "error": "Expected tier 'pro', got 'basic'",
+      "timestamp": "2025-11-08T18:27:13.393876"
     }
   },
   "chemistry_api_working": false
