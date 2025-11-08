@@ -279,15 +279,18 @@ frontend:
 
   - task: "Credits Badge Auto-Refresh (Phase 8 Patch 2)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/admin/AdminGate.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated AdminGate.tsx to call fetchSession after successful OTP verification and dispatch 'credits:update' event with credits payload. This ensures header badge auto-refreshes after login."
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Credits badge system operational. 'Billing & Credits' navigation link present in header. Authentication flow working with demo OTP codes. Authenticated users can access billing page without sign-in prompts. Credit refresh mechanism integrated with AdminGate authentication flow."
 
   - task: "PK-Aware Chemistry Options API (Phase 8 Final)"
     implemented: true
