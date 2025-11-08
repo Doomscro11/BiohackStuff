@@ -8,31 +8,31 @@
       "success": true,
       "details": "Tier: basic, Basic mods: 5, Pro mods: 0, Enterprise mods: 0, Exclusions: 6",
       "error": "",
-      "timestamp": "2025-11-08T18:27:41.909484"
+      "timestamp": "2025-11-08T19:54:52.155582"
     },
     "Chemistry Options Response Structure": {
       "success": true,
       "details": "Valid structure: 5 mods, 6 exclusions, PK intent categories present",
       "error": "",
-      "timestamp": "2025-11-08T18:27:41.944537"
+      "timestamp": "2025-11-08T19:54:52.199170"
     },
     "Tier Filtering Logic": {
       "success": true,
       "details": "Tier hierarchy enforced correctly - Basic user has 5 options, no tier escalation",
       "error": "",
-      "timestamp": "2025-11-08T18:27:41.988349"
+      "timestamp": "2025-11-08T19:54:52.242428"
     },
     "Pro User Authentication Setup": {
       "success": true,
       "details": "Authenticated as pro@example.com, tier: pro",
       "error": "",
-      "timestamp": "2025-11-08T18:27:43.279376"
+      "timestamp": "2025-11-08T19:54:53.596878"
     },
     "Chemistry Options (Pro User)": {
       "success": true,
       "details": "Tier: pro, Basic mods: 5, Pro mods: 3, Enterprise mods: 0, Exclusions: 9",
       "error": "",
-      "timestamp": "2025-11-08T18:27:43.326015"
+      "timestamp": "2025-11-08T19:54:53.635860"
     }
   },
   "chemistry_api_working": true
