@@ -93,7 +93,14 @@ function App() {
     setResults(null);
 
     try {
-      const response = await axios.post(`${API}/generate-analogues`, formData);
+      // Convert arrays to comma-separated strings for backend
+      const requestData = {
+        ...formData,
+        allowed_mods: formData.allowed_mods.join(', '),
+        exclusions: formData.exclusions.join(', ')
+      };
+      
+      const response = await axios.post(`${API}/generate-analogues`, requestData);
       setResults(response.data);
     } catch (error) {
       setError(error.response?.data?.detail || 'Failed to generate analogues');
