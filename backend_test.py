@@ -1226,6 +1226,493 @@ class AuthenticationTest:
             "auth_working": self.tests_passed >= self.tests_run * 0.85
         }
 
+class Phase8ChemistryTest:
+    """Test Phase 8 Final: PK-Aware Chemistry Options API"""
+    
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.admin_jwt_cookie = None
+        self.pro_jwt_cookie = None
+        self.admin_email = "founder@peptologic.ai"
+        self.pro_email = "pro@example.com"
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+    
+    def test_chemistry_options_anonymous(self):
+        """Test GET /api/chemistry/options without authentication (should return basic tier)"""
+        try:
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify tier is basic
+                if data.get("tier") != "basic":
+                    self.log_test(
+                        "Chemistry Options (Anonymous - Basic Tier)",
+                        False,
+                        error_details=f"Expected tier 'basic', got '{data.get('tier')}'"
+                    )
+                    return False
+                
+                # Verify basic tier options are present
+                mods = data.get("mods", [])
+                exclusions = data.get("exclusions", [])
+                
+                # Check for basic tier modifications
+                basic_mods = [mod for mod in mods if mod.get("key") in ["d_isomers", "cyclization", "acetylation", "amidation", "substitution"]]
+                
+                # Check that pro-tier options are NOT present
+                pro_mods = [mod for mod in mods if mod.get("key") in ["pegylation", "lipidation", "n_methylation"]]
+                
+                # Check that enterprise-tier options are NOT present
+                enterprise_mods = [mod for mod in mods if mod.get("key") in ["glycosylation", "peptoid", "stapling", "unnatural_aa"]]
+                
+                if len(basic_mods) >= 5 and len(pro_mods) == 0 and len(enterprise_mods) == 0:
+                    self.log_test(
+                        "Chemistry Options (Anonymous - Basic Tier)",
+                        True,
+                        f"Tier: {data.get('tier')}, Basic mods: {len(basic_mods)}, Pro mods: {len(pro_mods)}, Enterprise mods: {len(enterprise_mods)}, Exclusions: {len(exclusions)}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Chemistry Options (Anonymous - Basic Tier)",
+                        False,
+                        error_details=f"Tier filtering failed - Basic: {len(basic_mods)}, Pro: {len(pro_mods)}, Enterprise: {len(enterprise_mods)}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Chemistry Options (Anonymous - Basic Tier)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options (Anonymous - Basic Tier)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def authenticate_pro_user(self):
+        """Authenticate as pro-tier user (simulate by upgrading a user to pro)"""
+        try:
+            # Step 1: Request magic code for pro user
+            payload = {"email": self.pro_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Pro User Authentication Setup - Magic Code Request",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            data = response.json()
+            if not data.get("success") or "demo_code" not in data:
+                self.log_test(
+                    "Pro User Authentication Setup - Magic Code Request",
+                    False,
+                    error_details="Response missing demo_code or success flag"
+                )
+                return False
+            
+            demo_code = data["demo_code"]
+            
+            # Step 2: Verify magic code
+            payload = {"email": self.pro_email, "code": demo_code}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Pro User Authentication Setup - Magic Code Verify",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Extract JWT cookie
+            cookies = response.cookies
+            if "pmnc_jwt" not in cookies:
+                self.log_test(
+                    "Pro User Authentication Setup - JWT Cookie",
+                    False,
+                    error_details="JWT cookie not set in response"
+                )
+                return False
+            
+            self.pro_jwt_cookie = cookies["pmnc_jwt"]
+            
+            # Step 3: Get user info to extract user ID
+            cookies_dict = {"pmnc_jwt": self.pro_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/me", cookies=cookies_dict, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Pro User Authentication Setup - Get User Info",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            user_data = response.json()
+            pro_user_id = user_data.get("id")
+            
+            if not pro_user_id:
+                self.log_test(
+                    "Pro User Authentication Setup - Extract User ID",
+                    False,
+                    error_details="User ID not found in response"
+                )
+                return False
+            
+            # Step 4: Upgrade user to pro tier via mock webhook
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/upgrade?uid={pro_user_id}&plan=pro"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302) or return success
+            if response.status_code not in [200, 302]:
+                self.log_test(
+                    "Pro User Authentication Setup - Plan Upgrade",
+                    False,
+                    error_details=f"Plan upgrade failed: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Verify pro tier
+            time.sleep(1)  # Brief delay for processing
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies_dict, timeout=10)
+            
+            if response.status_code == 200:
+                session_data = response.json()
+                if session_data.get("tier") == "pro":
+                    self.log_test(
+                        "Pro User Authentication Setup",
+                        True,
+                        f"Authenticated as {self.pro_email}, tier: {session_data.get('tier')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Pro User Authentication Setup - Tier Verification",
+                        False,
+                        error_details=f"Expected tier 'pro', got '{session_data.get('tier')}'"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Pro User Authentication Setup - Session Check",
+                    False,
+                    error_details=f"Failed to get session: HTTP {response.status_code}"
+                )
+                return False
+            
+        except Exception as e:
+            self.log_test(
+                "Pro User Authentication Setup",
+                False,
+                error_details=f"Authentication failed: {str(e)}"
+            )
+            return False
+    
+    def test_chemistry_options_pro_user(self):
+        """Test GET /api/chemistry/options with pro-tier authentication"""
+        if not self.pro_jwt_cookie:
+            self.log_test(
+                "Chemistry Options (Pro User)",
+                False,
+                error_details="No pro JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.pro_jwt_cookie}
+            response = requests.get(f"{API_BASE}/chemistry/options", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify tier is pro
+                if data.get("tier") != "pro":
+                    self.log_test(
+                        "Chemistry Options (Pro User)",
+                        False,
+                        error_details=f"Expected tier 'pro', got '{data.get('tier')}'"
+                    )
+                    return False
+                
+                mods = data.get("mods", [])
+                exclusions = data.get("exclusions", [])
+                
+                # Check for basic + pro tier modifications
+                basic_mods = [mod for mod in mods if mod.get("key") in ["d_isomers", "cyclization", "acetylation", "amidation", "substitution"]]
+                pro_mods = [mod for mod in mods if mod.get("key") in ["pegylation", "lipidation", "n_methylation"]]
+                
+                # Check that enterprise-tier options are still NOT present
+                enterprise_mods = [mod for mod in mods if mod.get("key") in ["glycosylation", "peptoid", "stapling", "unnatural_aa"]]
+                
+                if len(basic_mods) >= 5 and len(pro_mods) >= 3 and len(enterprise_mods) == 0:
+                    self.log_test(
+                        "Chemistry Options (Pro User)",
+                        True,
+                        f"Tier: {data.get('tier')}, Basic mods: {len(basic_mods)}, Pro mods: {len(pro_mods)}, Enterprise mods: {len(enterprise_mods)}, Exclusions: {len(exclusions)}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Chemistry Options (Pro User)",
+                        False,
+                        error_details=f"Tier filtering failed - Basic: {len(basic_mods)}, Pro: {len(pro_mods)}, Enterprise: {len(enterprise_mods)}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Chemistry Options (Pro User)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options (Pro User)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_chemistry_options_response_structure(self):
+        """Test chemistry options response structure and PK intent data"""
+        try:
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify top-level structure
+                required_fields = ["tier", "mods", "exclusions"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Chemistry Options Response Structure",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                # Verify mods structure
+                mods = data.get("mods", [])
+                if not mods:
+                    self.log_test(
+                        "Chemistry Options Response Structure",
+                        False,
+                        error_details="No modifications returned"
+                    )
+                    return False
+                
+                # Check first mod for required fields
+                first_mod = mods[0]
+                required_mod_fields = ["key", "label", "tier", "pk_intent", "notes", "typical_targets"]
+                missing_mod_fields = [field for field in required_mod_fields if field not in first_mod]
+                
+                if missing_mod_fields:
+                    self.log_test(
+                        "Chemistry Options Response Structure",
+                        False,
+                        error_details=f"Modification missing required fields: {missing_mod_fields}"
+                    )
+                    return False
+                
+                # Verify PK intent is a list
+                if not isinstance(first_mod.get("pk_intent"), list):
+                    self.log_test(
+                        "Chemistry Options Response Structure",
+                        False,
+                        error_details="pk_intent should be a list"
+                    )
+                    return False
+                
+                # Verify exclusions structure
+                exclusions = data.get("exclusions", [])
+                if exclusions:
+                    first_exclusion = exclusions[0]
+                    required_exclusion_fields = ["key", "label", "tier"]
+                    missing_exclusion_fields = [field for field in required_exclusion_fields if field not in first_exclusion]
+                    
+                    if missing_exclusion_fields:
+                        self.log_test(
+                            "Chemistry Options Response Structure",
+                            False,
+                            error_details=f"Exclusion missing required fields: {missing_exclusion_fields}"
+                        )
+                        return False
+                
+                self.log_test(
+                    "Chemistry Options Response Structure",
+                    True,
+                    f"Valid structure: {len(mods)} mods, {len(exclusions)} exclusions, PK intent categories present"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Chemistry Options Response Structure",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options Response Structure",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_tier_filtering_logic(self):
+        """Test tier filtering hierarchy (basic=0, pro=1, enterprise=2)"""
+        try:
+            # Test anonymous (basic) access
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Tier Filtering Logic",
+                    False,
+                    error_details=f"Failed to get basic tier options: HTTP {response.status_code}"
+                )
+                return False
+            
+            basic_data = response.json()
+            basic_mods = {mod["key"] for mod in basic_data.get("mods", [])}
+            
+            # Verify tier escalation prevention
+            expected_basic_only = {"d_isomers", "cyclization", "acetylation", "amidation", "substitution"}
+            pro_only = {"pegylation", "lipidation", "n_methylation"}
+            enterprise_only = {"glycosylation", "peptoid", "stapling", "unnatural_aa"}
+            
+            # Basic user should have basic options but not pro/enterprise
+            basic_has_basic = expected_basic_only.issubset(basic_mods)
+            basic_has_pro = bool(pro_only.intersection(basic_mods))
+            basic_has_enterprise = bool(enterprise_only.intersection(basic_mods))
+            
+            if not basic_has_basic:
+                self.log_test(
+                    "Tier Filtering Logic",
+                    False,
+                    error_details=f"Basic user missing basic options: {expected_basic_only - basic_mods}"
+                )
+                return False
+            
+            if basic_has_pro or basic_has_enterprise:
+                self.log_test(
+                    "Tier Filtering Logic",
+                    False,
+                    error_details=f"Basic user has higher tier options: Pro={basic_has_pro}, Enterprise={basic_has_enterprise}"
+                )
+                return False
+            
+            self.log_test(
+                "Tier Filtering Logic",
+                True,
+                f"Tier hierarchy enforced correctly - Basic user has {len(basic_mods)} options, no tier escalation"
+            )
+            return True
+            
+        except Exception as e:
+            self.log_test(
+                "Tier Filtering Logic",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def run_all_tests(self):
+        """Run all chemistry options tests"""
+        print("=" * 80)
+        print("🧪 PEPTIMANCER PHASE 8 FINAL: PK-AWARE CHEMISTRY OPTIONS API TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Test 1: Anonymous user (basic tier)
+        print("📋 ANONYMOUS USER TESTS (BASIC TIER)")
+        print("-" * 40)
+        self.test_chemistry_options_anonymous()
+        
+        # Test 2: Response structure validation
+        print("\n📊 RESPONSE STRUCTURE TESTS")
+        print("-" * 40)
+        self.test_chemistry_options_response_structure()
+        
+        # Test 3: Tier filtering logic
+        print("\n🔒 TIER FILTERING TESTS")
+        print("-" * 40)
+        self.test_tier_filtering_logic()
+        
+        # Test 4: Pro user authentication and access
+        print("\n👤 PRO USER TESTS")
+        print("-" * 40)
+        if self.authenticate_pro_user():
+            self.test_chemistry_options_pro_user()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 CHEMISTRY OPTIONS API TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        print(f"\nChemistry Options API Status: {'✅ WORKING' if self.tests_passed >= self.tests_run * 0.85 else '❌ ISSUES DETECTED'}")
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "chemistry_api_working": self.tests_passed >= self.tests_run * 0.85
+        }
+
 class Phase8BillingTest:
     """Test Phase 8: Session Endpoint + Authenticated Billing Flow"""
     
