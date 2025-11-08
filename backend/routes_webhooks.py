@@ -113,9 +113,36 @@ async def stripe_webhook(request: Request):
 async def mock_success(request: Request):
     """
     Mock billing success page - simulates Stripe webhook and redirects
-    Usage:
-      /api/webhooks/billing/mock/success?uid=<USER_ID>&plan=pro
-      /api/webhooks/billing/mock/success?uid=<USER_ID>&credits=100
+    
+    **Usage Examples:**
+    
+    1. Upgrade to Pro:
+       GET /api/webhooks/billing/mock/success?uid=<USER_ID>&plan=pro
+       - Sets tier to "pro"
+       - Grants 200 monthly credits
+       - Creates subscription with renewal date
+    
+    2. Purchase Credits:
+       GET /api/webhooks/billing/mock/success?uid=<USER_ID>&credits=100
+       - Adds 100 credits to balance
+       - Creates ledger entry
+    
+    3. Upgrade + Credits:
+       GET /api/webhooks/billing/mock/success?uid=<USER_ID>&plan=enterprise&credits=50
+       - Upgrades to enterprise tier (5000 monthly credits)
+       - Adds bonus 50 credits
+    
+    **Testing Flow:**
+    1. Get your user_id from /api/auth/session
+    2. Visit mock URL with your user_id
+    3. Redirects to /billing?success=1
+    4. Credits badge updates within 5 seconds
+    5. Chemistry UI shows upgraded tier options
+    
+    **Environment:**
+    - Works in BILLING_PROVIDER=mock mode
+    - No actual payment processing
+    - Instant tier/credit changes
     """
     import os
     from fastapi.responses import RedirectResponse
