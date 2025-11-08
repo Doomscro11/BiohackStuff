@@ -320,6 +320,8 @@ test_plan:
   current_focus:
     - "Session Management Utility (Phase 8 Patch 1)"
     - "Credits Badge Auto-Refresh (Phase 8 Patch 2)"
+    - "PK-Aware Chemistry Options API (Phase 8 Final)"
+    - "PK-Aware Frontend Chemistry UI (Phase 8 Final)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
