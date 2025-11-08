@@ -45,5 +45,5 @@ export async function fetchJSON<T = any>(
 export function redirectToLogin(next?: string) {
   const returnPath = next || window.location.pathname + window.location.search;
   const encodedNext = encodeURIComponent(returnPath);
-  window.location.href = `/login?next=${encodedNext}`;
+  window.location.href = `/admin?next=${encodedNext}`;
 }
