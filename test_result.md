@@ -155,15 +155,42 @@ backend:
 
   - task: "Session Endpoint for Frontend State (Phase 8 Patch 1)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes_auth.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET /api/auth/session endpoint that fetches billing state and returns user email, role, tier, and credits. This enables frontend to access tier info via window.__USER_TIER__."
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: GET /api/auth/session endpoint working correctly. Authenticated requests return proper user data with email, role, tier, and credits. Unauthenticated requests correctly return 401 Unauthorized. Session data properly fetched from billing service."
+
+  - task: "Mock Billing System (Phase 8)"
+    implemented: true
+    working: true
+    file: "/app/backend/routes_billing.py, /app/backend/routes_webhooks.py, /app/backend/billing/service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Complete mock billing flow operational. Credit top-up via mock webhook working (GET /api/webhooks/billing/mock/success?uid=USER_ID&credits=100). Plan upgrades working (pro plan grants 200 credits, sets tier, creates subscription with renewal date). Credit enforcement working for analogue generation (1 credit per analogue, returns 402 if insufficient). Billing state query returns proper tier, credits, renewsAt, and transaction history. All ledger entries properly logged with correct reasons and metadata."
+
+  - task: "Credit Enforcement for Generation (Phase 8)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Credit enforcement working correctly in POST /api/generate-analogues. Authenticated users have credits deducted (1 credit per analogue). Insufficient credits properly return 402 Payment Required with appropriate error message. Credit consumption logged to ledger with generation details."
 
   - task: "Admin RBAC Protection"
     implemented: true
