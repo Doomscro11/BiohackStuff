@@ -286,6 +286,30 @@ frontend:
         agent: "main"
         comment: "Updated AdminGate.tsx to call fetchSession after successful OTP verification and dispatch 'credits:update' event with credits payload. This ensures header badge auto-refreshes after login."
 
+  - task: "PK-Aware Chemistry Options API (Phase 8 Final)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes_chemistry.py, /app/backend/constants/chemistry.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created GET /api/chemistry/options endpoint that serves canonical modification and exclusion options with tier filtering. Added constants/chemistry.py with ALLOWED_MOD_OPTIONS (13 options with PK intent, tier gating, notes, targets) and EXCLUSION_OPTIONS (10 options). Registered router in server.py."
+
+  - task: "PK-Aware Frontend Chemistry UI (Phase 8 Final)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/lib/chemistry.ts, /app/frontend/src/components/ui/MultiSelect.tsx, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created fetchChemistryOptions utility with client-side conflict checking. Created MultiSelect component for multi-option selection with badges. Updated App.js to fetch chemistry options on mount, group mods by PK intent (PK Extension, Protease Resistance, etc.), and render tier-aware multi-selects with conflict warnings, PK intent labels, and usage notes."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
