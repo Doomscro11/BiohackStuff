@@ -6,13 +6,20 @@ export type JsonResult<T = any> =
 /**
  * Safe JSON fetch - reads response body exactly once
  * Returns result object instead of throwing
+ * Always includes credentials by default
  */
 export async function fetchJSON<T = any>(
   input: RequestInfo, 
   init?: RequestInit
 ): Promise<JsonResult<T>> {
   try {
-    const response = await fetch(input, init);
+    // Merge init with default credentials: 'include'
+    const config: RequestInit = {
+      credentials: 'include',
+      ...init
+    };
+    
+    const response = await fetch(input, config);
     
     if (!response.ok) {
       // Read text exactly once for errors
