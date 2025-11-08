@@ -11,16 +11,42 @@ export default function BillingWidget() {
   const [state, setState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
+  const [serverError, setServerError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const prevCredits = useRef<number | null>(null);
 
   const reload = async () => {
     setLoading(true);
+    setServerError(false);
+    
+    // First check if user is authenticated
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+    try {
+      const sessionResult = await fetch(`${BACKEND_URL}/api/auth/session`, {
+        credentials: 'include'
+      });
+      
+      if (!sessionResult.ok) {
+        // User not authenticated
+        setAuthError(true);
+        setLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Session check failed:', error);
+      setAuthError(true);
+      setLoading(false);
+      return;
+    }
+    
+    // User is authenticated, fetch billing state
     const result = await fetchBillingState();
     
     if (!result.ok) {
       if (result.status === 401) {
         setAuthError(true);
+      } else if (result.status >= 500) {
+        setServerError(true);
       }
       setLoading(false);
       return;
