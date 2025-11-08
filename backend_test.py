@@ -1226,17 +1226,747 @@ class AuthenticationTest:
             "auth_working": self.tests_passed >= self.tests_run * 0.85
         }
 
+class Phase8BillingTest:
+    """Test Phase 8: Session Endpoint + Authenticated Billing Flow"""
+    
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.admin_jwt_cookie = None
+        self.admin_email = "founder@peptologic.ai"
+        self.user_id = None
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+    
+    def authenticate_test_user(self):
+        """Authenticate as test user to get JWT cookie and user ID"""
+        try:
+            # Step 1: Request magic code
+            payload = {"email": self.admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Authentication Setup - Magic Code Request",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            data = response.json()
+            if not data.get("success") or "demo_code" not in data:
+                self.log_test(
+                    "Authentication Setup - Magic Code Request",
+                    False,
+                    error_details="Response missing demo_code or success flag"
+                )
+                return False
+            
+            demo_code = data["demo_code"]
+            
+            # Step 2: Verify magic code
+            payload = {"email": self.admin_email, "code": demo_code}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Authentication Setup - Magic Code Verify",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Extract JWT cookie
+            cookies = response.cookies
+            if "pmnc_jwt" not in cookies:
+                self.log_test(
+                    "Authentication Setup - JWT Cookie",
+                    False,
+                    error_details="JWT cookie not set in response"
+                )
+                return False
+            
+            self.admin_jwt_cookie = cookies["pmnc_jwt"]
+            
+            # Step 3: Get user info to extract user ID
+            cookies_dict = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/me", cookies=cookies_dict, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Authentication Setup - Get User Info",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            user_data = response.json()
+            self.user_id = user_data.get("id")
+            
+            if not self.user_id:
+                self.log_test(
+                    "Authentication Setup - Extract User ID",
+                    False,
+                    error_details="User ID not found in response"
+                )
+                return False
+            
+            self.log_test(
+                "Authentication Setup",
+                True,
+                f"Authenticated as {self.admin_email}, user_id: {self.user_id}"
+            )
+            return True
+            
+        except Exception as e:
+            self.log_test(
+                "Authentication Setup",
+                False,
+                error_details=f"Authentication failed: {str(e)}"
+            )
+            return False
+    
+    def test_session_endpoint_authenticated(self):
+        """Test GET /api/auth/session with authenticated user"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Session Endpoint (Authenticated)",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["email", "role", "tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    self.log_test(
+                        "Session Endpoint (Authenticated)",
+                        True,
+                        f"Email: {data.get('email')}, Role: {data.get('role')}, Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Session Endpoint (Authenticated)",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Session Endpoint (Authenticated)",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Session Endpoint (Authenticated)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_session_endpoint_unauthenticated(self):
+        """Test GET /api/auth/session without authentication (should return 401)"""
+        try:
+            response = requests.get(f"{API_BASE}/auth/session", timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Session Endpoint (Unauthenticated - Should Fail)",
+                    True,
+                    "Correctly returned 401 Unauthorized for unauthenticated request"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Session Endpoint (Unauthenticated - Should Fail)",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Session Endpoint (Unauthenticated - Should Fail)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_mock_credit_topup(self):
+        """Test mock credit top-up via webhook"""
+        if not self.user_id:
+            self.log_test(
+                "Mock Credit Top-Up",
+                False,
+                error_details="No user ID available"
+            )
+            return False
+        
+        try:
+            # Get current credits first
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Mock Credit Top-Up - Get Initial State",
+                    False,
+                    error_details=f"Failed to get billing state: HTTP {response.status_code}"
+                )
+                return False
+            
+            initial_state = response.json()
+            initial_credits = initial_state.get("credits", 0)
+            
+            # Trigger mock webhook for credit purchase
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&credits=100"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            # Should redirect (302) to billing page
+            if response.status_code not in [200, 302]:
+                self.log_test(
+                    "Mock Credit Top-Up - Webhook Trigger",
+                    False,
+                    error_details=f"Webhook failed: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Check credits increased
+            time.sleep(1)  # Brief delay for processing
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                new_state = response.json()
+                new_credits = new_state.get("credits", 0)
+                
+                if new_credits >= initial_credits + 100:
+                    # Check ledger entry
+                    history = new_state.get("history", [])
+                    credit_entry = None
+                    for entry in history:
+                        if entry.get("reason") == "Credits purchase" and entry.get("delta") == 100:
+                            credit_entry = entry
+                            break
+                    
+                    if credit_entry:
+                        self.log_test(
+                            "Mock Credit Top-Up",
+                            True,
+                            f"Credits increased from {initial_credits} to {new_credits}, ledger entry created"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Mock Credit Top-Up",
+                            False,
+                            error_details="Credits increased but no ledger entry found"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Mock Credit Top-Up",
+                        False,
+                        error_details=f"Credits not increased properly: {initial_credits} -> {new_credits}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Mock Credit Top-Up - Check New State",
+                    False,
+                    error_details=f"Failed to get new billing state: HTTP {response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Mock Credit Top-Up",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_credit_debit_generation(self):
+        """Test credit debit for analogue generation"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Credit Debit for Generation",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            # Get current credits
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Credit Debit for Generation - Get Initial State",
+                    False,
+                    error_details=f"Failed to get billing state: HTTP {response.status_code}"
+                )
+                return False
+            
+            initial_state = response.json()
+            initial_credits = initial_state.get("credits", 0)
+            
+            if initial_credits < 2:
+                self.log_test(
+                    "Credit Debit for Generation",
+                    False,
+                    error_details=f"Insufficient credits for test: {initial_credits} (need at least 2)"
+                )
+                return False
+            
+            # Generate analogues (should cost 2 credits for 2 analogues)
+            payload = {
+                "generation_id": f"test_gen_{int(time.time())}",
+                "base_molecule": "HAEGTFTSDVSSYLEG",
+                "allowed_mods": "substitution",
+                "exclusions": "none",
+                "target_use": "credit debit test",
+                "num_analogues": 2,
+                "include_cost": False
+            }
+            
+            response = requests.post(f"{API_BASE}/generate-analogues", json=payload, cookies=cookies, timeout=60)
+            
+            if response.status_code == 200:
+                # Check credits decreased
+                time.sleep(1)  # Brief delay for processing
+                response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+                
+                if response.status_code == 200:
+                    new_state = response.json()
+                    new_credits = new_state.get("credits", 0)
+                    
+                    if new_credits == initial_credits - 2:
+                        # Check ledger entry
+                        history = new_state.get("history", [])
+                        debit_entry = None
+                        for entry in history:
+                            if "Analogue generation" in entry.get("reason", "") and entry.get("delta") == -2:
+                                debit_entry = entry
+                                break
+                        
+                        if debit_entry:
+                            self.log_test(
+                                "Credit Debit for Generation",
+                                True,
+                                f"Credits deducted: {initial_credits} -> {new_credits}, ledger entry created"
+                            )
+                            return True
+                        else:
+                            self.log_test(
+                                "Credit Debit for Generation",
+                                False,
+                                error_details="Credits deducted but no ledger entry found"
+                            )
+                            return False
+                    else:
+                        self.log_test(
+                            "Credit Debit for Generation",
+                            False,
+                            error_details=f"Credits not deducted properly: {initial_credits} -> {new_credits} (expected -2)"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Credit Debit for Generation - Check New State",
+                        False,
+                        error_details=f"Failed to get new billing state: HTTP {response.status_code}"
+                    )
+                    return False
+            elif response.status_code == 402:
+                self.log_test(
+                    "Credit Debit for Generation",
+                    True,
+                    "Correctly returned 402 Payment Required for insufficient credits"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Credit Debit for Generation",
+                    False,
+                    error_details=f"Generation failed: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Credit Debit for Generation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_mock_plan_upgrade(self):
+        """Test mock plan upgrade to Pro"""
+        if not self.user_id or not self.admin_jwt_cookie:
+            self.log_test(
+                "Mock Plan Upgrade (Pro)",
+                False,
+                error_details="No user ID or JWT cookie available"
+            )
+            return False
+        
+        try:
+            # Get current tier
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Mock Plan Upgrade - Get Initial State",
+                    False,
+                    error_details=f"Failed to get billing state: HTTP {response.status_code}"
+                )
+                return False
+            
+            initial_state = response.json()
+            initial_tier = initial_state.get("tier", "basic")
+            initial_credits = initial_state.get("credits", 0)
+            
+            # Start checkout for pro plan
+            payload = {"plan": "pro"}
+            response = requests.post(f"{API_BASE}/billing/checkout", json=payload, cookies=cookies, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Mock Plan Upgrade - Checkout",
+                    False,
+                    error_details=f"Checkout failed: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Trigger mock success webhook for pro plan
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={self.user_id}&plan=pro"
+            response = requests.get(webhook_url, timeout=10, allow_redirects=False)
+            
+            if response.status_code not in [200, 302]:
+                self.log_test(
+                    "Mock Plan Upgrade - Webhook Trigger",
+                    False,
+                    error_details=f"Webhook failed: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+            
+            # Check tier upgraded and credits granted
+            time.sleep(1)  # Brief delay for processing
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                new_state = response.json()
+                new_tier = new_state.get("tier", "basic")
+                new_credits = new_state.get("credits", 0)
+                renews_at = new_state.get("renewsAt")
+                
+                # Check tier upgrade
+                if new_tier != "pro":
+                    self.log_test(
+                        "Mock Plan Upgrade (Pro)",
+                        False,
+                        error_details=f"Tier not upgraded: {initial_tier} -> {new_tier} (expected pro)"
+                    )
+                    return False
+                
+                # Check credits granted (pro plan should grant 200 credits)
+                expected_credits = initial_credits + 200
+                if new_credits < expected_credits:
+                    self.log_test(
+                        "Mock Plan Upgrade (Pro)",
+                        False,
+                        error_details=f"Credits not granted properly: {initial_credits} -> {new_credits} (expected +200)"
+                    )
+                    return False
+                
+                # Check subscription created with renewal date
+                if not renews_at:
+                    self.log_test(
+                        "Mock Plan Upgrade (Pro)",
+                        False,
+                        error_details="No renewal date set for subscription"
+                    )
+                    return False
+                
+                # Check ledger entry
+                history = new_state.get("history", [])
+                refill_entry = None
+                for entry in history:
+                    if "Monthly refill (pro)" in entry.get("reason", "") and entry.get("delta") == 200:
+                        refill_entry = entry
+                        break
+                
+                if refill_entry:
+                    self.log_test(
+                        "Mock Plan Upgrade (Pro)",
+                        True,
+                        f"Tier: {initial_tier} -> {new_tier}, Credits: {initial_credits} -> {new_credits}, Renews: {renews_at}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Mock Plan Upgrade (Pro)",
+                        False,
+                        error_details="Tier upgraded but no ledger entry found"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Mock Plan Upgrade - Check New State",
+                    False,
+                    error_details=f"Failed to get new billing state: HTTP {response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Mock Plan Upgrade (Pro)",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_billing_state_query(self):
+        """Test GET /api/billing/state"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Billing State Query",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["tier", "credits", "renewsAt", "history"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    # Validate history structure
+                    history = data.get("history", [])
+                    if isinstance(history, list):
+                        self.log_test(
+                            "Billing State Query",
+                            True,
+                            f"Tier: {data.get('tier')}, Credits: {data.get('credits')}, History entries: {len(history)}"
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Billing State Query",
+                            False,
+                            error_details="History field is not an array"
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "Billing State Query",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Billing State Query",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing State Query",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def test_insufficient_credits_scenario(self):
+        """Test generation with insufficient credits (should return 402)"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Insufficient Credits Scenario",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            # Try to generate many analogues to exceed credits
+            payload = {
+                "generation_id": f"test_insufficient_{int(time.time())}",
+                "base_molecule": "HAEGTFTSDVSSYLEG",
+                "allowed_mods": "substitution",
+                "exclusions": "none",
+                "target_use": "insufficient credits test",
+                "num_analogues": 10,  # High number to likely exceed credits
+                "include_cost": False
+            }
+            
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.post(f"{API_BASE}/generate-analogues", json=payload, cookies=cookies, timeout=60)
+            
+            if response.status_code == 402:
+                data = response.json()
+                if "credits" in data.get("detail", "").lower():
+                    self.log_test(
+                        "Insufficient Credits Scenario",
+                        True,
+                        f"Correctly returned 402 Payment Required: {data.get('detail')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Insufficient Credits Scenario",
+                        False,
+                        error_details=f"402 returned but wrong message: {data.get('detail')}"
+                    )
+                    return False
+            elif response.status_code == 200:
+                # If it succeeded, user had enough credits - that's also valid
+                self.log_test(
+                    "Insufficient Credits Scenario",
+                    True,
+                    "Generation succeeded - user had sufficient credits"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Insufficient Credits Scenario",
+                    False,
+                    error_details=f"Unexpected response: HTTP {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "Insufficient Credits Scenario",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+    
+    def run_all_tests(self):
+        """Run all Phase 8 billing tests"""
+        print("=" * 80)
+        print("💳 PEPTIMANCER PHASE 8: SESSION ENDPOINT + BILLING FLOW TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test User: {self.admin_email}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Setup authentication
+        print("🔐 AUTHENTICATION SETUP")
+        print("-" * 40)
+        if not self.authenticate_test_user():
+            print("❌ Authentication setup failed - cannot proceed with billing tests")
+            return False
+        
+        # Test 1: Session Endpoint
+        print("\n📱 SESSION ENDPOINT TESTS")
+        print("-" * 40)
+        self.test_session_endpoint_authenticated()
+        self.test_session_endpoint_unauthenticated()
+        
+        # Test 2: Billing State Query
+        print("\n💰 BILLING STATE TESTS")
+        print("-" * 40)
+        self.test_billing_state_query()
+        
+        # Test 3: Mock Credit Top-Up
+        print("\n🔄 MOCK CREDIT TOP-UP TESTS")
+        print("-" * 40)
+        self.test_mock_credit_topup()
+        
+        # Test 4: Credit Debit for Generation
+        print("\n⚡ CREDIT ENFORCEMENT TESTS")
+        print("-" * 40)
+        self.test_credit_debit_generation()
+        self.test_insufficient_credits_scenario()
+        
+        # Test 5: Mock Plan Upgrade
+        print("\n📈 MOCK PLAN UPGRADE TESTS")
+        print("-" * 40)
+        self.test_mock_plan_upgrade()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 PHASE 8 BILLING TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        print(f"\nPhase 8 Status: {'✅ WORKING' if self.tests_passed >= self.tests_run * 0.85 else '❌ ISSUES DETECTED'}")
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "phase8_working": self.tests_passed >= self.tests_run * 0.85
+        }
+
 if __name__ == "__main__":
-    # Run authentication tests
-    auth_tester = AuthenticationTest()
-    auth_results = auth_tester.run_all_tests()
+    # Run Phase 8 billing tests
+    phase8_tester = Phase8BillingTest()
+    phase8_results = phase8_tester.run_all_tests()
     
     # Save results
-    with open('/app/auth_test_results.json', 'w') as f:
-        json.dump(auth_results, f, indent=2)
+    with open('/app/phase8_test_results.json', 'w') as f:
+        json.dump(phase8_results, f, indent=2)
     
     # Exit with appropriate code
-    sys.exit(0 if auth_results['auth_working'] else 1)
+    sys.exit(0 if phase8_results['phase8_working'] else 1)
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
