@@ -401,3 +401,31 @@ async def twofa_verify(body: TwoFAVerifyBody, response: Response, request: Reque
         "message": "2FA verified successfully",
         "expires_in": 1800  # 30 minutes in seconds
     }
+
+# ==================== Phase 8: Session Endpoint for FE State ====================
+
+@auth_router.get("/session")
+async def auth_session(request: Request):
+    """
+    Lightweight session endpoint for frontend state
+    Returns user info, tier, and credits
+    """
+    from middleware.auth import get_current_user
+    from billing.service import get_billing_state
+    
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    # Get billing state
+    billing = await get_billing_state(user["id"])
+    
+    return {
+        "email": user["email"],
+        "role": user.get("role", "researcher"),
+        "tier": billing.get("tier", "basic"),
+        "credits": billing.get("credits", 0)
+    }
