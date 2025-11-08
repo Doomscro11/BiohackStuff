@@ -275,79 +275,16 @@ function App() {
             </CardHeader>
             
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Base Molecule */}
-                <div className="space-y-2">
-                  <Label htmlFor="base_molecule">Base Molecule Sequence</Label>
-                  <Input
-                    id="base_molecule"
-                    data-testid="base-molecule-input"
-                    value={formData.base_molecule}
-                    onChange={(e) => handleInputChange('base_molecule', e.target.value.toUpperCase())}
-                    placeholder="HAEGTFTSDVSSYLEG..."
-                    className="font-mono text-sm"
-                  />
-                  {sequenceValidation && (
-                    <div className="text-xs text-gray-500">
-                      {sequenceValidation.is_valid ? (
-                        <span className="text-green-600">✓ Valid sequence ({sequenceValidation.length} amino acids)</span>
-                      ) : (
-                        <span className="text-red-600">✗ {sequenceValidation.error || 'Invalid amino acid sequence'}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Allowed Modifications - PK-Aware */}
-                {chemOptions ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="allowed_mods">Allowed Modifications</Label>
-                      <div className="text-xs text-gray-500">
-                        Up to {MAX_MOD_CLASSES} classes · Tier: <b className="capitalize">{chemOptions.tier}</b>
-                      </div>
-                    </div>
-
-                    {conflictMsg && (
-                      <div className="mb-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-xs p-2">
-                        ⚠️ {conflictMsg}
-                      </div>
-                    )}
-
-                    <div className="grid md:grid-cols-1 gap-3">
-                      {Object.entries(groupedMods).map(([group, items]) => (
-                        <div key={group} className="border rounded p-3">
-                          <div className="text-xs font-semibold mb-2 text-gray-700">{group}</div>
-                          <MultiSelect
-                            options={items.map((m) => ({
-                              label: `${m.label}${m.pk_intent?.length ? ` • ${m.pk_intent.join(' / ')}` : ''}`,
-                              value: m.key
-                            }))}
-                            value={formData.allowed_mods.filter(v => items.some(m => m.key === v))}
-                            onChange={(vals) => {
-                              // Enforce total cap across groups
-                              const other = formData.allowed_mods.filter(v => !items.some(m => m.key === v));
-                              if (other.length + vals.length > MAX_MOD_CLASSES) return;
-                              handleInputChange('allowed_mods', [...other, ...vals]);
-                            }}
-                            max={MAX_MOD_CLASSES}
-                            placeholder="Select modifications..."
-                          />
-                          <ul className="mt-2 text-xs text-gray-500 list-disc pl-5 space-y-1">
-                            {items.map((m) => (
-                              <li key={m.key}>
-                                {m.notes || '—'}
-                                {m.typical_targets?.length ? ` (targets: ${m.typical_targets.join(', ')})` : ''}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-2 text-sm text-gray-500">Loading design options...</div>
-                )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* New Compact Accordion Form */}
+                <AnalogueForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  chemOptions={chemOptions}
+                  conflictMsg={conflictMsg}
+                  sequenceValidation={sequenceValidation}
+                  groupedMods={groupedMods}
+                />
 
                 {/* Exclusions - PK-Aware */}
                 {chemOptions && (
