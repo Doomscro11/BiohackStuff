@@ -149,6 +149,21 @@ backend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING (after fix): All magic code endpoints working correctly. POST /api/auth/magic/request returns OTP codes in demo mode. POST /api/auth/magic/verify validates OTP and sets JWT cookie. GET /api/auth/me returns user info with correct role. POST /api/auth/logout clears JWT cookie. Edge cases tested: invalid OTP (401), invalid email format (422). FIXED: MongoDB update conflict resolved by removing role from $setOnInsert. FIXED: Environment variable loading order - moved load_dotenv() before route imports in server.py to ensure ADMIN_EMAILS is populated."
+      - working: "NA"
+        agent: "main"
+        comment: "Phase 8 Patch 1: Added GET /api/auth/session endpoint to expose user tier and credits to frontend. Returns {email, role, tier, credits}. Used by frontend to set window.__USER_TIER__."
+
+  - task: "Session Endpoint for Frontend State (Phase 8 Patch 1)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes_auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /api/auth/session endpoint that fetches billing state and returns user email, role, tier, and credits. This enables frontend to access tier info via window.__USER_TIER__."
 
   - task: "Admin RBAC Protection"
     implemented: true
