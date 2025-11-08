@@ -53,6 +53,20 @@ function App() {
     loadCurrentMode();
   }, []);
 
+  // Load chemistry options on mount
+  useEffect(() => {
+    fetchChemistryOptions()
+      .then(setChemOptions)
+      .catch(() => setChemOptions({ tier: 'basic', mods: [], exclusions: [] }));
+  }, []);
+
+  // Check for conflicts when mods or exclusions change
+  useEffect(() => {
+    if (chemOptions) {
+      setConflictMsg(hasClientConflicts(formData.allowed_mods, formData.exclusions));
+    }
+  }, [formData.allowed_mods, formData.exclusions, chemOptions]);
+
   // Validate sequence on change
   useEffect(() => {
     if (formData.base_molecule && formData.base_molecule.trim().length > 0) {
