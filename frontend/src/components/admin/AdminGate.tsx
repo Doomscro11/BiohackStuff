@@ -124,6 +124,14 @@ export default function AdminGate() {
       const userInfo = await getCurrentUser();
       setUser(userInfo);
       
+      // Phase 8 Patch 2: Fetch session and dispatch credits update
+      const session = await fetchSession();
+      if (session && typeof session.credits === 'number') {
+        window.dispatchEvent(new CustomEvent('credits:update', { 
+          detail: { credits: session.credits } 
+        }));
+      }
+      
       // Clear form state
       setAuthResponse(null);
       setCode('');
