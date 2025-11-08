@@ -267,9 +267,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Authentication UI (AdminGate)"
-    - "Authentication API Library"
-    - "Routing Setup for Admin Panel"
+    - "Session Endpoint for Frontend State (Phase 8 Patch 1)"
+    - "Session Management Utility (Phase 8 Patch 1)"
+    - "Credits Badge Auto-Refresh (Phase 8 Patch 2)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -279,3 +279,5 @@ agent_communication:
     message: "Completed Phase 1 integration. Backend authentication system with JWT, OTP magic codes, and RBAC is implemented. Frontend AdminGate component with routing is ready. ADMIN_EMAILS configured for founder@peptologic.ai and cto@peptologic.ai. Both services restarted successfully. Ready for backend testing of authentication flow."
   - agent: "testing"
     message: "Backend authentication testing COMPLETE - ALL TESTS PASSING (13/13, 100% success rate). Fixed 2 critical issues: (1) MongoDB update conflict in routes_auth.py - removed role from $setOnInsert to avoid conflict with $set, (2) Environment variable loading order in server.py - moved load_dotenv() before route imports to ensure ADMIN_EMAILS is populated. All authentication flows working: magic code request/verify, JWT cookie management, RBAC protection, admin settings access/update, logout, and edge cases. System ready for frontend testing. Note: Frontend testing requires user interaction and cannot be automated - recommend manual testing or ask user to test."
+  - agent: "main"
+    message: "Phase 8 Patches Implemented: (1) Added GET /api/auth/session endpoint to expose user tier and credits. (2) Created fetchSession utility in lib/session.ts that calls session endpoint and sets window.__USER_TIER__. (3) Added useEffect in MainApp.js to fetch session on app bootstrap. (4) Updated AdminGate.tsx to call fetchSession and dispatch 'credits:update' event after successful OTP verification. Services restarted successfully. Ready for backend testing of new session endpoint + authenticated billing flow testing."
