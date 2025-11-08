@@ -341,7 +341,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Billing Widget Stability (Phase 8.2)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
