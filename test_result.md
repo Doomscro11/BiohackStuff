@@ -309,15 +309,18 @@ frontend:
 
   - task: "PK-Aware Frontend Chemistry UI (Phase 8 Final)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/lib/chemistry.ts, /app/frontend/src/components/ui/MultiSelect.tsx, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created fetchChemistryOptions utility with client-side conflict checking. Created MultiSelect component for multi-option selection with badges. Updated App.js to fetch chemistry options on mount, group mods by PK intent (PK Extension, Protease Resistance, etc.), and render tier-aware multi-selects with conflict warnings, PK intent labels, and usage notes."
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: PK-aware chemistry UI fully functional. Found 'Allowed Modifications' section with tier indicator showing 'Tier: Basic'. PK intent groups properly displayed: Protease Resistance, Exopeptidase Protection, Affinity Tuning. 12 modification checkboxes available including D-amino acids and Cyclization. 'Exclusion Clauses' section present with up to 6 selections allowed. MultiSelect component working with proper selection counters (0/3 selected format). Form validation working with sequence validation and enabled Generate button."
 
 metadata:
   created_by: "main_agent"
