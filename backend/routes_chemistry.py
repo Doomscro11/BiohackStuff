@@ -6,7 +6,7 @@ from constants.chemistry import ALLOWED_MOD_OPTIONS, EXCLUSION_OPTIONS, TIER_ORD
 router = APIRouter(prefix="/api/chemistry", tags=["chemistry"])
 
 @router.get("/options")
-def chemistry_options(user=Depends(get_current_user)):
+async def chemistry_options(user=Depends(get_current_user)):
     """
     Serve canonical chemistry options (modifications & exclusions) with tier filtering
     Anonymous users get basic tier options
@@ -14,7 +14,14 @@ def chemistry_options(user=Depends(get_current_user)):
     # Get user tier (default to basic for anonymous)
     tier = "basic"
     if user:
-        tier = user.get("tier", "basic")
+        # Fetch tier from billing service
+        from billing.service import get_billing_state
+        try:
+            billing = await get_billing_state(user["id"])
+            tier = billing.get("tier", "basic")
+        except Exception:
+            # Fallback to basic if billing service fails
+            tier = "basic"
     
     # Helper to check if option is allowed for user's tier
     def allow(item):
