@@ -1398,7 +1398,7 @@ class Phase8ChemistryTest:
                 return False
             
             # Step 4: Upgrade user to pro tier via mock webhook
-            webhook_url = f"{API_BASE}/webhooks/billing/mock/upgrade?uid={pro_user_id}&plan=pro"
+            webhook_url = f"{API_BASE}/webhooks/billing/mock/success?uid={pro_user_id}&plan=pro"
             response = requests.get(webhook_url, timeout=10, allow_redirects=False)
             
             # Should redirect (302) or return success
