@@ -2444,16 +2444,16 @@ class Phase8BillingTest:
         }
 
 if __name__ == "__main__":
-    # Run Phase 8 billing tests
-    phase8_tester = Phase8BillingTest()
-    phase8_results = phase8_tester.run_all_tests()
+    # Run Phase 8 Final: Chemistry Options API tests
+    chemistry_tester = Phase8ChemistryTest()
+    chemistry_results = chemistry_tester.run_all_tests()
     
     # Save results
-    with open('/app/phase8_test_results.json', 'w') as f:
-        json.dump(phase8_results, f, indent=2)
+    with open('/app/phase8_chemistry_test_results.json', 'w') as f:
+        json.dump(chemistry_results, f, indent=2)
     
     # Exit with appropriate code
-    sys.exit(0 if phase8_results['phase8_working'] else 1)
+    sys.exit(0 if chemistry_results['chemistry_api_working'] else 1)
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
