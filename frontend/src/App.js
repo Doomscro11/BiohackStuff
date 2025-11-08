@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { AlertCircle, Dna, Zap, TrendingUp, Clock, DollarSign, Shield, Beaker, Download, Send, CreditCard } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import MultiSelect from '@/components/ui/MultiSelect.tsx';
+import { fetchChemistryOptions, hasClientConflicts, MAX_MOD_CLASSES, MAX_EXCLUSIONS } from './lib/chemistry.ts';
 import '@/App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -19,12 +21,16 @@ const API = `${BACKEND_URL}/api`;
 function App() {
   const [formData, setFormData] = useState({
     base_molecule: 'HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR',
-    allowed_mods: 'Substitution, Lipidation, Cyclization, D-isomers',
-    exclusions: 'No Aib or γ-Glu residues', 
+    allowed_mods: [],  // Changed to array for MultiSelect
+    exclusions: [],    // Changed to array for MultiSelect
     target_use: 'Metabolic Research / GLP-1R',
     num_analogues: 3,
     include_cost: true
   });
+  
+  // Chemistry options state
+  const [chemOptions, setChemOptions] = useState(null);
+  const [conflictMsg, setConflictMsg] = useState(null);
   
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
