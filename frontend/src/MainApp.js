@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import App from './App';
 import AdminGate from './components/admin/AdminGate.tsx';
@@ -6,8 +6,16 @@ import BillingPage from './pages/BillingPage';
 import CreditBadge from './components/CreditBadge';
 import { Shield, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { fetchSession } from './lib/session.ts';
 
 function MainApp() {
+  // Bootstrap: fetch session on app load
+  useEffect(() => {
+    fetchSession().catch(() => {
+      // User not authenticated - this is fine
+    });
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen">
