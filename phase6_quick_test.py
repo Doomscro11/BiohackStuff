@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime
 
-BACKEND_URL = "https://pep-forge.preview.emergentagent.com"
+BACKEND_URL = "https://peptimancer.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_critical_endpoints():
