@@ -294,7 +294,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Session Endpoint for Frontend State (Phase 8 Patch 1)"
     - "Session Management Utility (Phase 8 Patch 1)"
     - "Credits Badge Auto-Refresh (Phase 8 Patch 2)"
   stuck_tasks: []
