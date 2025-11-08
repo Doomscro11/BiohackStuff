@@ -322,6 +322,18 @@ frontend:
         agent: "testing"
         comment: "TESTED & WORKING: PK-aware chemistry UI fully functional. Found 'Allowed Modifications' section with tier indicator showing 'Tier: Basic'. PK intent groups properly displayed: Protease Resistance, Exopeptidase Protection, Affinity Tuning. 12 modification checkboxes available including D-amino acids and Cyclization. 'Exclusion Clauses' section present with up to 6 selections allowed. MultiSelect component working with proper selection counters (0/3 selected format). Form validation working with sequence validation and enabled Generate button."
 
+  - task: "Billing Widget Stability (Phase 8.2)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/billing/BillingWidget.tsx, /app/frontend/src/lib/http.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced BillingWidget with auth-aware session check before fetching billing state. Added server error handling with 'Billing temporarily unavailable' state. Updated redirectToLogin to use /admin instead of /login. Enhanced fetchJSON to always include credentials by default. Added comprehensive documentation to mock webhook endpoint."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
