@@ -288,15 +288,18 @@ frontend:
 
   - task: "PK-Aware Chemistry Options API (Phase 8 Final)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes_chemistry.py, /app/backend/constants/chemistry.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created GET /api/chemistry/options endpoint that serves canonical modification and exclusion options with tier filtering. Added constants/chemistry.py with ALLOWED_MOD_OPTIONS (13 options with PK intent, tier gating, notes, targets) and EXCLUSION_OPTIONS (10 options). Registered router in server.py."
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Chemistry Options API fully functional (5/5 tests passed, 100% success rate). Anonymous users correctly receive basic tier options (5 mods, 6 exclusions). Pro users correctly receive basic + pro tier options (8 mods, 9 exclusions). Tier filtering enforced properly - no tier escalation. Response structure validated with proper PK intent categories, notes, and typical targets. FIXED: Updated chemistry endpoint to fetch tier from billing service instead of JWT token for accurate tier detection."
 
   - task: "PK-Aware Frontend Chemistry UI (Phase 8 Final)"
     implemented: true
