@@ -1105,6 +1105,10 @@ from routes_webhooks import router as webhooks_router
 app.include_router(billing_router)
 app.include_router(webhooks_router)
 
+# Include Phase VIII chemistry options route
+from routes_chemistry import router as chemistry_router
+app.include_router(chemistry_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
