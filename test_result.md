@@ -324,15 +324,18 @@ frontend:
 
   - task: "Billing Widget Stability (Phase 8.2)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/billing/BillingWidget.tsx, /app/frontend/src/lib/http.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Enhanced BillingWidget with auth-aware session check before fetching billing state. Added server error handling with 'Billing temporarily unavailable' state. Updated redirectToLogin to use /admin instead of /login. Enhanced fetchJSON to always include credentials by default. Added comprehensive documentation to mock webhook endpoint."
+      - working: true
+        agent: "testing"
+        comment: "TESTED & WORKING: Phase 8.2 Billing Widget Stability - ALL TESTS PASSING (8/8, 100% success rate). Complete billing flow operational: (1) Session endpoint working correctly with proper user data (email, role, tier, credits), (2) Billing state endpoint returning proper billing state with tier, credits, renewsAt, and history, (3) Mock credit purchase working - credits increased by 100 with proper redirect to /billing?success=1, (4) Mock pro plan upgrade working - tier set to 'pro', 200 monthly credits granted, subscription created with renewal date, (5) Chemistry options after pro upgrade showing 9 total modifications including pro-tier options (pegylation, lipidation, n_methylation), (6) Mock enterprise upgrade working - tier set to 'enterprise', 5000 monthly credits granted, (7) Combined plan + credits working - both plan upgrade and bonus credits applied correctly. All mock webhooks redirect properly, credits and tier updates persist, no infinite loops or hangs detected."
 
 metadata:
   created_by: "main_agent"
