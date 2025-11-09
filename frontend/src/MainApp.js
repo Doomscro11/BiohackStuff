@@ -34,6 +34,12 @@ function MainApp() {
                   Billing & Credits
                 </Button>
               </Link>
+              <Link to="/admin/analytics">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Analytics
+                </Button>
+              </Link>
               <Link to="/admin">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
