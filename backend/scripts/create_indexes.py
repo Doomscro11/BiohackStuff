@@ -143,6 +143,35 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating billing indexes: {str(e)}")
 
+# Phase IXa: Analytics collection indexes
+print("\nCreating analytics indexes...")
+try:
+    # Generation logs indexes
+    db.generation_logs.create_index("ts", name="timestamp_idx")
+    print("  ✓ generation_logs.ts")
+    
+    db.generation_logs.create_index(
+        [("status", ASCENDING), ("ts", DESCENDING)],
+        name="status_timestamp_idx"
+    )
+    print("  ✓ generation_logs.status + ts (compound)")
+    
+    db.generation_logs.create_index(
+        [("userTier", ASCENDING), ("ts", DESCENDING)],
+        name="userTier_timestamp_idx"
+    )
+    print("  ✓ generation_logs.userTier + ts (compound)")
+    
+    # Analytics snapshots index
+    db.analytics_snapshots.create_index(
+        [("snapshot_date", DESCENDING)],
+        name="snapshot_date_desc_idx"
+    )
+    print("  ✓ analytics_snapshots.snapshot_date (descending)")
+    
+except Exception as e:
+    print(f"  ✗ Error creating analytics indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes
