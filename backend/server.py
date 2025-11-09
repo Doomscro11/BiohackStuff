@@ -1109,6 +1109,10 @@ app.include_router(webhooks_router)
 from routes_chemistry import router as chemistry_router
 app.include_router(chemistry_router)
 
+# Include Phase IXa analytics routes
+from routes_analytics import router as analytics_router
+app.include_router(analytics_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
