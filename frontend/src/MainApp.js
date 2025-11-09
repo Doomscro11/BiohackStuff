@@ -55,6 +55,7 @@ function MainApp() {
           <Route path="/" element={<App />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/admin" element={<AdminGate />} />
+          <Route path="/admin/analytics" element={<AnalyticsPage />} />
         </Routes>
       </div>
     </Router>
