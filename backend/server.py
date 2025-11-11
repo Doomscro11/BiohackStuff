@@ -1113,6 +1113,10 @@ app.include_router(chemistry_router)
 from routes_analytics import router as analytics_router
 app.include_router(analytics_router)
 
+# Include Phase IXb PatentPulse routes
+from routes_patentpulse import router as patentpulse_router
+app.include_router(patentpulse_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
