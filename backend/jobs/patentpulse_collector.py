@@ -161,7 +161,7 @@ class PatentPulseCollector:
         )
         
         if self.mode == "live":
-            await patentpulse_dlq.insert_one(dlq_entry.dict())
+            await patentpulse_dlq.insert_one(dlq_entry.model_dump())
         
         self.run.counts["dlq"] += 1
         logger.warning(f"  ✗ DLQ: {patent_id or 'unknown'} - {reason}")
@@ -206,7 +206,7 @@ class PatentPulseCollector:
                         self.run.counts["normalized"] += 1
                         
                         # Prepare for DB
-                        item_dict = normalized.dict()
+                        item_dict = normalized.model_dump()
                         item_dict["source_hash"] = normalized.compute_source_hash()
                         
                         # Convert datetime to UTC
@@ -226,7 +226,7 @@ class PatentPulseCollector:
                         if fixed:
                             try:
                                 normalized = normalize_item(source, fixed)
-                                item_dict = normalized.dict()
+                                item_dict = normalized.model_dump()
                                 item_dict["source_hash"] = normalized.compute_source_hash()
                                 item_dict.pop("source_payload", None)
                                 await self.upsert_patent_item(item_dict)
@@ -329,7 +329,7 @@ class PatentPulseCollector:
         
         # Save run metadata (running)
         if self.mode == "live":
-            await patentpulse_runs.insert_one(self.run.dict())
+            await patentpulse_runs.insert_one(self.run.model_dump())
         
         # Collect from each source
         for source in self.source_filter:
@@ -349,7 +349,7 @@ class PatentPulseCollector:
         if self.mode == "live":
             await patentpulse_runs.update_one(
                 {"run_id": self.run.run_id},
-                {"$set": self.run.dict()}
+                {"$set": self.run.model_dump()}
             )
         
         # Print summary

@@ -260,7 +260,7 @@ class MarketSignalsEnricher:
                 if self.mode == "live":
                     await patentpulse_signals.update_one(
                         {"patent_id": patent_id},
-                        {"$set": signal_doc.dict()},
+                        {"$set": signal_doc.model_dump()},
                         upsert=True
                     )
             

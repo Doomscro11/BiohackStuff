@@ -86,7 +86,7 @@ class DLQReprocessor:
             normalized = normalize_item(source, fixed_payload)
             
             # Prepare for DB
-            item_dict = normalized.dict()
+            item_dict = normalized.model_dump()
             item_dict["source_hash"] = normalized.compute_source_hash()
             item_dict["first_ingested_at"] = datetime.now(timezone.utc)
             item_dict["last_ingested_at"] = datetime.now(timezone.utc)
