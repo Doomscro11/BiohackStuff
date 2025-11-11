@@ -83,10 +83,10 @@ async def get_admin_token() -> str:
             raise Exception(f"Failed to request magic code: {response.text}")
         
         data = response.json()
-        magic_code = data.get("magic_code")
+        magic_code = data.get("demo_code") or data.get("magic_code")
         
         if not magic_code:
-            raise Exception("No magic code in response (demo mode may be disabled)")
+            raise Exception(f"No magic code in response: {data}")
         
         # Verify magic code
         response = await client.post(
