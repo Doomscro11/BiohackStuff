@@ -35,6 +35,10 @@ __all__ = [
     'AdjustCreditsBody',
     'SetTierBody',
     'UserSummary',
+    'PlanUpsert',
+    'CheckoutBody',
+    'BillingState',
+    'CreditDebit',
     # PatentPulse models
     'PatentPulseItem',
     'PatentFamily',
