@@ -70,8 +70,13 @@ def log_test(category: str, test_name: str, passed: bool, details: str = ""):
     return passed
 
 
-async def get_admin_token() -> str:
-    """Get admin JWT token via magic code auth"""
+async def get_admin_token() -> tuple:
+    """
+    Get admin JWT token and admin2FA token via magic code auth
+    
+    Returns:
+        tuple: (jwt_token, admin2fa_token)
+    """
     async with httpx.AsyncClient() as client:
         # Request magic code
         response = await client.post(
@@ -102,7 +107,12 @@ async def get_admin_token() -> str:
         if not jwt_cookie:
             raise Exception("No JWT cookie in response")
         
-        return jwt_cookie
+        # For testing, we'll use a bypass: call the admin endpoint with just JWT
+        # In production, this would require actual 2FA flow
+        # Since the partner portal requires 2FA, let's check if there's an admin2fa cookie
+        admin2fa_cookie = response.cookies.get("pmnc_admin2fa")
+        
+        return jwt_cookie, admin2fa_cookie
 
 
 async def create_test_export() -> str:
