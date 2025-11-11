@@ -146,3 +146,43 @@ def has_permission(user: Optional[Dict[str, Any]], permission: str) -> bool:
     """Check if user has specific permission"""
     user_permissions = get_user_permissions(user)
     return permission in user_permissions
+
+
+def require_role(allowed_roles: list):
+    """
+    Dependency for requiring specific roles with 2FA check for admin
+    
+    Usage:
+        @router.get("/endpoint", dependencies=[Depends(require_role(['admin']))])
+    """
+    from fastapi import Depends, HTTPException, Request, status
+    
+    async def check_role(request: Request):
+        # Check authentication
+        user = get_current_user(request)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
+        
+        # Check role
+        user_role = user.get("role", "")
+        if user_role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires one of: {', '.join(allowed_roles)}"
+            )
+        
+        # For admin role, require 2FA
+        if "admin" in allowed_roles and user_role == "admin":
+            admin2fa = getattr(request.state, 'admin2fa', False)
+            if not admin2fa:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Admin 2FA required"
+                )
+        
+        return user
+    
+    return check_role
