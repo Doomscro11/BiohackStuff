@@ -1,0 +1,258 @@
+{
+  "dashboard": {
+    "title": "PatentPulse Health & Performance",
+    "tags": ["patentpulse", "peptimancer", "monitoring"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "PatentPulse Health Status",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "sum(rate(http_requests_total{path=~\"/api/patentpulse.*\"}[5m])) - sum(rate(http_requests_total{path=~\"/api/patentpulse.*\",status=~\"5..\"}[5m]))",
+          "legendFormat": "Healthy Requests"
+        }],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 0.98, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Collector Runtime & Last Success",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "time() - patentpulse_collector_last_success_timestamp",
+          "legendFormat": "Time Since Last Success (seconds)"
+        }],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 86400, "color": "yellow"},
+                {"value": 172800, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "p95 Latency per Endpoint (ms)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{path=\"/api/patentpulse/items\"}[5m])) by (le)) * 1000",
+            "legendFormat": "/items (p95)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{path=\"/api/patentpulse/stats\"}[5m])) by (le)) * 1000",
+            "legendFormat": "/stats (p95)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{path=\"/api/patentpulse/top-opportunities\"}[5m])) by (le)) * 1000",
+            "legendFormat": "/top-opportunities (p95)"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Latency (ms)", "show": true},
+          {"format": "short", "show": false}
+        ],
+        "alert": {
+          "name": "PatentPulse High Latency",
+          "message": "p95 latency exceeded 900ms threshold",
+          "conditions": [{
+            "evaluator": {"type": "gt", "params": [900]},
+            "operator": {"type": "and"},
+            "query": {"params": ["A", "5m", "now"]},
+            "reducer": {"type": "avg"},
+            "type": "query"
+          }],
+          "frequency": "1m",
+          "handler": 1,
+          "noDataState": "no_data",
+          "executionErrorState": "alerting",
+          "for": "5m"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Patent Count per Week",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "increase(patentpulse_items_total[7d])",
+          "legendFormat": "New Patents per Week"
+        }],
+        "yaxes": [
+          {"format": "short", "label": "Count", "show": true},
+          {"format": "short", "show": false}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Top Assignees by Viability Score",
+        "type": "bargauge",
+        "gridPos": {"x": 8, "y": 8, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "topk(5, sum by (assignee) (patentpulse_viability_score))",
+          "legendFormat": "{{assignee}}"
+        }],
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "FTO Risk Distribution",
+        "type": "piechart",
+        "gridPos": {"x": 16, "y": 8, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "sum by (risk_level) (patentpulse_fto_risk_bucket)",
+          "legendFormat": "{{risk_level}}"
+        }],
+        "options": {
+          "legend": {"displayMode": "table", "placement": "right"},
+          "pieType": "pie",
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 7,
+        "title": "Error Rate (5xx responses)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 14, "w": 12, "h": 6},
+        "targets": [{
+          "expr": "sum(rate(http_requests_total{path=~\"/api/patentpulse.*\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{path=~\"/api/patentpulse.*\"}[5m]))",
+          "legendFormat": "5xx Error Rate"
+        }],
+        "yaxes": [
+          {"format": "percentunit", "label": "Error Rate", "show": true, "max": 0.1},
+          {"format": "short", "show": false}
+        ],
+        "alert": {
+          "name": "PatentPulse High Error Rate",
+          "message": "5xx error rate exceeded 2% threshold",
+          "conditions": [{
+            "evaluator": {"type": "gt", "params": [0.02]},
+            "operator": {"type": "and"},
+            "query": {"params": ["A", "5m", "now"]},
+            "reducer": {"type": "avg"},
+            "type": "query"
+          }],
+          "frequency": "1m",
+          "handler": 1,
+          "noDataState": "no_data",
+          "executionErrorState": "alerting",
+          "for": "5m"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 14, "w": 12, "h": 6},
+        "targets": [{
+          "expr": "sum(rate(http_requests_total{path=~\"/api/patentpulse.*\"}[5m]))",
+          "legendFormat": "Total Requests/s"
+        }],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/s", "show": true},
+          {"format": "short", "show": false}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Collector Health",
+        "type": "table",
+        "gridPos": {"x": 0, "y": 20, "w": 24, "h": 6},
+        "targets": [{
+          "expr": "patentpulse_collector_metrics",
+          "format": "table",
+          "instant": true
+        }],
+        "transformations": [{
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "collected": "New Patents",
+              "updated": "Updated Patents",
+              "errors": "Errors",
+              "duration_s": "Duration (s)",
+              "timestamp": "Last Run"
+            }
+          }
+        }]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "custom",
+          "options": [
+            {"text": "Production", "value": "prod"},
+            {"text": "Staging", "value": "staging"},
+            {"text": "Canary", "value": "canary"}
+          ],
+          "current": {"text": "Production", "value": "prod"}
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "blue",
+          "tags": ["deployment", "patentpulse"]
+        },
+        {
+          "name": "Incidents",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "red",
+          "tags": ["incident", "patentpulse"]
+        }
+      ]
+    }
+  }
+}
