@@ -559,10 +559,13 @@ async def test_dashboard_metrics() -> bool:
     print("\n[6] Testing Dashboard Metrics...")
     
     try:
-        jwt_token = await get_admin_token()
+        jwt_token, admin2fa_token = await get_admin_token()
         
         async with httpx.AsyncClient() as client:
-            headers = {"Cookie": f"pmnc_jwt={jwt_token}"}
+            cookie_parts = [f"pmnc_jwt={jwt_token}"]
+            if admin2fa_token:
+                cookie_parts.append(f"pmnc_admin2fa={admin2fa_token}")
+            headers = {"Cookie": "; ".join(cookie_parts)}
             
             response = await client.get(
                 f"{BACKEND_URL}/api/patentpulse/partner/dashboard/metrics?days=7",
