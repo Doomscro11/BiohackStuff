@@ -1,0 +1,457 @@
+{
+  "dashboard": {
+    "title": "PatentPulse Partner Portal Analytics",
+    "tags": ["patentpulse", "partner_portal", "security"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Share State Distribution",
+        "type": "piechart",
+        "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+        "description": "Distribution of shares by state (active, expired, revoked)",
+        "targets": [{
+          "query": "db.partner_shares.aggregate([{$group: {_id: '$state', count: {$sum: 1}}}])",
+          "refId": "A"
+        }],
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "right",
+            "values": ["value", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Downloads per Day by Partner",
+        "type": "timeseries",
+        "gridPos": {"x": 8, "y": 0, "w": 16, "h": 8},
+        "description": "Downloads over time grouped by partner",
+        "targets": [{
+          "query": "db.partner_share_events.aggregate([{$match: {event: 'download'}}, {$group: {_id: {date: {$dateToString: {format: '%Y-%m-%d', date: '$ts'}}, share_id: '$share_id'}, count: {$sum: 1}}}, {$sort: {'_id.date': 1}}])",
+          "refId": "A"
+        }],
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "barAlignment": 0,
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "pointSize": 5,
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "mode": "none",
+                "group": "A"
+              },
+              "axisPlacement": "auto"
+            },
+            "unit": "downloads"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Blocked Events",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 6},
+        "description": "Blocked access attempts over time by reason",
+        "targets": [{
+          "query": "db.partner_share_events.aggregate([{$match: {event: 'blocked'}}, {$group: {_id: {date: {$dateToString: {format: '%Y-%m-%d %H:00', date: '$ts'}}, reason: '$reason'}, count: {$sum: 1}}}, {$sort: {'_id.date': 1}}])",
+          "refId": "A"
+        }],
+        "options": {
+          "tooltip": {
+            "mode": "multi"
+          },
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["sum", "lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "bars",
+              "lineWidth": 1,
+              "fillOpacity": 80,
+              "stacking": {
+                "mode": "normal",
+                "group": "A"
+              }
+            },
+            "unit": "events"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Top Geographies",
+        "type": "bargauge",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 6},
+        "description": "Top countries accessing partner shares",
+        "targets": [{
+          "query": "db.partner_share_events.aggregate([{$match: {geo_country: {$ne: null}}}, {$group: {_id: '$geo_country', count: {$sum: 1}}}, {$sort: {count: -1}}, {$limit: 10}])",
+          "refId": "A"
+        }],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "continuous-GrYlRd"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 100, "color": "red"}
+              ]
+            },
+            "unit": "events"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Active Shares",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 14, "w": 6, "h": 4},
+        "description": "Total number of active shares",
+        "targets": [{
+          "query": "db.partner_shares.count({state: 'active'})",
+          "refId": "A"
+        }],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "blue"},
+                {"value": 10, "color": "green"},
+                {"value": 50, "color": "yellow"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Total Downloads (24h)",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 14, "w": 6, "h": 4},
+        "description": "Total downloads in the last 24 hours",
+        "targets": [{
+          "query": "db.partner_share_events.count({event: 'download', ts: {$gte: new Date(Date.now() - 86400000)}})",
+          "refId": "A"
+        }],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 100, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Blocked Events (24h)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 14, "w": 6, "h": 4},
+        "description": "Blocked access attempts in the last 24 hours",
+        "targets": [{
+          "query": "db.partner_share_events.count({event: 'blocked', ts: {$gte: new Date(Date.now() - 86400000)}})",
+          "refId": "A"
+        }],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 5, "color": "yellow"},
+                {"value": 20, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Expiring Soon (3 days)",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 14, "w": 6, "h": 4},
+        "description": "Shares expiring in the next 3 days",
+        "targets": [{
+          "query": "db.partner_shares.count({state: 'active', 'policy.expires_at': {$gte: new Date(), $lte: new Date(Date.now() + 259200000)}})",
+          "refId": "A"
+        }],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 3, "color": "yellow"},
+                {"value": 10, "color": "orange"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Top Partners by Downloads",
+        "type": "table",
+        "gridPos": {"x": 0, "y": 18, "w": 24, "h": 8},
+        "description": "Top partners ranked by download count",
+        "targets": [{
+          "query": "db.partner_share_events.aggregate([{$match: {event: 'download'}}, {$lookup: {from: 'partner_shares', localField: 'share_id', foreignField: 'share_id', as: 'share'}}, {$unwind: '$share'}, {$group: {_id: '$share.recipient_email', downloads: {$sum: 1}, company: {$first: '$share.company_or_project'}, last_download: {$max: '$ts'}}}, {$sort: {downloads: -1}}, {$limit: 20}])",
+          "refId": "A"
+        }],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Downloads", "desc": true}]
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "downloads"},
+              "properties": [{
+                "id": "custom.width",
+                "value": 120
+              }]
+            },
+            {
+              "matcher": {"id": "byName", "options": "last_download"},
+              "properties": [{
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }]
+            }
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "title": "Event Types Breakdown",
+        "type": "piechart",
+        "gridPos": {"x": 0, "y": 26, "w": 8, "h": 8},
+        "description": "Distribution of all event types",
+        "targets": [{
+          "query": "db.partner_share_events.aggregate([{$group: {_id: '$event', count: {$sum: 1}}}])",
+          "refId": "A"
+        }],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          },
+          "pieType": "donut",
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Recent Access Events",
+        "type": "logs",
+        "gridPos": {"x": 8, "y": 26, "w": 16, "h": 8},
+        "description": "Most recent access events across all shares",
+        "targets": [{
+          "query": "db.partner_share_events.find().sort({ts: -1}).limit(100)",
+          "refId": "A"
+        }],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "wrapLogMessage": false,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "time_range",
+          "type": "interval",
+          "options": [
+            {"text": "Last 24h", "value": "24h"},
+            {"text": "Last 7d", "value": "7d"},
+            {"text": "Last 30d", "value": "30d"},
+            {"text": "Last 90d", "value": "90d"}
+          ],
+          "current": {"text": "Last 7d", "value": "7d"}
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Share Creations",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "blue",
+          "tags": ["partner_share", "created"]
+        },
+        {
+          "name": "Revocations",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "red",
+          "tags": ["partner_share", "revoked"]
+        },
+        {
+          "name": "Security Incidents",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "orange",
+          "tags": ["security", "blocked"]
+        }
+      ]
+    },
+    "alerts": [
+      {
+        "id": 1,
+        "name": "Spike in Blocked Events",
+        "conditions": [
+          {
+            "evaluator": {
+              "type": "gt",
+              "params": [10]
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": ["A", "5m", "now"]
+            },
+            "reducer": {
+              "type": "sum"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "1m",
+        "handler": 1,
+        "message": "More than 10 blocked events detected in 5 minutes. Possible security issue.",
+        "noDataState": "no_data",
+        "notifications": []
+      },
+      {
+        "id": 2,
+        "name": "Single IP Download Spike",
+        "conditions": [
+          {
+            "evaluator": {
+              "type": "gt",
+              "params": [20]
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": ["A", "1h", "now"]
+            },
+            "reducer": {
+              "type": "max"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "5m",
+        "handler": 1,
+        "message": "Single IP address has downloaded more than 20 times in 1 hour. Possible scraping or sharing.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    ]
+  }
+}
