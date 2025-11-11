@@ -61,7 +61,7 @@
 
 ### Base URL
 ```
-https://peptimancer.preview.emergentagent.com/api/patentpulse
+https://peptide-designer-5.preview.emergentagent.com/api/patentpulse
 ```
 
 ### 1. GET /items

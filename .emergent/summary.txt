@@ -1,0 +1,78 @@
+<analysis>
+The trajectory details the evolution of Peptimancer, an AI peptide design platform, from a basic MVP to an enterprise-ready application. The AI engineer systematically added complex features in distinct phases. Initial work focused on core functionality, followed by enterprise features like a secure Admin panel with 2FA, RBAC, and dynamic settings. A major milestone was the integration of a full billing and credit system with Stripe (or a mock equivalent), which involved extensive backend and frontend work to handle plans, subscriptions, and credit-based usage.
+
+Subsequently, the engineer focused on significant UI/UX enhancements, redesigning the primary analogue generation form into a compact, tier-aware accordion layout. An admin analytics dashboard with chart-ready schemas and a data seeder was also implemented.
+
+The most recent and substantial work involved a comprehensive system audit, which greenlit the integration of a new PatentPulse module for mining biotech patents. This was a major undertaking, complete with its own data collectors, APIs, and a dedicated admin UI. Following this, a full post-deployment safety and verification suite was created. The final task initiated was the refactoring of the PatentPulse collector into a production-grade, idempotent, and incremental data pipeline (Phase IXc), which is the current work-in-progress.
+</analysis>
+
+<product_requirements>
+The product, Peptimancer, is an AI-powered platform for designing novel peptide analogues. Initially, it was a simple generator based on a base molecule and modifications.
+
+The platform's capabilities have been progressively expanded to meet enterprise needs:
+- **Core Functionality**: Generate peptide analogues with specified modifications and exclusions.
+- **Enterprise Features**:
+    - **Secure Admin Panel**: A protected area for administrators to manage the application, featuring email OTP and TOTP-based 2FA, Role-Based Access Control (RBAC), and the ability to change runtime settings dynamically.
+    - **Billing & Credits**: A complete system (using a mock provider, with Stripe integration planned) for managing user subscriptions, credit plans, credit consumption for generating analogues, and viewing transaction history.
+    - **Admin Analytics**: A dashboard providing administrators with insights into usage patterns, including active users, analogues generated, credit flows, and popular modifications, powered by a nightly data collection job.
+    - **PatentPulse Module**: A new vertical for mining and analyzing expired or near-expiry biotech patents to identify commercialization opportunities. This includes a data collector, a scoring engine, and a dedicated admin dashboard.
+- **UI/UX Enhancements**: The main generation form was redesigned from a simple list into a compact, user-friendly accordion interface that groups options by pharmacokinetic intent and displays tier-gated features.
+</product_requirements>
+
+<key_technical_concepts>
+- **Full-Stack Frameworks**: React for the frontend, FastAPI (Python) for the backend.
+- **Database**: MongoDB for application data, including dynamic settings, user info, billing ledgers, and analytics.
+- **Authentication & Security**: JWT for sessions, email OTP for login, and TOTP for Admin 2FA. Middleware enforces RBAC.
+- **Billing**: A modular system with adapters for mock or real (Stripe) payment providers, handling subscriptions, credits, and webhooks.
+- **Asynchronous Jobs**: Python scripts for nightly data rollups (analytics) and data ingestion (PatentPulse), with plans for cron scheduling.
+- **Testing & Deployment**: Automated testing with Playwright (frontend) and a custom backend test agent. Failsafe deployment strategies including Git tagging, feature branching, and plans for canary releases.
+- **Observability**: Error logging, system health checks, and plans for a Grafana dashboard.
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a standard monorepo structure with distinct  and  directories. The backend is a modular FastAPI application, and the frontend is a component-based React application.
+
+
+
+- ****: The core FastAPI application code.
+  - **Summary**: Contains all API logic. Recent additions include  for the admin dashboard,  for PK-aware options, and  for the new patent mining feature. The main server file ( or ) was updated to include these new routers.
+- ****: Houses asynchronous, long-running, or scheduled tasks.
+  - **Summary**: This directory is critical for data processing. It contains  for nightly rollups, and the newly added  and its seeder (). The most recent task involves refactoring the PatentPulse collector for production-readiness.
+- ****: A utility script for ensuring MongoDB indexes are created.
+  - **Summary**: This file has been consistently updated to add new indexes for , , and  to ensure performant queries for the new features.
+- ****: The main application component.
+  - **Summary**: This file was significantly refactored to replace the original large form with a new, compact accordion-based UI for analogue generation, fetching options dynamically from the  endpoint.
+- ****: Contains top-level page components for routing.
+  - **Summary**: This directory was expanded to include , , and , creating the UIs for the major new features.
+- ****: The Playwright test suite for end-to-end testing.
+  - **Summary**: This file was added to automate the testing of the complete authenticated user flow, including billing, credit consumption, and the PK-aware UI, ensuring new features didn't introduce regressions.
+- **New Safety & Ops Artifacts**:
+  - ****: A script to validate canary deployments against SLOs.
+  - ****: A CI workflow to automate canary promotion or rollback.
+  - ****: Comprehensive documentation for the new module.
+
+</code_architecture>
+
+<pending_tasks>
+- **Complete PatentPulse Collector Refactor (Phase IXc)**: Implement the source adapters, normalizer, DLQ reprocessor, and tests to make the collector idempotent and incremental.
+- **Schedule Cron Jobs**: The system audit revealed that the data collector jobs (, ) are not yet scheduled to run automatically.
+- **Integrate Real Patent APIs**: Replace the mock data sources in the PatentPulse collector with live API calls to USPTO, WIPO, etc.
+- **Finalize CI/CD Pipeline**: Implement the full canary deployment and rollback strategy defined in the safety suite artifacts.
+</pending_tasks>
+
+<current_work>
+The immediate work is the implementation of **Phase IXc: PatentPulse Production-Grade Collector**. This is a significant refactoring of the recently added PatentPulse data ingestion pipeline to make it robust and suitable for production. The goal is to create an idempotent, incremental, and self-healing system.
+
+The overall plan for Phase IXc involves creating several new modules:
+-    (for Pydantic models)
+-    (for fetching from different patent sources)
+-    (for standardizing data)
+-    (for handling failed records)
+-    (for unit tests)
+
+The work was started but is not complete. The very last action taken by the previous AI engineer was to begin creating the Pydantic models and validators for the new, more robust data structures. This is the first step in the detailed plan for Phase IXc. The system's state is that the initial MVP version of the PatentPulse collector exists, but the production-grade refactoring has just commenced.
+</current_work>
+
+<optional_next_step>
+Continue the implementation of Phase IXc by creating the source adapter module: , as laid out in the user's detailed instructions.
+</optional_next_step>
