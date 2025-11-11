@@ -117,11 +117,13 @@ async def get_admin_token() -> tuple:
 
 async def create_test_export() -> str:
     """Create a test export file for testing"""
+    import random
+    
     client = AsyncIOMotorClient(MONGO_URL)
     db = client[DB_NAME]
     
-    # Create a test PDF file
-    test_pdf_path = Path("/tmp/test_reclaim_pack.pdf")
+    # Create a test PDF file with unique name
+    test_pdf_path = Path(f"/tmp/test_reclaim_pack_{random.randint(1000, 9999)}.pdf")
     
     # Create minimal PDF using reportlab
     from reportlab.pdfgen import canvas
@@ -132,11 +134,11 @@ async def create_test_export() -> str:
     c.drawString(100, 730, "This is a test export for Partner Portal verification")
     c.save()
     
-    # Insert export record
-    file_id = f"test_export_{int(datetime.now(timezone.utc).timestamp())}"
+    # Insert export record with unique file_id
+    file_id = f"test_export_{int(datetime.now(timezone.utc).timestamp())}_{random.randint(1000, 9999)}"
     export_doc = {
         "file_id": file_id,
-        "file_name": "test_reclaim_pack.pdf",
+        "file_name": f"test_reclaim_pack_{random.randint(1000, 9999)}.pdf",
         "format": "pdf",
         "file_path": str(test_pdf_path),
         "generated_at": datetime.now(timezone.utc),
