@@ -63,7 +63,13 @@ export async function getPatentItems(filters?: {
 
 export async function getPatentStats() {
   const result = await fetchJSON<PatentStats>(
-    `${BACKEND_URL}/api/patentpulse/stats`
+    `${BACKEND_URL}/api/patentpulse/stats`,
+    {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
   );
   return result;
 }
