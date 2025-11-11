@@ -19,6 +19,10 @@ spec.loader.exec_module(legacy_models)
 AdjustCreditsBody = legacy_models.AdjustCreditsBody
 SetTierBody = legacy_models.SetTierBody
 UserSummary = legacy_models.UserSummary
+PlanUpsert = legacy_models.PlanUpsert
+CheckoutBody = legacy_models.CheckoutBody
+BillingState = legacy_models.BillingState
+CreditDebit = legacy_models.CreditDebit
 
 # Import from new models directory
 from .patentpulse import *
