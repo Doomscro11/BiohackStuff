@@ -285,11 +285,14 @@ async def test_policy_enforcement() -> bool:
     
     try:
         # Create a share with specific policies
-        jwt_token = await get_admin_token()
+        jwt_token, admin2fa_token = await get_admin_token()
         file_id = await create_test_export()
         
         async with httpx.AsyncClient() as client:
-            headers = {"Cookie": f"pmnc_jwt={jwt_token}"}
+            cookie_parts = [f"pmnc_jwt={jwt_token}"]
+            if admin2fa_token:
+                cookie_parts.append(f"pmnc_admin2fa={admin2fa_token}")
+            headers = {"Cookie": "; ".join(cookie_parts)}
             
             # Test expiry enforcement
             # Create share that expires immediately
