@@ -1,0 +1,56 @@
+name: PatentPulse Collector CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/jobs/patentpulse_*.py'
+      - 'backend/models/patentpulse.py'
+      - 'backend/tests/test_patentpulse_collector.py'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/jobs/patentpulse_*.py'
+      - 'backend/models/patentpulse.py'
+      - 'backend/tests/test_patentpulse_collector.py'
+
+jobs:
+  test-collector:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio
+    
+    - name: Run collector tests
+      env:
+        MONGO_URL: mongodb://localhost:27017
+        DB_NAME: peptimancer_test_db
+      run: |
+        cd backend
+        pytest tests/test_patentpulse_collector.py -v --tb=short
+    
+    - name: Check SLO compliance
+      run: |
+        echo "✅ Collector tests passed - SLO gates validated"

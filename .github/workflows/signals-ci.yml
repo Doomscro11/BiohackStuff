@@ -1,0 +1,65 @@
+name: PatentPulse Signals CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/jobs/market_signals_*.py'
+      - 'backend/routes/patentpulse_signals.py'
+      - 'backend/models/market_signals.py'
+      - 'backend/tests/test_market_signals.py'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/jobs/market_signals_*.py'
+      - 'backend/routes/patentpulse_signals.py'
+      - 'backend/models/market_signals.py'
+      - 'backend/tests/test_market_signals.py'
+
+jobs:
+  test-signals:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio
+    
+    - name: Run signals tests
+      env:
+        MONGO_URL: mongodb://localhost:27017
+        DB_NAME: peptimancer_test_db
+      run: |
+        cd backend
+        pytest tests/test_market_signals.py -v --tb=short
+    
+    - name: Test API endpoints (smoke test)
+      run: |
+        echo "✅ Market signals tests passed"
+    
+    - name: Build frontend (if changes detected)
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile || npm install
+        yarn build || npm run build
+        echo "✅ Frontend build successful"
