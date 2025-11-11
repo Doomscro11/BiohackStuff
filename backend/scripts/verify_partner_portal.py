@@ -388,7 +388,8 @@ async def test_watermarking() -> bool:
     try:
         # Test email masking
         masked = mask_email("testuser@example.com")
-        mask_correct = masked == "t*******r@example.com"
+        # "testuser" = 8 chars -> "t" + (8-2=6) asterisks + "r" = "t******r"
+        mask_correct = masked == "t******r@example.com"
         all_passed &= log_test("watermark", "Email masking", mask_correct, f"Masked: {masked}")
         
         # Test PDF watermarking
