@@ -78,6 +78,11 @@ export async function getTopOpportunities(limit: number = 10) {
   const result = await fetchJSON<{
     opportunities: PatentItem[];
     count: number;
-  }>(`${BACKEND_URL}/api/patentpulse/top-opportunities?limit=${limit}`);
+  }>(`${BACKEND_URL}/api/patentpulse/top-opportunities?limit=${limit}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   return result;
 }
