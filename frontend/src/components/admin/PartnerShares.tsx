@@ -1,0 +1,650 @@
+/**
+ * Partner Shares Admin Component (Phase IXf+)
+ * Manage partner share links, view analytics, and control access
+ */
+
+import React, { useState, useEffect } from 'react';
+import './PartnerShares.css';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+
+interface SharePolicy {
+  expires_at: string;
+  max_downloads: number;
+  ip_allowlist: string[];
+  rate_limit_per_ip: string;
+  watermark_enabled: boolean;
+}
+
+interface PartnerShare {
+  share_id: string;
+  file_id: string;
+  file_name: string;
+  format: string;
+  recipient_email: string;
+  recipient_first_name: string;
+  company_or_project: string;
+  policy: SharePolicy;
+  share_token: string;
+  state: 'active' | 'expired' | 'revoked';
+  download_count: number;
+  last_accessed_at: string | null;
+  created_by: string;
+  created_at: string;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  revoked_reason: string | null;
+  internal_notes: string;
+}
+
+interface ShareAnalytics {
+  opens: number;
+  downloads: number;
+  blocked: number;
+  expired: number;
+  revoked: number;
+  last_access_at: string | null;
+  top_ips: Array<{ ip: string; count: number; events: string[] }>;
+  geo_breakdown: Array<{ country: string; count: number }>;
+}
+
+interface ExportFile {
+  file_id: string;
+  file_name: string;
+  format: string;
+  generated_at: string;
+}
+
+const PartnerSharesAdmin: React.FC = () => {
+  const [shares, setShares] = useState<PartnerShare[]>([]);
+  const [exports, setExports] = useState<ExportFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedShare, setSelectedShare] = useState<PartnerShare | null>(null);
+  const [analytics, setAnalytics] = useState<ShareAnalytics | null>(null);
+  const [filter, setFilter] = useState<'all' | 'active' | 'expired' | 'revoked'>('all');
+
+  // Form state
+  const [formData, setFormData] = useState({
+    file_id: '',
+    recipient_email: '',
+    recipient_first_name: '',
+    company_or_project: '',
+    expires_in_days: 14,
+    max_downloads: 10,
+    ip_allowlist: '',
+    watermark_enabled: true,
+    internal_notes: ''
+  });
+
+  useEffect(() => {
+    fetchShares();
+    fetchExports();
+  }, [filter]);
+
+  const fetchShares = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filter !== 'all') {
+        params.append('state', filter);
+      }
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
+        { credentials: 'include' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch shares');
+      }
+
+      const data = await response.json();
+      setShares(data.shares || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchExports = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/patentpulse/reclaim/exports`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setExports(data.exports || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch exports:', err);
+    }
+  };
+
+  const createShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        ...formData,
+        ip_allowlist: formData.ip_allowlist
+          ? formData.ip_allowlist.split(',').map(ip => ip.trim()).filter(Boolean)
+          : []
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to create share' }));
+        throw new Error(errorData.detail);
+      }
+
+      const result = await response.json();
+      
+      // Show share URL
+      alert(`Share created successfully!\n\nShare URL:\n${result.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
+
+      // Reset form and refresh
+      setShowCreateForm(false);
+      setFormData({
+        file_id: '',
+        recipient_email: '',
+        recipient_first_name: '',
+        company_or_project: '',
+        expires_in_days: 14,
+        max_downloads: 10,
+        ip_allowlist: '',
+        watermark_enabled: true,
+        internal_notes: ''
+      });
+      fetchShares();
+    } catch (err: any) {
+      alert(`Error creating share: ${err.message}`);
+    }
+  };
+
+  const rotateToken = async (shareId: string) => {
+    if (!confirm('This will invalidate the old token. The recipient will need a new link. Continue?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/rotate`,
+        {
+          method: 'POST',
+          credentials: 'include'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to rotate token');
+      }
+
+      const result = await response.json();
+      const shareUrl = `${window.location.origin}/share/${result.new_token}`;
+      
+      alert(`Token rotated successfully!\n\nNew Share URL:\n${shareUrl}`);
+      fetchShares();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const revokeShare = async (shareId: string) => {
+    const reason = prompt('Reason for revocation (optional):');
+    if (reason === null) return; // User cancelled
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/revoke`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ reason: reason || 'Revoked by admin' })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to revoke share');
+      }
+
+      alert('Share revoked successfully');
+      fetchShares();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const copyShareLink = (token: string) => {
+    const shareUrl = `${window.location.origin}/share/${token}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Share link copied to clipboard!');
+    }).catch(() => {
+      alert(`Share link:\n${shareUrl}`);
+    });
+  };
+
+  const viewAnalytics = async (shareId: string) => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/analytics`,
+        { credentials: 'include' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics');
+      }
+
+      const data = await response.json();
+      setAnalytics(data);
+      
+      const share = shares.find(s => s.share_id === shareId);
+      setSelectedShare(share || null);
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'Never';
+    const date = new Date(dateStr);
+    return date.toLocaleString();
+  };
+
+  const getStateColor = (state: string) => {
+    switch (state) {
+      case 'active': return 'green';
+      case 'expired': return 'orange';
+      case 'revoked': return 'red';
+      default: return 'gray';
+    }
+  };
+
+  return (
+    <div className="partner-shares-admin">
+      <div className="admin-header">
+        <h2>Partner Shares Management</h2>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowCreateForm(true)}
+          data-testid="pp-partner-create"
+        >
+          + Create Share
+        </button>
+      </div>
+
+      {error && (
+        <div className="error-banner">
+          <span>⚠️ {error}</span>
+          <button onClick={() => setError(null)}>×</button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="modal-overlay" onClick={() => setShowCreateForm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Create Partner Share</h3>
+              <button className="close-btn" onClick={() => setShowCreateForm(false)}>×</button>
+            </div>
+
+            <form onSubmit={createShare} className="share-form">
+              <div className="form-group">
+                <label>Export File *</label>
+                <select
+                  required
+                  value={formData.file_id}
+                  onChange={(e) => setFormData({ ...formData, file_id: e.target.value })}
+                >
+                  <option value="">Select an export...</option>
+                  {exports.map(exp => (
+                    <option key={exp.file_id} value={exp.file_id}>
+                      {exp.file_name} ({exp.format.toUpperCase()}) - {formatDate(exp.generated_at)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Recipient Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.recipient_email}
+                    onChange={(e) => setFormData({ ...formData, recipient_email: e.target.value })}
+                    placeholder="partner@company.com"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Recipient First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.recipient_first_name}
+                    onChange={(e) => setFormData({ ...formData, recipient_first_name: e.target.value })}
+                    placeholder="John"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Company / Project *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.company_or_project}
+                  onChange={(e) => setFormData({ ...formData, company_or_project: e.target.value })}
+                  placeholder="ACME Pharma R&D"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Expires In (days) *</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="90"
+                    value={formData.expires_in_days}
+                    onChange={(e) => setFormData({ ...formData, expires_in_days: parseInt(e.target.value) })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Max Downloads *</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="100"
+                    value={formData.max_downloads}
+                    onChange={(e) => setFormData({ ...formData, max_downloads: parseInt(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>IP Allowlist (comma-separated, optional)</label>
+                <input
+                  type="text"
+                  value={formData.ip_allowlist}
+                  onChange={(e) => setFormData({ ...formData, ip_allowlist: e.target.value })}
+                  placeholder="192.168.1.1, 10.0.0.0/8"
+                />
+                <small>Leave empty to allow all IPs</small>
+              </div>
+
+              <div className="form-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.watermark_enabled}
+                    onChange={(e) => setFormData({ ...formData, watermark_enabled: e.target.checked })}
+                  />
+                  <span>Enable Watermarking</span>
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>Internal Notes (optional)</label>
+                <textarea
+                  value={formData.internal_notes}
+                  onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
+                  placeholder="Internal tracking notes..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCreateForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Create Share
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Analytics Modal */}
+      {selectedShare && analytics && (
+        <div className="modal-overlay" onClick={() => { setSelectedShare(null); setAnalytics(null); }}>
+          <div className="modal-content analytics-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Share Analytics</h3>
+              <button className="close-btn" onClick={() => { setSelectedShare(null); setAnalytics(null); }}>×</button>
+            </div>
+
+            <div className="analytics-content">
+              <div className="analytics-summary">
+                <div className="metric-card">
+                  <div className="metric-value">{analytics.opens}</div>
+                  <div className="metric-label">Opens</div>
+                </div>
+                <div className="metric-card">
+                  <div className="metric-value">{analytics.downloads}</div>
+                  <div className="metric-label">Downloads</div>
+                </div>
+                <div className="metric-card">
+                  <div className="metric-value">{analytics.blocked}</div>
+                  <div className="metric-label">Blocked</div>
+                </div>
+                <div className="metric-card">
+                  <div className="metric-value">{analytics.expired + analytics.revoked}</div>
+                  <div className="metric-label">Access Denied</div>
+                </div>
+              </div>
+
+              <div className="analytics-section">
+                <h4>Share Details</h4>
+                <div className="detail-row">
+                  <span>Recipient:</span>
+                  <strong>{selectedShare.recipient_email}</strong>
+                </div>
+                <div className="detail-row">
+                  <span>Company:</span>
+                  <strong>{selectedShare.company_or_project}</strong>
+                </div>
+                <div className="detail-row">
+                  <span>Last Accessed:</span>
+                  <strong>{formatDate(analytics.last_access_at)}</strong>
+                </div>
+              </div>
+
+              {analytics.top_ips.length > 0 && (
+                <div className="analytics-section">
+                  <h4>Top IPs</h4>
+                  <table className="analytics-table">
+                    <thead>
+                      <tr>
+                        <th>IP Address</th>
+                        <th>Requests</th>
+                        <th>Events</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.top_ips.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.ip}</td>
+                          <td>{item.count}</td>
+                          <td>{item.events.join(', ')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {analytics.geo_breakdown.length > 0 && (
+                <div className="analytics-section">
+                  <h4>Geographic Distribution</h4>
+                  <table className="analytics-table">
+                    <thead>
+                      <tr>
+                        <th>Country</th>
+                        <th>Requests</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.geo_breakdown.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.country}</td>
+                          <td>{item.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Tabs */}
+      <div className="filter-tabs">
+        <button
+          className={filter === 'all' ? 'active' : ''}
+          onClick={() => setFilter('all')}
+        >
+          All
+        </button>
+        <button
+          className={filter === 'active' ? 'active' : ''}
+          onClick={() => setFilter('active')}
+        >
+          Active
+        </button>
+        <button
+          className={filter === 'expired' ? 'active' : ''}
+          onClick={() => setFilter('expired')}
+        >
+          Expired
+        </button>
+        <button
+          className={filter === 'revoked' ? 'active' : ''}
+          onClick={() => setFilter('revoked')}
+        >
+          Revoked
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading shares...</p>
+        </div>
+      ) : shares.length === 0 ? (
+        <div className="empty-state">
+          <p>No partner shares found</p>
+          <button className="btn btn-primary" onClick={() => setShowCreateForm(true)}>
+            Create Your First Share
+          </button>
+        </div>
+      ) : (
+        <div className="shares-table-container">
+          <table className="shares-table">
+            <thead>
+              <tr>
+                <th>Recipient</th>
+                <th>Company</th>
+                <th>File</th>
+                <th>State</th>
+                <th>Expires</th>
+                <th>Downloads</th>
+                <th>Last Access</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shares.map(share => (
+                <tr key={share.share_id}>
+                  <td>
+                    <div className="recipient-cell">
+                      <strong>{share.recipient_first_name}</strong>
+                      <small>{share.recipient_email}</small>
+                    </div>
+                  </td>
+                  <td>{share.company_or_project}</td>
+                  <td>
+                    <div className="file-cell">
+                      <span>{share.file_name}</span>
+                      <small>{share.format.toUpperCase()}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`state-badge state-${share.state}`} style={{ color: getStateColor(share.state) }}>
+                      {share.state}
+                    </span>
+                  </td>
+                  <td>{formatDate(share.policy.expires_at)}</td>
+                  <td>
+                    {share.download_count} / {share.policy.max_downloads}
+                  </td>
+                  <td>{formatDate(share.last_accessed_at)}</td>
+                  <td>
+                    <div className="action-buttons">
+                      {share.state === 'active' && (
+                        <>
+                          <button
+                            className="btn-icon"
+                            onClick={() => copyShareLink(share.share_token)}
+                            title="Copy Link"
+                            data-testid="pp-partner-copy"
+                          >
+                            📋
+                          </button>
+                          <button
+                            className="btn-icon"
+                            onClick={() => rotateToken(share.share_id)}
+                            title="Rotate Token"
+                            data-testid="pp-partner-rotate"
+                          >
+                            🔄
+                          </button>
+                          <button
+                            className="btn-icon"
+                            onClick={() => revokeShare(share.share_id)}
+                            title="Revoke"
+                            data-testid="pp-partner-revoke"
+                          >
+                            🚫
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="btn-icon"
+                        onClick={() => viewAnalytics(share.share_id)}
+                        title="View Analytics"
+                      >
+                        📊
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PartnerSharesAdmin;
