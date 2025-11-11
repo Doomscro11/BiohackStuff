@@ -196,8 +196,77 @@ try:
     db.patentpulse_items.create_index("assignee", name="assignee_idx")
     print("  ✓ patentpulse_items.assignee")
     
+    # Phase IXc: Additional indexes for collector
+    db.patentpulse_items.create_index("last_seen_at", name="last_seen_at_idx")
+    print("  ✓ patentpulse_items.last_seen_at")
+    
+    db.patentpulse_items.create_index("source_hash", name="source_hash_idx")
+    print("  ✓ patentpulse_items.source_hash")
+    
+    # Phase IXd: Market signals indexes
+    db.patentpulse_items.create_index("market_last_refreshed_at", name="market_last_refreshed_at_idx")
+    print("  ✓ patentpulse_items.market_last_refreshed_at")
+    
+    db.patentpulse_items.create_index(
+        [("commercial_score_adj", DESCENDING)],
+        name="commercial_score_adj_desc_idx"
+    )
+    print("  ✓ patentpulse_items.commercial_score_adj (descending)")
+    
 except Exception as e:
     print(f"  ✗ Error creating PatentPulse indexes: {str(e)}")
+
+# Phase IXc: Collector metadata indexes
+print("\nCreating PatentPulse Runs indexes...")
+try:
+    db.patentpulse_runs.create_index("run_id", unique=True, name="run_id_unique_idx")
+    print("  ✓ patentpulse_runs.run_id (unique)")
+    
+    db.patentpulse_runs.create_index(
+        [("started_at", DESCENDING)],
+        name="started_at_desc_idx"
+    )
+    print("  ✓ patentpulse_runs.started_at (descending)")
+    
+    db.patentpulse_runs.create_index("status", name="status_idx")
+    print("  ✓ patentpulse_runs.status")
+    
+except Exception as e:
+    print(f"  ✗ Error creating PatentPulse Runs indexes: {str(e)}")
+
+# Phase IXc: DLQ indexes
+print("\nCreating PatentPulse DLQ indexes...")
+try:
+    db.patentpulse_dlq.create_index("source", name="source_idx")
+    print("  ✓ patentpulse_dlq.source")
+    
+    db.patentpulse_dlq.create_index("retries", name="retries_idx")
+    print("  ✓ patentpulse_dlq.retries")
+    
+    db.patentpulse_dlq.create_index(
+        [("last_failed_at", DESCENDING)],
+        name="last_failed_at_desc_idx"
+    )
+    print("  ✓ patentpulse_dlq.last_failed_at (descending)")
+    
+except Exception as e:
+    print(f"  ✗ Error creating PatentPulse DLQ indexes: {str(e)}")
+
+# Phase IXd: Signals indexes with TTL
+print("\nCreating PatentPulse Signals indexes...")
+try:
+    db.patentpulse_signals.create_index("patent_id", name="patent_id_idx")
+    print("  ✓ patentpulse_signals.patent_id")
+    
+    db.patentpulse_signals.create_index("keyword_key", name="keyword_key_idx")
+    print("  ✓ patentpulse_signals.keyword_key")
+    
+    # TTL index for 24h cache expiry
+    db.patentpulse_signals.create_index("ttl_expires_at", name="ttl_expires_at_ttl_idx", expireAfterSeconds=0)
+    print("  ✓ patentpulse_signals.ttl_expires_at (TTL)")
+    
+except Exception as e:
+    print(f"  ✗ Error creating PatentPulse Signals indexes: {str(e)}")
 
 print("\n✅ Index creation complete!")
 
