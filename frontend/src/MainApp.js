@@ -63,6 +63,7 @@ function MainApp() {
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/admin" element={<AdminGate />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
+          <Route path="/admin/patentpulse" element={<PatentPulsePage />} />
         </Routes>
       </div>
     </Router>
