@@ -268,6 +268,30 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating PatentPulse Signals indexes: {str(e)}")
 
+# Phase IXe: Reclaim Pack exports indexes
+print("\nCreating PatentPulse Exports indexes...")
+try:
+    # TTL index for auto-cleanup (expires_at)
+    db.patentpulse_exports.create_index(
+        "expires_at",
+        name="patentpulse_exports_expires_at_ttl",
+        expireAfterSeconds=0
+    )
+    print("  ✓ patentpulse_exports.expires_at (TTL)")
+    
+    # Query performance
+    db.patentpulse_exports.create_index(
+        [("generated_at", DESCENDING)],
+        name="patentpulse_exports_generated_at_desc_idx"
+    )
+    print("  ✓ patentpulse_exports.generated_at (descending)")
+    
+    db.patentpulse_exports.create_index("file_id", unique=True, name="file_id_unique_idx")
+    print("  ✓ patentpulse_exports.file_id (unique)")
+    
+except Exception as e:
+    print(f"  ✗ Error creating PatentPulse Exports indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes
