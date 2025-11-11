@@ -1,12 +1,13 @@
 """
-PatentPulse Pydantic Models & Validators
-Enforces data quality rules and schema consistency
+PatentPulse Pydantic Models & Validators (Phase IXc+IXd)
+Enforces data quality rules and schema consistency for production collector
 """
 
-from datetime import datetime
-from typing import List, Optional, Literal
+from datetime import datetime, timezone
+from typing import List, Optional, Literal, Dict, Any
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 import hashlib
+import uuid
 
 
 class DataQualityError(Exception):
@@ -39,7 +40,7 @@ class PatentItemInput(BaseModel):
     def validate_expiry_date(cls, v, info):
         """Validate expiry date based on status"""
         status = info.data.get('status')
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if status in ["Expired", "Lapsed"]:
             if v >= now:
@@ -87,8 +88,18 @@ class PatentItemInput(BaseModel):
         return hashlib.sha256(content.encode()).hexdigest()[:16]
 
 
+class CommercialBreakdown(BaseModel):
+    """Breakdown of commercial score calculation (Phase IXd)"""
+    base: float = Field(..., ge=0.0, le=1.0)
+    market_factor: float = Field(..., ge=0.0, le=1.0)
+    weights: Dict[str, float] = Field(default_factory=lambda: {"base": 0.6, "market": 0.4})
+    inputs: Dict[str, Any] = Field(default_factory=dict)  # Raw market signal inputs
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
 class PatentItemDB(BaseModel):
-    """Database model for patentpulse_items collection"""
+    """Database model for patentpulse_items collection (Phase IXc+IXd)"""
     patent_id: str
     source: str
     title: str
@@ -98,22 +109,27 @@ class PatentItemDB(BaseModel):
     expiry_date: datetime
     keywords: List[str]
     sequence_data: Optional[str]
-    commercial_score: float
+    commercial_score: float  # BASELINE score from collector
     synthesis_score: float
     fto_risk: float
     repurpose_notes: str
-    last_seen_at: datetime
+    last_seen_at: Optional[datetime] = None
     first_ingested_at: datetime
     last_ingested_at: datetime
     source_hash: str
+    
+    # Phase IXd: Market signal enrichment fields
+    commercial_score_adj: Optional[float] = None  # Adjusted score after market signals
+    commercial_breakdown: Optional[Dict[str, Any]] = None  # Breakdown object
+    market_last_refreshed_at: Optional[datetime] = None  # Last market signal refresh
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class RunMetadata(BaseModel):
-    """Metadata for a collector run"""
-    run_id: str
-    started_at: datetime
+    """Metadata for a collector run (Phase IXc)"""
+    run_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: Optional[datetime] = None
     mode: Literal["dry-run", "live"]
     sources: List[str]
@@ -130,21 +146,57 @@ class RunMetadata(BaseModel):
     })
     errors: List[dict] = Field(default_factory=list)
     status: Literal["running", "success", "partial", "failed"] = "running"
-    slo: dict = Field(default_factory=dict)
+    slo: dict = Field(default_factory=dict)  # {p95_ms, error_rate}
     notes: str = ""
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class DLQEntry(BaseModel):
-    """Dead Letter Queue entry for failed items"""
+    """Dead Letter Queue entry for failed items (Phase IXc)"""
+    dlq_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     patent_id: Optional[str] = None
     source: str
     payload: dict
     reason: str
     retries: int = 0
-    first_failed_at: datetime
-    last_failed_at: datetime
+    first_failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_error: str
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class MarketSignalFeatures(BaseModel):
+    """Market signal features for a patent (Phase IXd)"""
+    avg_price: Optional[float] = None
+    price_dispersion: Optional[float] = None  # (max-min)/median
+    availability_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    search_index: Optional[float] = Field(None, ge=0.0, le=1.0)
+    social_sentiment: Optional[float] = Field(None, ge=-1.0, le=1.0)
+    social_volume: Optional[int] = None
+    market_velocity: Optional[float] = Field(None, ge=0.0, le=1.0)  # Combined metric
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class MarketSignalProvenance(BaseModel):
+    """Provenance tracking for market signal data"""
+    source: str  # e.g., "VendorCatalogAdapter"
+    ts: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    meta: Dict[str, Any] = Field(default_factory=dict)
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class PatentMarketSignal(BaseModel):
+    """Market signal document for patentpulse_signals collection (Phase IXd)"""
+    signal_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    patent_id: Optional[str] = None  # Can be None if using keyword_key fallback
+    keyword_key: Optional[str] = None  # Normalized keyword combo for fallback queries
+    features: MarketSignalFeatures
+    provenance: List[MarketSignalProvenance] = Field(default_factory=list)
+    computed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ttl_expires_at: datetime  # For TTL index (24h cache)
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
