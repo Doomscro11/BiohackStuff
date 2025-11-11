@@ -413,6 +413,78 @@ frontend:
         agent: "main"
         comment: "Appended comprehensive documentation for Phase IXc and IXd to README_PATENTPULSE.md including: Architecture diagrams, CLI usage examples, data quality rules, DLQ reprocessor guide, run metadata schema, SLO gates, market factor calculation formula, API endpoints, TTL cache explanation, floor clamp protection, troubleshooting guides, monitoring metrics, change log updated to v1.1 and v1.2."
 
+  - task: "Partner Portal Backend (Phase IXf+)"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/partner_shares.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented complete Partner Portal backend: (1) partner_shares.py router with admin endpoints (create, list, get, rotate, revoke, analytics) and public endpoints (share metadata, download with watermarking), (2) HMAC-signed token generation and verification, (3) Policy enforcement (expiry, max downloads, IP allowlist, rate limiting), (4) partner_analytics.py module for event tracking and dashboard metrics, (5) share_link_cleaner.py job for nightly cleanup, (6) Updated watermark/pdf_watermark.py with mask_email and JSON watermark headers, (7) Database indexes for partner_shares and partner_share_events collections, (8) Environment configuration in .env with feature flags and policy defaults, (9) require_role dependency added to middleware/auth.py for 2FA-protected admin endpoints."
+
+  - task: "Partner Portal Frontend (Phase IXf+)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/partner/SharePage.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created partner-facing frontend: (1) SharePage.tsx public landing page with downloads counter, expiry countdown, file download functionality, error states (expired, revoked, rate limited, IP blocked), landing copy with legal disclaimers, mobile-responsive design, (2) PartnerShares.tsx admin component with create share form, shares table with filters (all/active/expired/revoked), inline actions (copy link, rotate token, revoke share), analytics modal with metrics, (3) CSS files for both components with professional styling."
+
+  - task: "Partner Portal Email Templates (Phase IXf+)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/emails/"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created 4 email templates in Markdown format: (1) partner_onboarding_invite.md - welcome email with program overview, (2) partner_access_granted.md - share link delivery with access details, (3) partner_access_reminder.md - 3-day expiry reminder, (4) partner_access_revoked.md - revocation notification. All templates use Jinja-style placeholders for personalization."
+
+  - task: "Partner Portal Documentation (Phase IXf+)"
+    implemented: true
+    working: "NA"
+    file: "/app/docs/PARTNER_PORTAL.md"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created comprehensive documentation: (1) PARTNER_PORTAL.md covering architecture, API reference, security model, configuration, monitoring, troubleshooting, (2) PARTNER_ONBOARDING_PLAYBOOK.md with step-by-step onboarding process, best practices, email templates customization, metrics tracking, checklists."
+
+  - task: "Partner Portal Tests & CI (Phase IXf+)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/tests/test_partner_portal.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created test suite and CI workflow: (1) test_partner_portal.py with pytest tests for token signing/verification, watermarking, analytics, rate limiting, share creation/revocation flows, (2) partner-portal-ci.yml GitHub Actions workflow for backend tests, frontend build, watermark validation, and PR summaries."
+
+  - task: "Partner Portal Grafana Dashboard (Phase IXf+)"
+    implemented: true
+    working: "NA"
+    file: "/app/dashboards/grafana_partner_portal.json"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created dedicated Grafana dashboard with 11 panels: (1) Share state distribution pie chart, (2) Downloads per day time series, (3) Blocked events with reason breakdown, (4) Top geographies bar gauge, (5) Active shares stat, (6) Total downloads 24h stat, (7) Blocked events 24h stat, (8) Expiring soon stat, (9) Top partners table, (10) Event types donut chart, (11) Recent events log. Includes alerts for spike_blocked_events and single_ip_downloads_spike."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
