@@ -515,3 +515,471 @@ make seed-dev
 **Maintained by:** Peptimancer Platform Team  
 **Last Updated:** 2025-11-11  
 **Review Cycle:** Quarterly
+
+
+---
+
+## Phase IXc: Production-Grade Collector
+
+### Overview
+
+Phase IXc transforms the PatentPulse collector from an MVP into a production-grade, idempotent, incremental, and self-healing data pipeline.
+
+### Key Features
+
+- **Idempotent Upserts:** Re-running with same inputs produces zero duplicates
+- **Incremental Sync:** Tracks last successful run and only fetches changed patents
+- **Dead Letter Queue (DLQ):** Failed items are quarantined for reprocessing
+- **SLO Monitoring:** Tracks p95 latency, error rate, and DQ reject rate
+- **Feature Flags:** Safe-by-default with `FEATURE_PATENTPULSE` gate
+
+### Architecture
+
+```
+┌─────────────────────┐
+│ Patent Sources      │
+│ (USPTO, WIPO, LENS) │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Source Adapters     │
+│ - Pagination        │
+│ - Retry with backoff│
+│ - Mock/Real modes   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Normalizer          │
+│ - Patent ID derive  │
+│ - Data quality      │
+│ - Score computation │
+└──────────┬──────────┘
+           │
+           ├─── Valid ───▶ Upsert (patentpulse_items)
+           │
+           └─── Invalid ▶ DLQ (patentpulse_dlq)
+```
+
+### CLI Usage
+
+```bash
+# Dry-run (no DB writes)
+python jobs/patentpulse_collector.py --mode dry-run --since 2025-10-01T00:00:00Z --verbose
+
+# Live mode (requires feature flag)
+FEATURE_PATENTPULSE=true python jobs/patentpulse_collector.py --mode live --limit 500
+
+# Incremental sync (auto-detects last successful run)
+FEATURE_PATENTPULSE=true python jobs/patentpulse_collector.py --mode live
+
+# Source filtering
+python jobs/patentpulse_collector.py --mode dry-run --source uspto --limit 100
+```
+
+### Data Quality Rules
+
+**Required Fields:**
+- `patent_id` (5-50 chars, unique)
+- `title` (10-500 chars)
+- `status` (Expired|Lapsed|ExpiringSoon)
+- `commercial_score`, `synthesis_score`, `fto_risk` (0.0-1.0)
+- `expiry_date` (datetime, validated against status)
+
+**Sequence Validation:**
+- Format: 3-letter AA codes (`His-Ala-Glu-...`) or single-letter (`HAEGVK...`)
+- Length: 8-25 amino acids
+- Characters: Valid 20 amino acids only
+
+**Status-Date Consistency:**
+- `Expired`/`Lapsed`: `expiry_date` < now
+- `ExpiringSoon`: `expiry_date` within next 24 months
+
+### Dead Letter Queue (DLQ)
+
+**Purpose:** Failed items are sent to DLQ for manual review and reprocessing
+
+**DLQ Reprocessor:**
+```bash
+# Dry-run reprocessing
+python jobs/patentpulse_dlq_reprocessor.py --max-retries 3 --dry-run
+
+# Live reprocessing
+FEATURE_PATENTPULSE=true python jobs/patentpulse_dlq_reprocessor.py
+```
+
+**DLQ Schema:**
+```json
+{
+  "dlq_id": "uuid",
+  "patent_id": "US1234567",
+  "source": "USPTO",
+  "payload": {...},
+  "reason": "data_quality_violation",
+  "retries": 2,
+  "first_failed_at": "2025-11-11T00:00:00Z",
+  "last_failed_at": "2025-11-11T01:00:00Z",
+  "last_error": "Title too short"
+}
+```
+
+### Run Metadata
+
+Each collector run persists metadata to `patentpulse_runs` collection:
+
+```json
+{
+  "run_id": "uuid",
+  "started_at": "2025-11-11T00:00:00Z",
+  "finished_at": "2025-11-11T00:05:00Z",
+  "mode": "live",
+  "sources": ["USPTO", "WIPO", "LENS"],
+  "params": {"since": "...", "until": "...", "limit": 500},
+  "counts": {
+    "fetched": 150,
+    "normalized": 145,
+    "upserts": 120,
+    "updates": 25,
+    "unchanged": 0,
+    "rejected": 5,
+    "dlq": 5,
+    "duplicates": 0
+  },
+  "errors": [],
+  "status": "success",
+  "slo": {
+    "p95_ms": 450,
+    "error_rate": 0.0333,
+    "dq_reject_rate": 0.0333
+  },
+  "notes": ""
+}
+```
+
+### SLO Gates
+
+Collector runs are validated against:
+
+| Metric | Target | Gate |
+|--------|--------|------|
+| p95 latency | ≤ 900ms | Fail if exceeded |
+| Error rate | ≤ 2% | Fail if exceeded |
+| DQ reject rate | ≤ 5% | Fail if exceeded |
+| Duplicates | 0 | Fail if any found |
+
+**Auto-Rollback:** If SLO gates fail for 2 consecutive runs, feature flag is auto-disabled.
+
+### Troubleshooting
+
+**Issue:** Collector fails with "Feature flag not enabled"
+- **Fix:** Set `FEATURE_PATENTPULSE=true` in environment
+
+**Issue:** High DQ reject rate
+- **Cause:** Source API data quality degraded
+- **Fix:** Inspect DLQ, improve normalizer, or contact source provider
+
+**Issue:** Duplicates detected
+- **Cause:** Race condition or index missing
+- **Fix:** Rebuild unique index on `patent_id`, check collector logic
+
+**Issue:** Incremental sync not working
+- **Cause:** No successful runs in `patentpulse_runs`
+- **Fix:** Run with explicit `--since` parameter, verify run status
+
+---
+
+## Phase IXd: Market Signal Enrichment
+
+### Overview
+
+Phase IXd enriches patent commercial scores with real-time market intelligence signals including pricing, search trends, social sentiment, and marketplace activity.
+
+### Key Features
+
+- **Multi-Source Signal Aggregation:** Vendor catalogs, search trends, social chatter, marketplace data
+- **Dynamic Score Adjustment:** Adjusts `commercial_score` based on market factor (0-1)
+- **TTL Caching:** 24-hour cache prevents redundant API calls
+- **Floor Clamp Protection:** Prevents score drops >0.25 in single run
+- **Configurable Weights:** Tune base vs. market signal influence
+
+### Architecture
+
+```
+┌─────────────────────┐
+│ Patent Item         │
+│ base commercial     │
+│ score = 0.7         │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Market Signals      │
+│ - Vendor pricing    │
+│ - Search trends     │
+│ - Social sentiment  │
+│ - Marketplace       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Market Factor       │
+│ calculation = 0.65  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Adjusted Score      │
+│ 0.6*base + 0.4*mkt  │
+│ = 0.68 (Δ -0.02)    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Update Patent       │
+│ commercial_score_adj│
+│ + breakdown         │
+└─────────────────────┘
+```
+
+### CLI Usage
+
+```bash
+# Dry-run enrichment
+python jobs/market_signals_enricher.py --mode dry-run --limit 50
+
+# Live enrichment (requires feature flag)
+FEATURE_PATENTPULSE_SIGNALS=true python jobs/market_signals_enricher.py --mode live --limit 200
+
+# Enrich only recent items
+python jobs/market_signals_enricher.py --mode live --since 2025-11-01T00:00:00Z
+
+# Custom weights (higher market influence)
+python jobs/market_signals_enricher.py --mode live --weights "base:0.4,market:0.6"
+```
+
+### Signal Adapters
+
+**1. VendorCatalogAdapter**
+- Fetches pricing and availability from peptide vendors
+- Returns: `avg_price`, `price_dispersion`, `availability_score`
+- Mock mode generates realistic pricing data
+
+**2. SearchTrendAdapter**
+- Fetches search volume trends (Google Trends-like)
+- Returns: `search_index` (0-100, normalized to 0-1)
+- Higher index = more commercial interest
+
+**3. SocialChatterAdapter**
+- Fetches social media mentions and sentiment
+- Returns: `sentiment` (-1 to 1), `volume` (mention count)
+- Tracks Twitter, Reddit, LinkedIn, biotech forums
+
+**4. MarketplaceAdapter**
+- Fetches transaction data from biotech marketplaces
+- Returns: `transaction_count`, `velocity_score` (0-1)
+- Indicates actual commercial activity
+
+### Market Factor Calculation
+
+**Formula:**
+```
+market_factor = clamp(
+    0.35 * search_index +
+    0.25 * availability_score +
+    0.20 * (1 - sigmoid(price_dispersion)) +
+    0.20 * max(sentiment, 0),
+    0, 1
+)
+```
+
+**Adjusted Score:**
+```
+adjusted = clamp(
+    base_weight * commercial_score + market_weight * market_factor,
+    commercial_score - 0.25,  # Floor clamp
+    1.0
+)
+```
+
+**Default Weights:** `base=0.6, market=0.4`
+
+### API Endpoints
+
+**1. GET /api/patentpulse/signals/{patent_id}**
+
+Get market signals for a specific patent.
+
+**Response:**
+```json
+{
+  "patent_id": "US1234567",
+  "features": {
+    "avg_price": 1250.50,
+    "price_dispersion": 0.35,
+    "availability_score": 0.75,
+    "search_index": 0.68,
+    "social_sentiment": 0.42,
+    "social_volume": 156,
+    "market_velocity": 0.55
+  },
+  "provenance": [
+    {
+      "source": "VendorCatalogAdapter",
+      "ts": "2025-11-11T12:00:00Z",
+      "meta": {"vendor_count": 5}
+    }
+  ],
+  "computed_at": "2025-11-11T12:00:00Z",
+  "breakdown": {
+    "base": 0.7,
+    "market_factor": 0.65,
+    "weights": {"base": 0.6, "market": 0.4},
+    "inputs": {...}
+  }
+}
+```
+
+**2. POST /api/patentpulse/signals/recompute**
+
+Trigger recomputation of market signals (queues enrichment job).
+
+**Request:**
+```json
+{
+  "patent_ids": ["US1234567", "EP8083369"],
+  "since": "2025-11-01T00:00:00Z",
+  "limit": 50,
+  "weights": {"base": 0.5, "market": 0.5}
+}
+```
+
+**3. GET /api/patentpulse/items/{patent_id}/score**
+
+Get detailed score breakdown for a patent.
+
+**Response:**
+```json
+{
+  "patent_id": "US1234567",
+  "base_score": 0.70,
+  "adjusted_score": 0.68,
+  "delta": -0.02,
+  "market_factor": 0.65,
+  "breakdown": {...},
+  "market_last_refreshed_at": "2025-11-11T12:00:00Z"
+}
+```
+
+### TTL Cache
+
+**Purpose:** Prevent redundant API calls within 24 hours
+
+**Implementation:**
+- Signals cached in `patentpulse_signals` collection
+- TTL index on `ttl_expires_at` field (MongoDB auto-deletes expired docs)
+- Enricher checks cache before fetching fresh signals
+
+**Cache Hit Flow:**
+```
+1. Check patentpulse_signals for patent_id
+2. If found and ttl_expires_at > now → use cached
+3. Else → fetch fresh signals, cache with ttl_expires_at = now + 24h
+```
+
+### Floor Clamp Protection
+
+**Problem:** Market signals can cause drastic score drops, confusing users
+
+**Solution:** Floor clamp prevents adjusted score from dropping >0.25 below base
+
+**Example:**
+```
+Base score: 0.9
+Market factor: 0.1 (very negative signals)
+Raw adjusted: 0.6 * 0.9 + 0.4 * 0.1 = 0.58 (Δ -0.32)
+Floor clamp: max(0.58, 0.9 - 0.25) = 0.65 (Δ -0.25)
+```
+
+**Warning:** Clamping events are logged and counted for monitoring
+
+### Database Schema
+
+**patentpulse_items (updated):**
+```json
+{
+  "patent_id": "US1234567",
+  "commercial_score": 0.70,          // BASELINE
+  "commercial_score_adj": 0.68,      // ADJUSTED (Phase IXd)
+  "commercial_breakdown": {           // NEW
+    "base": 0.70,
+    "market_factor": 0.65,
+    "weights": {"base": 0.6, "market": 0.4},
+    "inputs": {...}
+  },
+  "market_last_refreshed_at": "2025-11-11T12:00:00Z"  // NEW
+}
+```
+
+**patentpulse_signals (new collection):**
+```json
+{
+  "signal_id": "uuid",
+  "patent_id": "US1234567",
+  "keyword_key": "glp-1_insulin_peptide",  // Fallback for generic queries
+  "features": {...},
+  "provenance": [...],
+  "computed_at": "2025-11-11T12:00:00Z",
+  "ttl_expires_at": "2025-11-12T12:00:00Z"  // TTL index
+}
+```
+
+### Troubleshooting
+
+**Issue:** Enricher fails with "Feature flag not enabled"
+- **Fix:** Set `FEATURE_PATENTPULSE_SIGNALS=true`
+
+**Issue:** All signals return mock data
+- **Cause:** Real API keys not configured
+- **Fix:** Set `FEATURE_PATENTPULSE_SOURCES=true` and provide API keys
+
+**Issue:** Adjusted scores not updating in UI
+- **Cause:** Frontend not reading `commercial_score_adj` field
+- **Fix:** Update UI to display adjusted score with delta badge
+
+**Issue:** Too many API calls (cost concern)
+- **Cause:** TTL cache not working or expired
+- **Fix:** Verify TTL index exists, increase cache duration if needed
+
+**Issue:** Clamping too frequent (>10% of enrichments)
+- **Cause:** Market signals overly negative or weights misconfigured
+- **Fix:** Adjust weights to increase base influence (e.g., `base:0.7,market:0.3`)
+
+### Monitoring
+
+**Key Metrics:**
+- **Enrichment rate:** Items enriched per hour
+- **Cache hit rate:** % of enrichments using cached signals
+- **Clamp rate:** % of enrichments triggering floor clamp
+- **Adapter error rate:** % of signal fetches failing per adapter
+
+**Alerts:**
+- Adapter error rate > 5% for 5 min → Warning
+- Cache hit rate < 50% → Info (possible TTL index issue)
+- Clamp rate > 15% → Warning (weights may need tuning)
+
+---
+
+## Change Log (Updated)
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2025-11-11 | Initial release - Phase IXb integration |
+| 1.1 | 2025-11-11 | Phase IXc - Production collector with idempotency, DLQ, SLO |
+| 1.2 | 2025-11-11 | Phase IXd - Market signal enrichment with TTL cache |
+
+---
+
+**Maintained by:** Peptimancer Platform Team  
+**Last Updated:** 2025-11-11  
+**Review Cycle:** Quarterly
