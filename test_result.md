@@ -337,6 +337,82 @@ frontend:
         agent: "testing"
         comment: "TESTED & WORKING: Phase 8.2 Billing Widget Stability - ALL TESTS PASSING (8/8, 100% success rate). Complete billing flow operational: (1) Session endpoint working correctly with proper user data (email, role, tier, credits), (2) Billing state endpoint returning proper billing state with tier, credits, renewsAt, and history, (3) Mock credit purchase working - credits increased by 100 with proper redirect to /billing?success=1, (4) Mock pro plan upgrade working - tier set to 'pro', 200 monthly credits granted, subscription created with renewal date, (5) Chemistry options after pro upgrade showing 9 total modifications including pro-tier options (pegylation, lipidation, n_methylation), (6) Mock enterprise upgrade working - tier set to 'enterprise', 5000 monthly credits granted, (7) Combined plan + credits working - both plan upgrade and bonus credits applied correctly. All mock webhooks redirect properly, credits and tier updates persist, no infinite loops or hangs detected."
 
+
+  - task: "PatentPulse Production Collector (Phase IXc)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/jobs/patentpulse_collector.py, /app/backend/jobs/patentpulse_source_adapters.py, /app/backend/jobs/patentpulse_normalizer.py, /app/backend/jobs/patentpulse_dlq_reprocessor.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented production-grade collector with: (1) Source adapters (USPTO, WIPO, LENS) with mock mode, pagination, retry logic with backoff, (2) Normalizer with patent_id derivation, data quality enforcement, score computation, (3) Idempotent upsert by patent_id with source_hash change detection, (4) Incremental sync tracking last successful run, (5) DLQ for failed items with reprocessor, (6) Run metadata tracking with SLO metrics (p95 latency, error rate, DQ reject rate), (7) CLI with dry-run/live modes, source filtering, limits. Tested dry-run: 10 items fetched, normalized, upserted in 0.5s with p95=4ms, error_rate=0.0. Feature flags: FEATURE_PATENTPULSE (live writes), FEATURE_PATENTPULSE_SOURCES (real APIs)."
+
+  - task: "Market Signals Enrichment (Phase IXd)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/jobs/market_signals_enricher.py, /app/backend/jobs/market_signals_adapters.py, /app/backend/routes/patentpulse_signals.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented market signal enrichment system with: (1) Signal adapters (VendorCatalog, SearchTrend, SocialChatter, Marketplace) with mock modes, (2) Market factor calculation from multi-source signals (0-1 range), (3) Dynamic commercial_score_adj with configurable weights (default: base=0.6, market=0.4), (4) Floor clamp protection (prevents drops >0.25), (5) TTL cache (24h) in patentpulse_signals collection, (6) API endpoints: GET /signals/{patent_id}, POST /signals/recompute, GET /items/{patent_id}/score, (7) Commercial breakdown tracking (base, market_factor, weights, inputs). Tested dry-run: 5 items enriched with market factors 0.258-0.576, 1 clamp triggered. Feature flag: FEATURE_PATENTPULSE_SIGNALS."
+
+  - task: "Database Indexes (Phase IXc+IXd)"
+    implemented: true
+    working: true
+    file: "/app/backend/scripts/create_indexes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added new indexes: patentpulse_items (last_seen_at, source_hash, market_last_refreshed_at, commercial_score_adj DESC), patentpulse_runs (run_id UNIQUE, started_at DESC, status), patentpulse_dlq (source, retries, last_failed_at DESC), patentpulse_signals (patent_id, keyword_key, ttl_expires_at TTL). All indexes created successfully."
+      - working: true
+        agent: "main"
+        comment: "Verified by running scripts/create_indexes.py - all indexes created successfully with proper uniqueness, TTL, and descending sort orders."
+
+  - task: "CI Workflows (Phase IXc+IXd)"
+    implemented: true
+    working: "NA"
+    file: "/.github/workflows/collector-ci.yml, /.github/workflows/signals-ci.yml"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created two CI workflow files: (1) collector-ci.yml - runs pytest for patentpulse_collector tests on MongoDB service, validates SLO gates, (2) signals-ci.yml - runs pytest for market_signals tests, includes frontend build smoke test. Both trigger on push/PR to main/develop branches with path filters."
+
+  - task: "Tests (Phase IXc+IXd)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/tests/test_patentpulse_collector.py, /app/backend/tests/test_market_signals.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created comprehensive test suites: (1) test_patentpulse_collector.py - tests adapters (USPTO, WIPO, LENS mock modes), normalizer (ID derivation, score computation, validation), collector (idempotent upserts, incremental sync, dry-run safety, SLO calculation), (2) test_market_signals.py - tests signal adapters (vendor, search, social, marketplace), enricher (market factor calc, score adjustment, clamp protection, weight overrides, TTL cache). Tests use pytest-asyncio with clean_db fixtures."
+
+  - task: "Documentation (Phase IXc+IXd)"
+    implemented: true
+    working: "NA"
+    file: "/app/docs/README_PATENTPULSE.md"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Appended comprehensive documentation for Phase IXc and IXd to README_PATENTPULSE.md including: Architecture diagrams, CLI usage examples, data quality rules, DLQ reprocessor guide, run metadata schema, SLO gates, market factor calculation formula, API endpoints, TTL cache explanation, floor clamp protection, troubleshooting guides, monitoring metrics, change log updated to v1.1 and v1.2."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
