@@ -41,6 +41,12 @@ function MainApp() {
                   Analytics
                 </Button>
               </Link>
+              <Link to="/admin/patentpulse">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  PatentPulse
+                </Button>
+              </Link>
               <Link to="/admin">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
