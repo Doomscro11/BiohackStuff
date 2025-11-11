@@ -41,11 +41,11 @@ export default function AnalyticsPage() {
       ]);
 
       if (!liveResult.ok) {
-        throw new Error(`Failed to load live analytics: ${liveResult.text}`);
+        throw new Error(`Failed to load live analytics: ${liveResult.text || 'Unknown error'}`);
       }
 
       if (!snapshotsResult.ok) {
-        throw new Error(`Failed to load snapshots: ${snapshotsResult.text}`);
+        throw new Error(`Failed to load snapshots: ${snapshotsResult.text || 'Unknown error'}`);
       }
 
       setLive(liveResult.data);
