@@ -1117,6 +1117,10 @@ app.include_router(analytics_router)
 from routes_patentpulse import router as patentpulse_router
 app.include_router(patentpulse_router)
 
+# Include Phase IXd PatentPulse Signals routes
+from routes.patentpulse_signals import router as patentpulse_signals_router
+app.include_router(patentpulse_signals_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
