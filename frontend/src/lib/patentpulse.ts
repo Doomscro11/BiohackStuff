@@ -56,7 +56,12 @@ export async function getPatentItems(filters?: {
     total: number;
     skip: number;
     limit: number;
-  }>(url);
+  }>(url, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   
   return result;
 }
