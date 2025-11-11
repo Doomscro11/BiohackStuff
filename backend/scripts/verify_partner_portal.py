@@ -475,6 +475,9 @@ async def test_analytics() -> bool:
         
         all_passed &= log_test("analytics", "Event tracking", True, "4 events tracked")
         
+        # Small delay to ensure events are written to DB
+        await asyncio.sleep(0.5)
+        
         # Get analytics
         analytics = await get_share_analytics(test_share_id)
         
