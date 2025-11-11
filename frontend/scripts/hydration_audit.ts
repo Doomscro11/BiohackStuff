@@ -280,4 +280,5 @@ if (require.main === module) {
   });
 }
 
-export { HydrationAuditor, AuditResult };
+export { HydrationAuditor };
+export type { AuditResult };
