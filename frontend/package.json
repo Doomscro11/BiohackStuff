@@ -64,7 +64,10 @@
     "test:unit": "jest -c jest.config.js",
     "test:e2e": "playwright test --project=chromium --reporter=list",
     "audit:hydration": "tsx scripts/hydration_audit.ts",
-    "test:all": "npm run typecheck && npm run test:unit && npm run test:e2e && npm run audit:hydration"
+    "test:all": "npm run typecheck && npm run test:unit && npm run test:e2e && npm run audit:hydration",
+    "test:reclaim:unit": "jest tests/unit/reclaim_pack_api.spec.ts -c jest.config.js",
+    "test:reclaim:e2e": "playwright test tests/e2e/reclaim_pack.spec.ts --project=chromium",
+    "reclaim:build": "craco build"
   },
   "browserslist": {
     "production": [
