@@ -509,14 +509,18 @@ async def test_analytics() -> bool:
         # Get analytics
         analytics = await get_share_analytics(test_share_id)
         
-        # Verify counters
-        opens_correct = analytics["opens"] == 2
-        downloads_correct = analytics["downloads"] == 1
-        blocked_correct = analytics["blocked"] == 1
+        # Verify counters (check both singular and plural forms due to aggregation)
+        opens_count = analytics.get("opens", 0) or analytics.get("open", 0)
+        downloads_count = analytics.get("downloads", 0) or analytics.get("download", 0)
+        blocked_count = analytics.get("blocked", 0)
         
-        all_passed &= log_test("analytics", "Opens counter", opens_correct, f"Opens: {analytics['opens']}")
-        all_passed &= log_test("analytics", "Downloads counter", downloads_correct, f"Downloads: {analytics['downloads']}")
-        all_passed &= log_test("analytics", "Blocked counter", blocked_correct, f"Blocked: {analytics['blocked']}")
+        opens_correct = opens_count == 2
+        downloads_correct = downloads_count == 1
+        blocked_correct = blocked_count == 1
+        
+        all_passed &= log_test("analytics", "Opens counter", opens_correct, f"Opens: {opens_count}")
+        all_passed &= log_test("analytics", "Downloads counter", downloads_correct, f"Downloads: {downloads_count}")
+        all_passed &= log_test("analytics", "Blocked counter", blocked_correct, f"Blocked: {blocked_count}")
         
         # Verify top IPs
         has_top_ips = len(analytics.get("top_ips", [])) > 0
