@@ -172,6 +172,33 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating analytics indexes: {str(e)}")
 
+# Phase IXb: PatentPulse collection indexes
+print("\nCreating PatentPulse indexes...")
+try:
+    db.patentpulse_items.create_index("patent_id", unique=True, name="patent_id_unique_idx")
+    print("  ✓ patentpulse_items.patent_id (unique)")
+    
+    db.patentpulse_items.create_index("status", name="status_idx")
+    print("  ✓ patentpulse_items.status")
+    
+    db.patentpulse_items.create_index("expiry_date", name="expiry_date_idx")
+    print("  ✓ patentpulse_items.expiry_date")
+    
+    db.patentpulse_items.create_index(
+        [("commercial_score", DESCENDING)],
+        name="commercial_score_desc_idx"
+    )
+    print("  ✓ patentpulse_items.commercial_score (descending)")
+    
+    db.patentpulse_items.create_index("country", name="country_idx")
+    print("  ✓ patentpulse_items.country")
+    
+    db.patentpulse_items.create_index("assignee", name="assignee_idx")
+    print("  ✓ patentpulse_items.assignee")
+    
+except Exception as e:
+    print(f"  ✗ Error creating PatentPulse indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes
