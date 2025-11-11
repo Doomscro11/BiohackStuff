@@ -1,0 +1,87 @@
+================================================================================
+🧬 PEPTIMANCER PHASE VI PRODUCTION ENTERPRISE VALIDATION
+================================================================================
+Backend URL: https://peptimancer.preview.emergentagent.com
+Test Started: 2025-11-06T18:21:15.225786
+================================================================================
+
+📋 CORE FUNCTIONALITY TESTS
+----------------------------------------
+❌ API Health Check: FAILED
+   Error: Connection failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Sequence Validation - Valid GLP-1 sequence: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Sequence Validation - Invalid characters: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Sequence Validation - Empty sequence: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Sequence Validation - Invalid amino acids: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+🧬 Generating enterprise analogues (may take 10-15 seconds)...
+❌ Enterprise Analogue Generation: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=30)
+
+
+📊 ENTERPRISE FEATURE TESTS
+----------------------------------------
+❌ Vault Ledger System: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+✅ Generation History System: PASSED
+   Details: Retrieved 10 history entries, status: active
+
+❌ PDF Export System: FAILED
+   Error: No generation ID available (analogue generation must succeed first)
+
+❌ CRO Integration System: FAILED
+   Error: No vault IDs available (analogue generation must succeed first)
+
+✅ Token Management System: PASSED
+   Details: Created token: 15ad1d07-5e69-4aaf-99f1-4deecaa22073, tier: enterprise, credits: 5000
+
+
+🚀 SCALABILITY & RESILIENCE TESTS
+----------------------------------------
+🚀 Testing concurrent load (5 simultaneous requests)...
+❌ Concurrent Load Handling: FAILED
+   Error: Only 0/5 requests succeeded. Failures: Req2: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req1: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req5: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req3: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req4: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45)
+
+❌ Error Resilience - Invalid Generation ID Export: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Error Resilience - Invalid Vault ID Lookup: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+❌ Error Resilience - Invalid Token Lookup: FAILED
+   Error: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+
+================================================================================
+📈 PHASE VI ENTERPRISE VALIDATION SUMMARY
+================================================================================
+Tests Run: 15
+Tests Passed: 2
+Success Rate: 13.3%
+
+❌ CRITICAL FAILURES (13):
+  • API Health Check: Connection failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Sequence Validation - Valid GLP-1 sequence: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Sequence Validation - Invalid characters: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Sequence Validation - Empty sequence: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Sequence Validation - Invalid amino acids: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Enterprise Analogue Generation: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=30)
+  • Vault Ledger System: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • PDF Export System: No generation ID available (analogue generation must succeed first)
+  • CRO Integration System: No vault IDs available (analogue generation must succeed first)
+  • Concurrent Load Handling: Only 0/5 requests succeeded. Failures: Req2: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req1: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req5: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req3: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45), Req4: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=45)
+  • Error Resilience - Invalid Generation ID Export: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Error Resilience - Invalid Vault ID Lookup: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+  • Error Resilience - Invalid Token Lookup: Request failed: HTTPSConnectionPool(host='peptide-architect-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)
+
+Enterprise Deployment Status: ❌ NOT READY
+================================================================================
