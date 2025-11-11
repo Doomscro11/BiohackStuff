@@ -58,7 +58,13 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "build:frontend": "craco build",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "jest -c jest.config.js",
+    "test:e2e": "playwright test --project=chromium --reporter=list",
+    "audit:hydration": "tsx scripts/hydration_audit.ts",
+    "test:all": "npm run typecheck && npm run test:unit && npm run test:e2e && npm run audit:hydration"
   },
   "browserslist": {
     "production": [
