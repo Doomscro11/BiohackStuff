@@ -156,7 +156,7 @@ async def test_admin_api() -> bool:
     
     try:
         # Get admin token
-        jwt_token = await get_admin_token()
+        jwt_token, admin2fa_token = await get_admin_token()
         all_passed &= log_test("admin_api", "Admin authentication", True, "JWT obtained")
         
         # Create test export
@@ -164,7 +164,11 @@ async def test_admin_api() -> bool:
         all_passed &= log_test("admin_api", "Test export creation", True, f"file_id={file_id}")
         
         async with httpx.AsyncClient() as client:
-            headers = {"Cookie": f"pmnc_jwt={jwt_token}"}
+            # Include both cookies for admin endpoints
+            cookie_parts = [f"pmnc_jwt={jwt_token}"]
+            if admin2fa_token:
+                cookie_parts.append(f"pmnc_admin2fa={admin2fa_token}")
+            headers = {"Cookie": "; ".join(cookie_parts)}
             
             # Test 1: Create share
             create_payload = {
