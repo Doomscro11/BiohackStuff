@@ -19,7 +19,7 @@ export default function AnalogueForm({
   groupedMods
 ) {
   // Get user tier from window or default to basic
-  const userTier = (window as any).__USER_TIER__ || 'basic';
+  const userTier = window.__USER_TIER__ || 'basic';
   
   const tierOrder = { basic: 0, pro: 1, enterprise: 2 };
   
