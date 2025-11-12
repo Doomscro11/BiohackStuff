@@ -105,7 +105,7 @@ const SharePage = () => {
     });
   };
 
-  const getDaysRemaining = (expiryStr: string) => {
+  const getDaysRemaining = (expiryStr) => {
     const expiry = new Date(expiryStr);
     const now = new Date();
     const diff = expiry.getTime() - now.getTime();
