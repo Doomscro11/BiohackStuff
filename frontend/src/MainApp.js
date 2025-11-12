@@ -9,7 +9,7 @@ import SharePage from './pages/partner/SharePage';
 import CreditBadge from './components/CreditBadge';
 import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fetchSession } from './lib/session.ts';
+import { fetchSession } from './lib/session';
 
 function MainApp() {
   // Bootstrap: fetch session on app load
