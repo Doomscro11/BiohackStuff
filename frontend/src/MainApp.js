@@ -5,7 +5,7 @@ import TestPage from './pages/TestPage';
 import BillingPage from './pages/BillingPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PatentPulsePage from './pages/PatentPulsePage';
-import SharePage from './pages/partner/SharePage';
+import SharePage from './pages/partner/SharePage.js';
 import CreditBadge from './components/CreditBadge';
 import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
