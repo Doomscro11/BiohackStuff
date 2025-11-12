@@ -167,7 +167,7 @@ const PartnerSharesAdmin: React.FC = () => {
         internal_notes: ''
       });
       fetchShares();
-    } catch (err: any) {
+    } catch (err) {
       alert(`Error creating share: ${err.message}`);
     }
   };
