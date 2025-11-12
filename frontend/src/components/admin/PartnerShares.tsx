@@ -256,13 +256,13 @@ const PartnerSharesAdmin: React.FC = () => {
     }
   };
 
-  const formatDate = (dateStr: string | null) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return 'Never';
     const date = new Date(dateStr);
     return date.toLocaleString();
   };
 
-  const getStateColor = (state: string) => {
+  const getStateColor = (state) => {
     switch (state) {
       case 'active': return 'green';
       case 'expired': return 'orange';
