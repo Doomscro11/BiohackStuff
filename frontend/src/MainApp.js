@@ -63,6 +63,7 @@ function MainApp() {
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
           <Route path="/admin/patentpulse" element={<PatentPulsePage />} />
