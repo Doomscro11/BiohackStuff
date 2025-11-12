@@ -12,9 +12,9 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const SharePage = () => {
   const { token } = useParams();
   const location = useLocation();
-  const [metadata, setMetadata] = useState<ShareMetadata | null>(null);
+  const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
