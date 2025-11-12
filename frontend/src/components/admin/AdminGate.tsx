@@ -163,11 +163,9 @@ export default function AdminGate() {
 
   // Show loading state while checking existing auth
   if (isCheckingAuth) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-        <span className="ml-2">Checking authentication...</span>
-      </div>
+    return React.createElement('div', { className: "flex items-center justify-center p-8" },
+      React.createElement('div', { className: "animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" }),
+      React.createElement('span', { className: "ml-2" }, "Checking authentication...")
     );
   }
 
