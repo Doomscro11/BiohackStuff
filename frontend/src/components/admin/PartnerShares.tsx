@@ -125,7 +125,7 @@ const PartnerSharesAdmin: React.FC = () => {
     }
   };
 
-  const createShare = async (e: React.FormEvent) => {
+  const createShare = async (e) => {
     e.preventDefault();
 
     try {
