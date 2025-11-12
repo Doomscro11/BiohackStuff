@@ -200,7 +200,7 @@ const PartnerSharesAdmin: React.FC = () => {
     }
   };
 
-  const revokeShare = async (shareId: string) => {
+  const revokeShare = async (shareId) => {
     const reason = prompt('Reason for revocation (optional):');
     if (reason === null) return; // User cancelled
 
