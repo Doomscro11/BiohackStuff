@@ -33,12 +33,11 @@ const SharePage = () => {
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Failed to load share' }));
-        throw new Error(errorData.detail || `Error ${response.status}`);
-      }
-
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || `Error ${response.status}`);
+      }
       setMetadata(data);
       setError(null);
     } catch (err) {
