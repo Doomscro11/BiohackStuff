@@ -61,6 +61,7 @@ function MainApp() {
         {/* Routes */}
         <Routes>
           <Route path="/" element={<App />} />
+          <Route path="/test" element={<TestPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/admin" element={<AdminGate />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
