@@ -9,21 +9,8 @@ import './SharePage.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-interface ShareMetadata {
-  share_id: string;
-  file_name: string;
-  format: string;
-  recipient_first_name: string;
-  company_or_project: string;
-  expires_at: string;
-  max_downloads: number;
-  download_count: number;
-  downloads_remaining: number;
-  support_email: string;
-}
-
-const SharePage: React.FC = () => {
-  const { token } = useParams<{ token: string }>();
+const SharePage = () => {
+  const { token } = useParams();
   const location = useLocation();
   const [metadata, setMetadata] = useState<ShareMetadata | null>(null);
   const [loading, setLoading] = useState(true);
