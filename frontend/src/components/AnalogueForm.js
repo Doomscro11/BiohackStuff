@@ -17,7 +17,7 @@ export default function AnalogueForm({
   conflictMsg,
   sequenceValidation,
   groupedMods
-}: any) {
+) {
   // Get user tier from window or default to basic
   const userTier = (window as any).__USER_TIER__ || 'basic';
   
