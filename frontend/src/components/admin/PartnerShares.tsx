@@ -226,7 +226,7 @@ const PartnerSharesAdmin: React.FC = () => {
     }
   };
 
-  const copyShareLink = (token: string) => {
+  const copyShareLink = (token) => {
     const shareUrl = `${window.location.origin}/share/${token}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert('Share link copied to clipboard!');
