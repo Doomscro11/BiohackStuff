@@ -180,7 +180,7 @@ const SharePage = () => {
       <div className="share-container">
         <div className="share-header">
           <div className="logo-section">
-            <h1>PatentPulse</h1>
+            <h1 data-testid="pp-partner-branding">PatentPulse</h1>
             <p className="tagline">Secure Preview</p>
           </div>
         </div>
