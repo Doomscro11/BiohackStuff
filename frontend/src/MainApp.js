@@ -5,6 +5,7 @@ import AdminGate from './components/admin/AdminGate.tsx';
 import BillingPage from './pages/BillingPage';
 import AnalyticsPage from './pages/AnalyticsPage.tsx';
 import PatentPulsePage from './pages/PatentPulsePage.tsx';
+import SharePage from './pages/partner/SharePage.tsx';
 import CreditBadge from './components/CreditBadge';
 import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
