@@ -64,7 +64,6 @@ function MainApp() {
           <Route path="/" element={<App />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/billing" element={<BillingPage />} />
-          <Route path="/admin" element={<AdminGate />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
           <Route path="/admin/patentpulse" element={<PatentPulsePage />} />
           <Route path="/share/:token" element={<SharePage />} />
