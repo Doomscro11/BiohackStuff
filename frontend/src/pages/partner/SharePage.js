@@ -33,11 +33,12 @@ const SharePage = () => {
         credentials: 'include'
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.detail || `Error ${response.status}`);
+        const errorData = await response.json().catch(() => ({ detail: 'Invalid or expired share link' }));
+        throw new Error(errorData.detail || 'Invalid or expired share link');
       }
+      
+      const data = await response.json();
       setMetadata(data);
       setError(null);
     } catch (err) {
