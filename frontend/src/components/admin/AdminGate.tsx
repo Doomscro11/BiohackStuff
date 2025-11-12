@@ -8,10 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Mail, Lock, AlertCircle, CheckCircle, Clock, LogOut } from 'lucide-react';
 
-import AdminModeSwitch from './AdminModeSwitch';
-import AdminHealthCard from './AdminHealthCard';
-import AdminUsersPanel from './AdminUsersPanel';
-import Admin2FA from './Admin2FA';
+// Temporarily removed problematic imports for testing
 import { 
   requestMagicCode, 
   verifyMagicCode, 
