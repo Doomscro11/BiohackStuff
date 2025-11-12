@@ -172,7 +172,7 @@ const PartnerSharesAdmin: React.FC = () => {
     }
   };
 
-  const rotateToken = async (shareId: string) => {
+  const rotateToken = async (shareId) => {
     if (!confirm('This will invalidate the old token. The recipient will need a new link. Continue?')) {
       return;
     }
