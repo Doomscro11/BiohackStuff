@@ -277,14 +277,7 @@ function App() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* New Compact Accordion Form */}
-                <AnalogueForm
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  chemOptions={chemOptions}
-                  conflictMsg={conflictMsg}
-                  sequenceValidation={sequenceValidation}
-                  groupedMods={groupedMods}
-                />
+                <div>Form temporarily disabled for testing</div>
 
                 {/* Submit Button */}
                 <Button 
