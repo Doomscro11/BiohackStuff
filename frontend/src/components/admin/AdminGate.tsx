@@ -23,8 +23,8 @@ import {
   formatTimeRemaining,
   type UserInfo,
   type AuthResponse 
-} from '../../lib/auth.ts';
-import { fetchSession } from '../../lib/session.ts';
+} from '../../lib/auth';
+import { fetchSession } from '../../lib/session';
 
 interface AdminStatus {
   admin_emails_configured: boolean;
