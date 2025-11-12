@@ -27,7 +27,7 @@ export default function AnalogueForm({
     return tierOrder[userTier as keyof typeof tierOrder] >= tierOrder[requiredTier as keyof typeof tierOrder];
   };
   
-  const getTierBadge = (tier: string) => {
+  const getTierBadge = (tier) => {
     if (tier === 'pro') return <Lock className="h-3 w-3 text-blue-600 inline ml-1" title="Pro tier required" />;
     if (tier === 'enterprise') return <Lock className="h-3 w-3 text-purple-600 inline ml-1" title="Enterprise tier required" />;
     return null;
