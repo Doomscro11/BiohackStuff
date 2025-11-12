@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Key, CheckCircle, AlertCircle, QrCode } from 'lucide-react';
 
 // Temporary placeholder components to avoid compilation errors
-const AdminHealthCard = () => <div>Admin Health Card</div>;
-const AdminModeSwitch = () => <div>Admin Mode Switch</div>;
-const AdminUsersPanel = () => <div>Admin Users Panel</div>;
-const AdminPlansPanel = () => <div>Admin Plans Panel</div>;
+const AdminHealthCard = () => React.createElement('div', null, 'Admin Health Card');
+const AdminModeSwitch = () => React.createElement('div', null, 'Admin Mode Switch');
+const AdminUsersPanel = () => React.createElement('div', null, 'Admin Users Panel');
+const AdminPlansPanel = () => React.createElement('div', null, 'Admin Plans Panel');
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
