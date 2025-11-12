@@ -15,8 +15,8 @@ import {
   getTopOpportunities,
   type PatentItem,
   type PatentStats 
-} from '../lib/patentpulse.ts';
-import PartnerSharesAdmin from '../components/admin/PartnerShares.tsx';
+} from '../lib/patentpulse';
+import PartnerSharesAdmin from '../components/admin/PartnerShares';
 
 export default function PatentPulsePage() {
   const [stats, setStats] = useState<PatentStats | null>(null);
