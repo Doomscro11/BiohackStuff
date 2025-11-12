@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import App from './App';
 import TestPage from './pages/TestPage';
+import AdminPage from './pages/AdminPage';
 import BillingPage from './pages/BillingPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PatentPulsePage from './pages/PatentPulsePage';
