@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Mail, Lock, AlertCircle, CheckCircle, Clock, LogOut } from 'lucide-react';
 
-import AdminModeSwitch from './AdminModeSwitch.tsx';
-import AdminHealthCard from './AdminHealthCard.tsx';
-import AdminUsersPanel from './AdminUsersPanel.tsx';
-import Admin2FA from './Admin2FA.tsx';
+import AdminModeSwitch from './AdminModeSwitch';
+import AdminHealthCard from './AdminHealthCard';
+import AdminUsersPanel from './AdminUsersPanel';
+import Admin2FA from './Admin2FA';
 import { 
   requestMagicCode, 
   verifyMagicCode, 
