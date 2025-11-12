@@ -87,7 +87,7 @@ const SharePage = () => {
 
       // Refresh metadata to update download count
       setTimeout(fetchShareMetadata, 1000);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Download failed');
     } finally {
       setDownloading(false);
