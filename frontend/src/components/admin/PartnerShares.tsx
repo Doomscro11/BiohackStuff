@@ -8,54 +8,7 @@ import './PartnerShares.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-interface SharePolicy {
-  expires_at: string;
-  max_downloads: number;
-  ip_allowlist: string[];
-  rate_limit_per_ip: string;
-  watermark_enabled: boolean;
-}
-
-interface PartnerShare {
-  share_id: string;
-  file_id: string;
-  file_name: string;
-  format: string;
-  recipient_email: string;
-  recipient_first_name: string;
-  company_or_project: string;
-  policy: SharePolicy;
-  share_token: string;
-  state: 'active' | 'expired' | 'revoked';
-  download_count: number;
-  last_accessed_at: string | null;
-  created_by: string;
-  created_at: string;
-  revoked_at: string | null;
-  revoked_by: string | null;
-  revoked_reason: string | null;
-  internal_notes: string;
-}
-
-interface ShareAnalytics {
-  opens: number;
-  downloads: number;
-  blocked: number;
-  expired: number;
-  revoked: number;
-  last_access_at: string | null;
-  top_ips: Array<{ ip: string; count: number; events: string[] }>;
-  geo_breakdown: Array<{ country: string; count: number }>;
-}
-
-interface ExportFile {
-  file_id: string;
-  file_name: string;
-  format: string;
-  generated_at: string;
-}
-
-const PartnerSharesAdmin: React.FC = () => {
+const PartnerSharesAdmin = () => {
   const [shares, setShares] = useState<PartnerShare[]>([]);
   const [exports, setExports] = useState<ExportFile[]>([]);
   const [loading, setLoading] = useState(true);
