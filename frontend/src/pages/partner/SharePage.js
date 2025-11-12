@@ -158,11 +158,9 @@ const SharePage = () => {
               </div>
             )}
             
-            {metadata?.support_email && (
-              <p className="support-info">
-                Need help? Contact <a href={`mailto:${metadata.support_email}`}>{metadata.support_email}</a>
-              </p>
-            )}
+            <p className="support-info">
+              Need help? Contact <a href="mailto:support@peptologic.ai">support@peptologic.ai</a>
+            </p>
           </div>
         </div>
       </div>
