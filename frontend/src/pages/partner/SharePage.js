@@ -41,7 +41,7 @@ const SharePage = () => {
       const data = await response.json();
       setMetadata(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to load share');
     } finally {
       setLoading(false);
