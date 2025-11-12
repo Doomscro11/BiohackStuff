@@ -9,14 +9,14 @@ import './PartnerShares.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 const PartnerSharesAdmin = () => {
-  const [shares, setShares] = useState<PartnerShare[]>([]);
-  const [exports, setExports] = useState<ExportFile[]>([]);
+  const [shares, setShares] = useState([]);
+  const [exports, setExports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedShare, setSelectedShare] = useState<PartnerShare | null>(null);
-  const [analytics, setAnalytics] = useState<ShareAnalytics | null>(null);
-  const [filter, setFilter] = useState<'all' | 'active' | 'expired' | 'revoked'>('all');
+  const [selectedShare, setSelectedShare] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [filter, setFilter] = useState('all');
 
   // Form state
   const [formData, setFormData] = useState({
