@@ -195,7 +195,7 @@ const PartnerSharesAdmin: React.FC = () => {
       
       alert(`Token rotated successfully!\n\nNew Share URL:\n${shareUrl}`);
       fetchShares();
-    } catch (err: any) {
+    } catch (err) {
       alert(`Error: ${err.message}`);
     }
   };
@@ -221,7 +221,7 @@ const PartnerSharesAdmin: React.FC = () => {
 
       alert('Share revoked successfully');
       fetchShares();
-    } catch (err: any) {
+    } catch (err) {
       alert(`Error: ${err.message}`);
     }
   };
