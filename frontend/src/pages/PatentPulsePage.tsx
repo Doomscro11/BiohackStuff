@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   FileText, TrendingUp, DollarSign, AlertCircle, 
-  Award, Building2, Globe, Calendar, Dna 
+  Award, Building2, Globe, Calendar, Dna, Share2 
 } from 'lucide-react';
 import { 
   getPatentItems, 
@@ -15,6 +16,7 @@ import {
   type PatentItem,
   type PatentStats 
 } from '../lib/patentpulse.ts';
+import PartnerSharesAdmin from '../components/admin/PartnerShares.tsx';
 
 export default function PatentPulsePage() {
   const [stats, setStats] = useState<PatentStats | null>(null);
