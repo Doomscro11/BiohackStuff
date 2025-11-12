@@ -103,7 +103,7 @@ const PartnerSharesAdmin: React.FC = () => {
       const data = await response.json();
       setShares(data.shares || []);
       setError(null);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
