@@ -235,7 +235,7 @@ const PartnerSharesAdmin: React.FC = () => {
     });
   };
 
-  const viewAnalytics = async (shareId: string) => {
+  const viewAnalytics = async (shareId) => {
     try {
       const response = await fetch(
         `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/analytics`,
@@ -251,7 +251,7 @@ const PartnerSharesAdmin: React.FC = () => {
       
       const share = shares.find(s => s.share_id === shareId);
       setSelectedShare(share || null);
-    } catch (err: any) {
+    } catch (err) {
       alert(`Error: ${err.message}`);
     }
   };
