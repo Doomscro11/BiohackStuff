@@ -1,20 +1,14 @@
 // Safe HTTP utilities - prevents "Response body already used" errors
-export type JsonResult<T = any> = 
-  | { ok: true; data: T } 
-  | { ok: false; status: number; text: string };
 
 /**
  * Safe JSON fetch - reads response body exactly once
  * Returns result object instead of throwing
  * Always includes credentials by default
  */
-export async function fetchJSON<T = any>(
-  input: RequestInfo, 
-  init?: RequestInit
-): Promise<JsonResult<T>> {
+export async function fetchJSON(input, init) {
   try {
     // Merge init with default credentials: 'include'
-    const config: RequestInit = {
+    const config = {
       credentials: 'include',
       ...init
     };
@@ -32,12 +26,12 @@ export async function fetchJSON<T = any>(
     }
     
     // Read JSON exactly once for success
-    const data = await response.json() as T;
+    const data = await response.json();
     return { 
       ok: true, 
       data 
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
       status: 0,
