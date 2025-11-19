@@ -12,7 +12,7 @@ export async function fetchBillingState() {
 
 export async function startCheckout(payload: {
   plan?: 'basic' | 'pro' | 'enterprise';
-  purchase_credits?: number;
+  purchase_credits?;
 }) {
   const result = await fetchJSON(`${BACKEND_URL}/api/billing/checkout`, {
     method: 'POST',
@@ -38,9 +38,9 @@ export async function getPlans() {
 }
 
 export async function upsertPlan(plan: {
-  code: string;
-  price: number;
-  credits: number;
+  code;
+  price;
+  credits;
 }) {
   const response = await fetch(`${BACKEND_URL}/api/billing/admin/plans`, {
     method: 'PUT',

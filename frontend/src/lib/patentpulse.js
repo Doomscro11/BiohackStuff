@@ -4,40 +4,40 @@ import { fetchJSON } from './http';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export interface PatentItem {
-  _id: string;
-  title: string;
-  patent_id: string;
-  assignee: string;
-  country: string;
-  expiry_date: string;
-  status: string;
-  keywords: string[];
-  sequence_data: string | null;
-  commercial_score: number;
-  synthesis_score: number;
-  fto_risk: number;
-  repurpose_notes: string;
-  created_at: string;
-  updated_at: string;
-  viability_score?: number;
+  _id;
+  title;
+  patent_id;
+  assignee;
+  country;
+  expiry_date;
+  status;
+  keywords[];
+  sequence_data | null;
+  commercial_score;
+  synthesis_score;
+  fto_risk;
+  repurpose_notes;
+  created_at;
+  updated_at;
+  viability_score?;
 }
 
 export interface PatentStats {
-  total: number;
+  total;
   by_status: Record<string, number>;
-  top_assignees: Array<{ assignee: string; count: number }>;
-  avg_commercial_score: number;
-  avg_synthesis_score: number;
-  avg_fto_risk: number;
-  expiring_soon_24mo: number;
+  top_assignees: Array<{ assignee; count }>;
+  avg_commercial_score;
+  avg_synthesis_score;
+  avg_fto_risk;
+  expiring_soon_24mo;
 }
 
 export async function getPatentItems(filters?: {
-  status?: string;
-  country?: string;
-  min_commercial_score?: number;
-  limit?: number;
-  skip?: number;
+  status?;
+  country?;
+  min_commercial_score?;
+  limit?;
+  skip?;
 }) {
   const params = new URLSearchParams();
   if (filters?.status) params.append('status_filter', filters.status);
@@ -52,10 +52,10 @@ export async function getPatentItems(filters?: {
   
   const result = await fetchJSON<{
     items: PatentItem[];
-    count: number;
-    total: number;
-    skip: number;
-    limit: number;
+    count;
+    total;
+    skip;
+    limit;
   }>(url, {
     credentials: 'include',
     headers: {
@@ -79,10 +79,10 @@ export async function getPatentStats() {
   return result;
 }
 
-export async function getTopOpportunities(limit: number = 10) {
+export async function getTopOpportunities(limit = 10) {
   const result = await fetchJSON<{
     opportunities: PatentItem[];
-    count: number;
+    count;
   }>(`${BACKEND_URL}/api/patentpulse/top-opportunities?limit=${limit}`, {
     credentials: 'include',
     headers: {

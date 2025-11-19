@@ -2,27 +2,27 @@
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export interface AdminSettings {
-  integrationsMode: string;
-  demoMode: boolean;
-  watermarkExports: boolean;
-  croEnabled: boolean;
-  billingEnabled: boolean;
-  rateLimitDemo: number;
-  rateLimitLive: number;
-  maxAnalogues: number;
-  enterpriseFeatures: boolean;
-  auditLogging: boolean;
+  integrationsMode;
+  demoMode;
+  watermarkExports;
+  croEnabled;
+  billingEnabled;
+  rateLimitDemo;
+  rateLimitLive;
+  maxAnalogues;
+  enterpriseFeatures;
+  auditLogging;
 }
 
 export interface SettingsUpdate extends Partial<AdminSettings> {
-  confirm: string;
+  confirm;
 }
 
 export interface AuditRecord {
-  _id: string;
-  timestamp: string;
-  actor: string;
-  action: string;
+  _id;
+  timestamp;
+  actor;
+  action;
   before: AdminSettings;
   after: AdminSettings;
   changes: Partial<AdminSettings>;

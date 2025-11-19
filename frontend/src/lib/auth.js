@@ -2,31 +2,31 @@
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export interface AuthResponse {
-  success: boolean;
-  message: string;
-  demo_code?: string;
-  expires_in_minutes?: number;
+  success;
+  message;
+  demo_code?;
+  expires_in_minutes?;
 }
 
 export interface VerifyResponse {
-  success: boolean;
-  role: string;
-  email: string;
-  message: string;
+  success;
+  role;
+  email;
+  message;
 }
 
 export interface UserInfo {
-  id: string;
-  email: string;
-  role: string;
-  org_id: string;
-  is_admin: boolean;
+  id;
+  email;
+  role;
+  org_id;
+  is_admin;
 }
 
 /**
  * Request a magic code (OTP) to be sent to the user's email
  */
-export async function requestMagicCode(email: string): Promise<AuthResponse> {
+export async function requestMagicCode(email): Promise<AuthResponse> {
   const response = await fetch(`${BACKEND_URL}/api/auth/magic/request`, {
     method: 'POST',
     headers: {
@@ -58,7 +58,7 @@ export async function requestMagicCode(email: string): Promise<AuthResponse> {
 /**
  * Verify the magic code and authenticate the user
  */
-export async function verifyMagicCode(email: string, code: string): Promise<VerifyResponse> {
+export async function verifyMagicCode(email, code): Promise<VerifyResponse> {
   const response = await fetch(`${BACKEND_URL}/api/auth/magic/verify`, {
     method: 'POST',
     headers: {
@@ -139,7 +139,7 @@ export async function getAdminStatus() {
 /**
  * Validate email format
  */
-export function isValidEmail(email: string): boolean {
+export function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
@@ -147,14 +147,14 @@ export function isValidEmail(email: string): boolean {
 /**
  * Validate OTP code format
  */
-export function isValidOTP(code: string): boolean {
+export function isValidOTP(code) {
   return /^\d{6}$/.test(code);
 }
 
 /**
  * Format time remaining for OTP expiry
  */
-export function formatTimeRemaining(expiresInMinutes: number, startTime: Date): string {
+export function formatTimeRemaining(expiresInMinutes, startTime: Date) {
   const now = new Date();
   const elapsed = Math.floor((now.getTime() - startTime.getTime()) / 1000 / 60);
   const remaining = Math.max(0, expiresInMinutes - elapsed);

@@ -35,9 +35,9 @@ export async function listUsers() {
  * Adjust user credits
  */
 export async function adjustCredits(payload: {
-  userId: string;
-  delta: number;
-  reason: string;
+  userId;
+  delta;
+  reason;
 }) {
   const response = await fetch(`${BACKEND_URL}/api/admin/users/adjust-credits`, {
     method: 'POST',
@@ -60,8 +60,8 @@ export async function adjustCredits(payload: {
  * Set user tier
  */
 export async function setTier(payload: {
-  userId: string;
-  tier: string;
+  userId;
+  tier;
 }) {
   const response = await fetch(`${BACKEND_URL}/api/admin/users/set-tier`, {
     method: 'POST',

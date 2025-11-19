@@ -3,22 +3,22 @@
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export type ModOpt = {
-  key: string;
-  label: string;
+  key;
+  label;
   tier: 'basic' | 'pro' | 'enterprise';
-  pk_intent: string[];
-  notes?: string;
-  typical_targets?: string[];
+  pk_intent[];
+  notes?;
+  typical_targets?[];
 };
 
 export type ExcOpt = {
-  key: string;
-  label: string;
+  key;
+  label;
   tier: 'basic' | 'pro' | 'enterprise';
 };
 
 export interface ChemistryOptions {
-  tier: string;
+  tier;
   mods: ModOpt[];
   exclusions: ExcOpt[];
 }
@@ -43,7 +43,7 @@ export async function fetchChemistryOptions(): Promise<ChemistryOptions> {
  * Client-side conflict awareness (UX hints only; server is authoritative)
  * Returns warning message if conflicts detected
  */
-export function hasClientConflicts(mods: string[], exclusions: string[]): string | null {
+export function hasClientConflicts(mods[], exclusions[]) | null {
   const set = new Set<string>([...mods, ...exclusions]);
   
   // Mirror key UX conflicts (not exhaustive - server validates fully)

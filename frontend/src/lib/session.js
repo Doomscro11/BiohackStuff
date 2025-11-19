@@ -2,10 +2,10 @@
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export interface SessionData {
-  email: string;
-  role: string;
-  tier: string;
-  credits: number;
+  email;
+  role;
+  tier;
+  credits;
 }
 
 /**
@@ -26,7 +26,7 @@ export async function fetchSession(): Promise<SessionData | null> {
     const session: SessionData = await response.json();
     
     // Expose tier globally for frontend components
-    (window as any).__USER_TIER__ = session.tier || 'basic';
+    (window).__USER_TIER__ = session.tier || 'basic';
     
     return session;
   } catch (error) {
