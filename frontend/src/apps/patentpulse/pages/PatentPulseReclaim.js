@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { fetchJSON } from '../lib/http';
+import { fetchJSON } from '@/lib/http';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
