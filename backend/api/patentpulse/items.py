@@ -1,21 +1,13 @@
 # PatentPulse Backend Routes - Patent Mining & Analysis API
 import logging
-from datetime import datetime, timedelta
+import os
 from typing import Optional, List
 from fastapi import APIRouter, Request, HTTPException, status, Depends, Query
 from pydantic import BaseModel
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
+
+from services import patentpulse_service
 
 logger = logging.getLogger(__name__)
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
-
-# Collections
-patentpulse_items = db['patentpulse_items']
 
 router = APIRouter(prefix="/api/patentpulse", tags=["patentpulse"])
 
