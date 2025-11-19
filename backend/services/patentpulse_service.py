@@ -87,45 +87,72 @@ async def get_patent_stats() -> Dict[str, Any]:
     Get patent statistics
     
     Returns:
-        Dict with total, by_status, by_country counts
+        Dict with total, by_status, top_assignees, average scores, expiring_soon count
     """
-    pipeline = [
-        {
-            '$facet': {
-                'total': [{'$count': 'count'}],
-                'by_status': [
-                    {'$group': {'_id': '$status', 'count': {'$sum': 1}}}
-                ],
-                'by_country': [
-                    {'$group': {'_id': '$country', 'count': {'$sum': 1}}},
-                    {'$sort': {'count': -1}},
-                    {'$limit': 10}
-                ]
-            }
+    try:
+        # Total patents
+        total = await db.patentpulse_items.count_documents({})
+        
+        # By status
+        status_pipeline = [
+            {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        status_result = await db.patentpulse_items.aggregate(status_pipeline).to_list(None)
+        by_status = {item["_id"]: item["count"] for item in status_result}
+        
+        # Top assignees
+        assignee_pipeline = [
+            {"$group": {"_id": "$assignee", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        assignee_result = await db.patentpulse_items.aggregate(assignee_pipeline).to_list(10)
+        top_assignees = [{"assignee": item["_id"], "count": item["count"]} for item in assignee_result]
+        
+        # Average scores
+        avg_pipeline = [
+            {"$group": {
+                "_id": None,
+                "avg_commercial": {"$avg": "$commercial_score"},
+                "avg_synthesis": {"$avg": "$synthesis_score"},
+                "avg_fto_risk": {"$avg": "$fto_risk"}
+            }}
+        ]
+        avg_result = await db.patentpulse_items.aggregate(avg_pipeline).to_list(1)
+        avg_scores = avg_result[0] if avg_result else {
+            "avg_commercial": 0,
+            "avg_synthesis": 0,
+            "avg_fto_risk": 0
         }
-    ]
-    
-    result = await db.patentpulse_items.aggregate(pipeline).to_list(length=1)
-    
-    if not result:
+        
+        # Expiring soon (next 24 months)
+        cutoff = datetime.now(timezone.utc) + timedelta(days=730)
+        expiring_soon = await db.patentpulse_items.count_documents({
+            "status": {"$in": ["Active", "Expiring"]},
+            "expiry_date": {"$lte": cutoff}
+        })
+        
         return {
-            'total': 0,
-            'by_status': {},
-            'by_country': {}
+            "total": total,
+            "by_status": by_status,
+            "top_assignees": top_assignees,
+            "avg_commercial_score": round(avg_scores.get("avg_commercial", 0), 3),
+            "avg_synthesis_score": round(avg_scores.get("avg_synthesis", 0), 3),
+            "avg_fto_risk": round(avg_scores.get("avg_fto_risk", 0), 3),
+            "expiring_soon_24mo": expiring_soon
         }
-    
-    data = result[0]
-    
-    total = data['total'][0]['count'] if data['total'] else 0
-    
-    by_status = {item['_id']: item['count'] for item in data['by_status']}
-    by_country = {item['_id']: item['count'] for item in data['by_country']}
-    
-    return {
-        'total': total,
-        'by_status': by_status,
-        'by_country': by_country
-    }
+    except Exception as e:
+        logger.error(f"PatentPulse stats fetch failed: {e}")
+        return {
+            "total": 0,
+            "by_status": {},
+            "top_assignees": [],
+            "avg_commercial_score": 0,
+            "avg_synthesis_score": 0,
+            "avg_fto_risk": 0,
+            "expiring_soon_24mo": 0
+        }
 
 
 async def get_top_opportunities(limit: int = 5) -> List[Dict[str, Any]]:
