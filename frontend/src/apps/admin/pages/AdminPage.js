@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import PartnerSharesAdmin from '../components/admin/PartnerShares';
+import PartnerSharesAdmin from '@/components/admin/PartnerShares';
 
 const AdminPage = () => {
   return (
