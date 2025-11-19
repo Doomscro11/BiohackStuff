@@ -62,7 +62,7 @@ export default function BillingWidget() {
     const params = new URLSearchParams(window.location.search);
     const cameFromCheckout = params.get('success') === '1';
     
-    let timer: any = null;
+    let timer = null;
     let tries = 0;
     
     const poll = async () => {
