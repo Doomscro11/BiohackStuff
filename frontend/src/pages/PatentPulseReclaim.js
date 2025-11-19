@@ -9,43 +9,43 @@ import { fetchJSON } from '../lib/http';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 interface ReclaimExport {
-  file_id: string;
-  file_name: string;
+  file_id;
+  file_name;
   format: 'pdf' | 'json';
-  items: number;
-  viability_avg: number;
-  generated_at: string;
-  expires_at: string;
-  size_kb: number;
+  items;
+  viability_avg;
+  generated_at;
+  expires_at;
+  size_kb;
 }
 
 interface ExportCriteria {
   format: 'pdf' | 'json';
-  limit: number;
-  country?: string;
-  status?: string;
+  limit;
+  country?;
+  status?;
 }
 
 export default function PatentPulseReclaim() {
   const [loading, setLoading] = useState(false);
-  const [exports, setExports] = useState<ReclaimExport[]>([]);
+  const [exports, setExports] = useState([]);
   const [featureEnabled, setFeatureEnabled] = useState(true);
   const [requires2FA, setRequires2FA] = useState(false);
   
   // Form state
-  const [format, setFormat] = useState<'pdf' | 'json'>('pdf');
+  const [format, setFormat] = useState('pdf');
   const [limit, setLimit] = useState(10);
   const [country, setCountry] = useState('');
   const [status, setStatus] = useState('');
   
   // Toast state
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState(null);
   
   useEffect(() => {
     loadExports();
   }, []);
   
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = (message, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 5000);
   };
@@ -66,7 +66,7 @@ export default function PatentPulseReclaim() {
           setRequires2FA(true);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to load exports:', error);
     }
   };
@@ -113,14 +113,14 @@ export default function PatentPulseReclaim() {
           showToast(`Export failed: ${result.text || 'Unknown error'}`, 'error');
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       showToast(`Export failed: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
   };
   
-  const deleteExport = async (fileId: string) => {
+  const deleteExport = async (fileId) => {
     if (!confirm('Delete this export?')) return;
     
     try {
@@ -138,12 +138,12 @@ export default function PatentPulseReclaim() {
       } else {
         showToast('Delete failed', 'error');
       }
-    } catch (error: any) {
+    } catch (error) {
       showToast(`Delete failed: ${error.message}`, 'error');
     }
   };
   
-  const formatDate = (isoString: string) => {
+  const formatDate = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -152,7 +152,7 @@ export default function PatentPulseReclaim() {
     });
   };
   
-  const isExpired = (expiresAt: string) => {
+  const isExpired = (expiresAt) => {
     return new Date(expiresAt) < new Date();
   };
   
