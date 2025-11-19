@@ -101,7 +101,7 @@ export default function PatentPulsePage() {
 
   if (!stats) return null;
 
-  const getStatusBadgeColor = (status: string) => {
+  const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'Expired': return 'bg-green-100 text-green-800';
       case 'Lapsed': return 'bg-blue-100 text-blue-800';
@@ -110,7 +110,7 @@ export default function PatentPulsePage() {
     }
   };
 
-  const getScoreBadge = (score: number, inverse: boolean = false) => {
+  const getScoreBadge = (score, inverse = false) => {
     const value = inverse ? (1 - score) : score;
     if (value >= 0.7) return 'bg-green-100 text-green-800';
     if (value >= 0.4) return 'bg-yellow-100 text-yellow-800';

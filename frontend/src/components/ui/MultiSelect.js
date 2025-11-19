@@ -14,7 +14,7 @@ export default function MultiSelect({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   
-  const handleToggle = (optionValue: string) => {
+  const handleToggle = (optionValue) => {
     if (value.includes(optionValue)) {
       // Remove
       onChange(value.filter(v => v !== optionValue));
@@ -26,7 +26,7 @@ export default function MultiSelect({
     }
   };
   
-  const handleRemove = (optionValue: string) => {
+  const handleRemove = (optionValue) => {
     onChange(value.filter(v => v !== optionValue));
   };
   

@@ -23,7 +23,7 @@ export default function AnalogueForm({
   
   const tierOrder = { basic: 0, pro: 1, enterprise: 2 };
   
-  const canAccess = (requiredTier: string) => {
+  const canAccess = (requiredTier) => {
     return tierOrder[userTier as keyof typeof tierOrder] >= tierOrder[requiredTier as keyof typeof tierOrder];
   };
   
@@ -33,10 +33,10 @@ export default function AnalogueForm({
     return null;
   };
   
-  const handleModToggle = (modKey: string) => {
+  const handleModToggle = (modKey) => {
     const current = formData.allowed_mods || [];
     if (current.includes(modKey)) {
-      handleInputChange('allowed_mods', current.filter((k: string) => k !== modKey));
+      handleInputChange('allowed_mods', current.filter((k) => k !== modKey));
     } else {
       if (current.length < 3) {
         handleInputChange('allowed_mods', [...current, modKey]);
@@ -44,10 +44,10 @@ export default function AnalogueForm({
     }
   };
   
-  const handleExclusionToggle = (excKey: string) => {
+  const handleExclusionToggle = (excKey) => {
     const current = formData.exclusions || [];
     if (current.includes(excKey)) {
-      handleInputChange('exclusions', current.filter((k: string) => k !== excKey));
+      handleInputChange('exclusions', current.filter((k) => k !== excKey));
     } else {
       if (current.length < 6) {
         handleInputChange('exclusions', [...current, excKey]);

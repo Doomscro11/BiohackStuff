@@ -207,7 +207,7 @@ export default function BillingWidget() {
     );
   }
 
-  const getTierColor = (tier: string) => {
+  const getTierColor = (tier) => {
     switch (tier) {
       case 'basic': return 'bg-gray-100 text-gray-700';
       case 'pro': return 'bg-blue-100 text-blue-700';
