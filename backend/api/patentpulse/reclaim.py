@@ -167,25 +167,15 @@ async def delete_export(
     check_feature_flag()
     
     try:
-        # Find export
-        export = await patentpulse_exports.find_one({"file_id": file_id})
+        result = await reclaim_service.delete_export(file_id)
         
-        if not export:
+        if not result['success']:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Export {file_id} not found"
+                detail=result['message']
             )
         
-        # Delete file
-        file_path = Path(export["file_path"])
-        if file_path.exists():
-            file_path.unlink()
-            logger.info(f"Deleted file: {file_path}")
-        
-        # Delete metadata
-        await patentpulse_exports.delete_one({"file_id": file_id})
-        
-        return {"message": f"Export {file_id} deleted successfully"}
+        return {"message": result['message']}
     
     except HTTPException:
         raise
