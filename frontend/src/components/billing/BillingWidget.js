@@ -380,7 +380,7 @@ export default function BillingWidget() {
           <div className="max-h-64 overflow-auto">
             {state.history && state.history.length > 0 ? (
               <div className="space-y-2">
-                {state.history.map((h: any) => (
+                {state.history.map((h) => (
                   <div key={h._id} className="flex items-center justify-between py-2 border-b text-sm">
                     <div className="flex items-center gap-2">
                       <span className={`font-semibold ${h.delta > 0 ? 'text-green-600' : 'text-red-600'}`}>
