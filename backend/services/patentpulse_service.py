@@ -155,20 +155,50 @@ async def get_patent_stats() -> Dict[str, Any]:
         }
 
 
-async def get_top_opportunities(limit: int = 5) -> List[Dict[str, Any]]:
+async def get_top_opportunities(limit: int = 10) -> Dict[str, Any]:
     """
-    Get top patent opportunities sorted by viability score
+    Get top patent opportunities ranked by composite viability score
+    Composite = commercial_score * (1 - synthesis_score) * (1 - fto_risk)
+    
+    Returns:
+        Dict with 'opportunities' and 'count'
     """
-    cursor = db.patentpulse_items.find(
-        {'viability_score': {'$exists': True}},
-        {'_id': 0}
-    ).sort('viability_score', -1).limit(limit)
-    
-    opportunities = await cursor.to_list(length=limit)
-    
-    logger.info(f"Retrieved {len(opportunities)} top opportunities")
-    
-    return opportunities
+    try:
+        # Calculate composite viability and sort
+        pipeline = [
+            {"$match": {"status": {"$in": ["Expired", "Lapsed", "Expiring"]}}},
+            {"$addFields": {
+                "viability_score": {
+                    "$multiply": [
+                        "$commercial_score",
+                        {"$subtract": [1, "$synthesis_score"]},
+                        {"$subtract": [1, "$fto_risk"]}
+                    ]
+                }
+            }},
+            {"$sort": {"viability_score": -1}},
+            {"$limit": limit}
+        ]
+        
+        result = await db.patentpulse_items.aggregate(pipeline).to_list(limit)
+        
+        # Serialize dates and round viability score
+        for item in result:
+            _serialize_dates(item)
+            item["viability_score"] = round(item["viability_score"], 4)
+        
+        logger.info(f"Retrieved {len(result)} top opportunities")
+        
+        return {
+            "opportunities": result,
+            "count": len(result)
+        }
+    except Exception as e:
+        logger.error(f"Top opportunities fetch failed: {e}")
+        return {
+            "opportunities": [],
+            "count": 0
+        }
 
 
 async def update_patent_status(patent_id: str, status: str) -> bool:
