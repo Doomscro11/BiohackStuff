@@ -276,8 +276,15 @@ function App() {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* New Compact Accordion Form */}
-                <div>Form temporarily disabled for testing</div>
+                {/* Submit Button - Form disabled temporarily */}
+                <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    Peptide generation form temporarily disabled during Partner Portal testing.
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Navigate to <a href="/admin" className="underline font-medium">/admin</a> to test Partner Portal features.
+                  </p>
+                </div>
 
                 {/* Submit Button */}
                 <Button 
