@@ -13,8 +13,8 @@ import {
   getPatentItems, 
   getPatentStats, 
   getTopOpportunities
-} from '../lib/patentpulse';
-import PartnerSharesAdmin from '../components/admin/PartnerShares.js';
+} from '@/lib/patentpulse';
+import PartnerSharesAdmin from '@/components/admin/PartnerShares.js';
 
 export default function PatentPulsePage() {
   const [stats, setStats] = useState(null);
