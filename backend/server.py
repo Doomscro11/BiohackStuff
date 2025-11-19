@@ -1122,7 +1122,7 @@ from api.patentpulse.signals import router as patentpulse_signals_router
 app.include_router(patentpulse_signals_router)
 
 # Include Phase IXe PatentPulse Reclaim routes
-from routes.patentpulse_reclaim import router as patentpulse_reclaim_router
+from api.patentpulse.reclaim import router as patentpulse_reclaim_router
 app.include_router(patentpulse_reclaim_router)
 
 # Include Phase IXf+ Partner Portal routes
