@@ -22,8 +22,8 @@ export async function fetchChemistryOptions(): Promise<ChemistryOptions> {
  * Client-side conflict awareness (UX hints only; server is authoritative)
  * Returns warning message if conflicts detected
  */
-export function hasClientConflicts(mods[], exclusions[]) | null {
-  const set = new Set<string>([...mods, ...exclusions]);
+export function hasClientConflicts(mods, exclusions) {
+  const set = new Set([...mods, ...exclusions]);
   
   // Mirror key UX conflicts (not exhaustive - server validates fully)
   if (set.has('pegylation') && set.has('lipidation') && set.has('no_linker_conflicts')) {
