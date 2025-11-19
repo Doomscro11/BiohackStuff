@@ -17,7 +17,10 @@ from .patentpulse import (
     MarketSignalProvenance,
     PatentMarketSignal
 )
-from .market_signals import MarketSignal, CommercialBreakdown
+from .market_signals import (
+    MarketFactorCalculation,
+    ScoreAdjustmentResult
+)
 from .reclaim_pack import (
     ExportCriteria,
     PatentExportItem,
