@@ -2,27 +2,6 @@
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-export type ModOpt = {
-  key;
-  label;
-  tier: 'basic' | 'pro' | 'enterprise';
-  pk_intent[];
-  notes?;
-  typical_targets?[];
-};
-
-export type ExcOpt = {
-  key;
-  label;
-  tier: 'basic' | 'pro' | 'enterprise';
-};
-
-export interface ChemistryOptions {
-  tier;
-  mods: ModOpt[];
-  exclusions: ExcOpt[];
-}
-
 /**
  * Fetch canonical chemistry options from backend
  * Options are already filtered by user's tier

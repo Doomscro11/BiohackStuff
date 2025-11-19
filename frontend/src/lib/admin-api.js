@@ -1,31 +1,8 @@
 // API utilities for Peptimancer Admin Panel
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-export interface AdminSettings {
-  integrationsMode;
-  demoMode;
-  watermarkExports;
-  croEnabled;
-  billingEnabled;
-  rateLimitDemo;
-  rateLimitLive;
-  maxAnalogues;
-  enterpriseFeatures;
-  auditLogging;
-}
-
 export interface SettingsUpdate extends Partial<AdminSettings> {
   confirm;
-}
-
-export interface AuditRecord {
-  _id;
-  timestamp;
-  actor;
-  action;
-  before: AdminSettings;
-  after: AdminSettings;
-  changes: Partial<AdminSettings>;
 }
 
 // Admin API functions

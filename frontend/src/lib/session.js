@@ -1,13 +1,6 @@
 // Session management utilities for Peptimancer
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-export interface SessionData {
-  email;
-  role;
-  tier;
-  credits;
-}
-
 /**
  * Fetch current session data (user info, tier, credits)
  * Sets window.__USER_TIER__ for global access

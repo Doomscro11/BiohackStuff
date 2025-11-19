@@ -34,11 +34,7 @@ export async function getPlans() {
   return response.json();
 }
 
-export async function upsertPlan(plan: {
-  code;
-  price;
-  credits;
-}) {
+export async function upsertPlan(plan) {
   const response = await fetch(`${BACKEND_URL}/api/billing/admin/plans`, {
     method: 'PUT',
     headers: {

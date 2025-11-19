@@ -1,28 +1,6 @@
 // Authentication utilities for Peptimancer Admin
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-export interface AuthResponse {
-  success;
-  message;
-  demo_code?;
-  expires_in_minutes?;
-}
-
-export interface VerifyResponse {
-  success;
-  role;
-  email;
-  message;
-}
-
-export interface UserInfo {
-  id;
-  email;
-  role;
-  org_id;
-  is_admin;
-}
-
 /**
  * Request a magic code (OTP) to be sent to the user's email
  */

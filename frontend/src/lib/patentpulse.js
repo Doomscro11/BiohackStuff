@@ -3,36 +3,14 @@ import { fetchJSON } from './http';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-export interface PatentItem {
-  _id;
-  title;
-  patent_id;
-  assignee;
-  country;
-  expiry_date;
-  status;
-  keywords[];
-  sequence_data | null;
-  commercial_score;
-  synthesis_score;
-  fto_risk;
-  repurpose_notes;
-  created_at;
-  updated_at;
-  viability_score?;
-}
-
-export interface PatentStats {
-  total;
-  by_status: Record<string, number>;
-  top_assignees: Array<{ assignee; count }>;
+>;
   avg_commercial_score;
   avg_synthesis_score;
   avg_fto_risk;
   expiring_soon_24mo;
 }
 
-export async function getPatentItems(filters?: {
+export async function getPatentItems(filters? {
   status?;
   country?;
   min_commercial_score?;
