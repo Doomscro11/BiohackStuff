@@ -20,10 +20,10 @@ import {
 } from 'recharts';
 
 export default function AnalyticsPage() {
-  const [live, setLive] = useState<LiveAnalytics | null>(null);
-  const [snapshots, setSnapshots] = useState<AnalyticsSnapshot[]>([]);
+  const [live, setLive] = useState(null);
+  const [snapshots, setSnapshots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadAnalytics();
