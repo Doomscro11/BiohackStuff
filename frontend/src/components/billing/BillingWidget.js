@@ -114,7 +114,7 @@ export default function BillingWidget() {
       return;
     }
     
-    window.location.href = (result as any).data.url;
+    window.location.href = result.data.url;
   };
 
   const buyCredits = async (credits) => {
@@ -127,7 +127,7 @@ export default function BillingWidget() {
       return;
     }
     
-    window.location.href = (result as any).data.url;
+    window.location.href = result.data.url;
   };
 
   if (loading) {
