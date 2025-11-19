@@ -92,71 +92,7 @@ async def get_patent_stats(user=Depends(require_admin_2fa)):
     """
     check_feature_enabled()
     
-    try:
-        # Total patents
-        total = await patentpulse_items.count_documents({})
-        
-        # By status
-        status_pipeline = [
-            {"$group": {"_id": "$status", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}}
-        ]
-        status_result = await patentpulse_items.aggregate(status_pipeline).to_list(None)
-        by_status = {item["_id"]: item["count"] for item in status_result}
-        
-        # Top assignees
-        assignee_pipeline = [
-            {"$group": {"_id": "$assignee", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 10}
-        ]
-        assignee_result = await patentpulse_items.aggregate(assignee_pipeline).to_list(10)
-        top_assignees = [{"assignee": item["_id"], "count": item["count"]} for item in assignee_result]
-        
-        # Average scores
-        avg_pipeline = [
-            {"$group": {
-                "_id": None,
-                "avg_commercial": {"$avg": "$commercial_score"},
-                "avg_synthesis": {"$avg": "$synthesis_score"},
-                "avg_fto_risk": {"$avg": "$fto_risk"}
-            }}
-        ]
-        avg_result = await patentpulse_items.aggregate(avg_pipeline).to_list(1)
-        avg_scores = avg_result[0] if avg_result else {
-            "avg_commercial": 0,
-            "avg_synthesis": 0,
-            "avg_fto_risk": 0
-        }
-        
-        # Expiring soon (next 24 months)
-        cutoff = datetime.utcnow() + timedelta(days=730)
-        expiring_soon = await patentpulse_items.count_documents({
-            "status": {"$in": ["Active", "Expiring"]},
-            "expiry_date": {"$lte": cutoff}
-        })
-        
-        return {
-            "total": total,
-            "by_status": by_status,
-            "top_assignees": top_assignees,
-            "avg_commercial_score": round(avg_scores.get("avg_commercial", 0), 3),
-            "avg_synthesis_score": round(avg_scores.get("avg_synthesis", 0), 3),
-            "avg_fto_risk": round(avg_scores.get("avg_fto_risk", 0), 3),
-            "expiring_soon_24mo": expiring_soon
-        }
-        
-    except Exception as e:
-        logger.error(f"PatentPulse stats fetch failed: {e}")
-        return {
-            "total": 0,
-            "by_status": {},
-            "top_assignees": [],
-            "avg_commercial_score": 0,
-            "avg_synthesis_score": 0,
-            "avg_fto_risk": 0,
-            "expiring_soon_24mo": 0
-        }
+    return await patentpulse_service.get_patent_stats()
 
 @router.get("/top-opportunities")
 async def get_top_opportunities(
