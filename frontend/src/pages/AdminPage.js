@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import PartnerShares from '../components/admin/PartnerShares';
+import PartnerSharesAdmin from '../components/admin/PartnerShares';
 
 const AdminPage = () => {
   return (
@@ -17,7 +17,7 @@ const AdminPage = () => {
         </p>
       </div>
       
-      <PartnerShares />
+      <PartnerSharesAdmin />
     </div>
   );
 };
