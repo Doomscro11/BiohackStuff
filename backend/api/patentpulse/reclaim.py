@@ -65,32 +65,12 @@ async def generate_export(
     check_feature_flag()
     
     try:
-        logger.info(f"Generating {format} reclaim pack: limit={limit}, country={country}, status={status}")
-        
-        # Build criteria
-        criteria = ExportCriteria(
+        return await reclaim_service.generate_reclaim_pack(
+            format=format,
             limit=limit,
-            status_filter=[status] if status else None,
-            country_filter=country
+            country=country,
+            status=status
         )
-        
-        # Generate
-        generator = ReclaimPackGenerator(criteria, format, EXPORT_DIR)
-        export_meta = await generator.generate()
-        
-        # Return metadata
-        return {
-            "file_id": export_meta.file_id,
-            "file_name": export_meta.file_name,
-            "format": export_meta.format,
-            "path": f"/api/patentpulse/reclaim/{export_meta.file_id}/download",
-            "size_kb": export_meta.size_kb,
-            "items": export_meta.count,
-            "viability_avg": export_meta.viability_avg,
-            "generated_at": export_meta.generated_at.isoformat(),
-            "expires_at": export_meta.expires_at.isoformat()
-        }
-    
     except Exception as e:
         logger.error(f"Export generation failed: {e}")
         raise HTTPException(
