@@ -5,7 +5,7 @@ Handles patent data queries and operations
 
 import os
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -18,29 +18,62 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
 
+def _serialize_dates(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert datetime objects to ISO strings"""
+    if item.get("_id"):
+        item["_id"] = str(item["_id"])
+    
+    date_fields = ["expiry_date", "created_at", "updated_at", "priority_date"]
+    for field in date_fields:
+        if isinstance(item.get(field), datetime):
+            item[field] = item[field].isoformat()
+    
+    return item
+
+
 async def get_patent_items(
-    status: Optional[str] = None,
+    status_filter: Optional[str] = None,
     country: Optional[str] = None,
-    limit: int = 100,
+    min_commercial_score: Optional[float] = None,
+    limit: int = 50,
     skip: int = 0
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     """
-    Get patent items with optional filters
+    Get patent items with optional filters and pagination
+    
+    Returns:
+        Dict with 'items', 'count', 'total', 'skip', 'limit'
     """
     query = {}
     
-    if status:
-        query['status'] = status
+    if status_filter:
+        query['status'] = status_filter
     
     if country:
         query['country'] = country
     
-    cursor = db.patentpulse_items.find(query, {'_id': 0}).skip(skip).limit(limit).sort('priority_date', -1)
-    items = await cursor.to_list(length=limit)
+    if min_commercial_score is not None:
+        query['commercial_score'] = {'$gte': min_commercial_score}
     
-    logger.info(f"Retrieved {len(items)} patent items")
+    # Execute query with pagination
+    cursor = db.patentpulse_items.find(query).sort('commercial_score', -1).skip(skip).limit(limit)
+    items = await cursor.to_list(limit)
     
-    return items
+    # Serialize dates
+    items = [_serialize_dates(item) for item in items]
+    
+    # Get total count
+    total = await db.patentpulse_items.count_documents(query)
+    
+    logger.info(f"Retrieved {len(items)} patent items (total: {total})")
+    
+    return {
+        'items': items,
+        'count': len(items),
+        'total': total,
+        'skip': skip,
+        'limit': limit
+    }
 
 
 async def get_patent_by_id(patent_id: str) -> Optional[Dict[str, Any]]:
