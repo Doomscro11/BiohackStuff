@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
 
       setLive(liveResult.data);
       setSnapshots(snapshotsResult.data.snapshots);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
