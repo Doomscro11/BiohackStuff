@@ -1110,7 +1110,7 @@ from api.chemistry import router as chemistry_router
 app.include_router(chemistry_router)
 
 # Include Phase IXa analytics routes
-from routes_analytics import router as analytics_router
+from api.admin.analytics import router as analytics_router
 app.include_router(analytics_router)
 
 # Include Phase IXb PatentPulse routes
