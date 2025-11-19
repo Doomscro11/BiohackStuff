@@ -1,6 +1,6 @@
 // Billing Page - User subscription and credit management
 import React from 'react';
-import BillingWidget from '../components/billing/BillingWidget.tsx';
+import BillingWidget from '../components/billing/BillingWidget';
 
 export default function BillingPage() {
   return (
