@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, Coins, TrendingUp, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function BillingWidget() {
-  const [state, setState] = useState<any>(null);
+  const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [serverError, setServerError] = useState(false);
