@@ -130,10 +130,18 @@ const SharePage = () => {
     return (
       <div className="share-page">
         <div className="share-container">
-          <div className="error-state">
-            <div className="error-icon">⚠️</div>
-            <h2>Access Error</h2>
-            <p className="error-message">{error}</p>
+          <div className="share-header">
+            <div className="logo-section">
+              <h1 data-testid="pp-partner-branding">PatentPulse</h1>
+              <p className="tagline">Secure Preview</p>
+            </div>
+          </div>
+          
+          <div className="share-content">
+            <div className="error-state">
+              <div className="error-icon">⚠️</div>
+              <h2>Access Error</h2>
+              <p className="error-message">{error}</p>
             
             {error.includes('expired') && (
               <div className="error-details">
