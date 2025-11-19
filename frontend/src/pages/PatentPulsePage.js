@@ -12,19 +12,17 @@ import {
 import { 
   getPatentItems, 
   getPatentStats, 
-  getTopOpportunities,
-  type PatentItem,
-  type PatentStats 
+  getTopOpportunities
 } from '../lib/patentpulse';
 import PartnerSharesAdmin from '../components/admin/PartnerShares.js';
 
 export default function PatentPulsePage() {
-  const [stats, setStats] = useState<PatentStats | null>(null);
-  const [opportunities, setOpportunities] = useState<PatentItem[]>([]);
-  const [patents, setPatents] = useState<PatentItem[]>([]);
+  const [stats, setStats] = useState(null);
+  const [opportunities, setOpportunities] = useState([]);
+  const [patents, setPatents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     loadPatentPulseData();
