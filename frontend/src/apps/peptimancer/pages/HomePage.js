@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertCircle, Dna, Zap, TrendingUp, Clock, DollarSign, Shield, Beaker, Download, Send, CreditCard } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 // import AnalogueForm from '@/components/AnalogueForm.js';
-import { fetchChemistryOptions, hasClientConflicts } from './lib/chemistry';
+import { fetchChemistryOptions, hasClientConflicts } from '@/lib/chemistry';
 import '@/App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
