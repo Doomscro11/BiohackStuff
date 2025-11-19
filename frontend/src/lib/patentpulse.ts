@@ -1,5 +1,5 @@
 // PatentPulse API helpers for Peptimancer Admin
-import { fetchJSON } from './http.ts';
+import { fetchJSON } from './http';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
