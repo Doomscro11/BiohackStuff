@@ -7,9 +7,23 @@ For backward compatibility, we re-export schemas here
 """
 
 # Import persistence models from models directory
-from .patentpulse import PatentPulseItem, PatentFamily, ClaimsSnapshot, FTOSnapshot
+from .patentpulse import (
+    PatentItemInput,
+    PatentItemDB,
+    CommercialBreakdown as PatentCommercialBreakdown,
+    RunMetadata,
+    DLQEntry,
+    MarketSignalFeatures,
+    MarketSignalProvenance,
+    PatentMarketSignal
+)
 from .market_signals import MarketSignal, CommercialBreakdown
-from .reclaim_pack import ReclaimPackRequest, ReclaimPackItem, ExportCriteria, ReclaimPackExport
+from .reclaim_pack import (
+    ExportCriteria,
+    PatentExportItem,
+    ReclaimPackExport,
+    ReclaimPackData
+)
 from .partner_share import (
     SharePolicy,
     PartnerShare,
