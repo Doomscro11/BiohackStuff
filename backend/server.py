@@ -1106,7 +1106,7 @@ app.include_router(billing_router)
 app.include_router(webhooks_router)
 
 # Include Phase VIII chemistry options route
-from routes_chemistry import router as chemistry_router
+from api.chemistry import router as chemistry_router
 app.include_router(chemistry_router)
 
 # Include Phase IXa analytics routes
