@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import App from './App';
+import App from './apps/peptimancer/pages/HomePage';
 import TestPage from './pages/TestPage';
-import AdminPage from './pages/AdminPage';
-import BillingPage from './pages/BillingPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import PatentPulsePage from './pages/PatentPulsePage';
-import SharePage from './pages/partner/SharePage.js';
+import AdminPage from './apps/admin/pages/AdminPage';
+import BillingPage from './apps/account/pages/BillingPage';
+import AnalyticsPage from './apps/admin/pages/AnalyticsPage';
+import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
+import SharePage from './apps/patentpulse/pages/SharePage';
 import CreditBadge from './components/CreditBadge';
 import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
