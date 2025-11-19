@@ -189,7 +189,7 @@ export default function AnalogueForm({
               Up to 6 exclusions · Specify constraints for the design
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {chemOptions.exclusions.map((e: any) => {
+              {chemOptions.exclusions.map((e) => {
                 const isLocked = !canAccess(e.tier);
                 const isSelected = formData.exclusions?.includes(e.key);
                 const isDisabled = isLocked || (!isSelected && (formData.exclusions?.length || 0) >= 6);
