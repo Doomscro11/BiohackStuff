@@ -78,8 +78,8 @@ __all__ = [
     'MarketSignalProvenance',
     'PatentMarketSignal',
     # Market signals
-    'MarketSignal',
-    'CommercialBreakdown',
+    'MarketFactorCalculation',
+    'ScoreAdjustmentResult',
     # Reclaim pack models
     'ExportCriteria',
     'PatentExportItem',
