@@ -13,7 +13,7 @@ export default function BillingWidget() {
   const [authError, setAuthError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const prevCredits = useRef<number | null>(null);
+  const prevCredits = useRef(null);
 
   const reload = async () => {
     setLoading(true);
