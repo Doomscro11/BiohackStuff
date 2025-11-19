@@ -117,7 +117,7 @@ export default function BillingWidget() {
     window.location.href = (result as any).data.url;
   };
 
-  const buyCredits = async (credits: number) => {
+  const buyCredits = async (credits) => {
     setActionLoading(true);
     const result = await startCheckout({ purchase_credits: credits });
     
