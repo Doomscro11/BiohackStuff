@@ -56,7 +56,7 @@ export default function PatentPulsePage() {
       setStats(statsResult.data);
       setOpportunities(oppsResult.data.opportunities);
       setPatents(patentsResult.data.items);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to load PatentPulse data');
     } finally {
       setLoading(false);
