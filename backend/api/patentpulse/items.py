@@ -106,40 +106,7 @@ async def get_top_opportunities(
     check_feature_enabled()
     
     try:
-        # Calculate composite viability and sort
-        pipeline = [
-            {"$match": {"status": {"$in": ["Expired", "Lapsed", "Expiring"]}}},
-            {"$addFields": {
-                "viability_score": {
-                    "$multiply": [
-                        "$commercial_score",
-                        {"$subtract": [1, "$synthesis_score"]},
-                        {"$subtract": [1, "$fto_risk"]}
-                    ]
-                }
-            }},
-            {"$sort": {"viability_score": -1}},
-            {"$limit": limit}
-        ]
-        
-        result = await patentpulse_items.aggregate(pipeline).to_list(limit)
-        
-        # Convert dates to strings
-        for item in result:
-            item["_id"] = str(item["_id"])
-            if isinstance(item.get("expiry_date"), datetime):
-                item["expiry_date"] = item["expiry_date"].isoformat()
-            if isinstance(item.get("created_at"), datetime):
-                item["created_at"] = item["created_at"].isoformat()
-            if isinstance(item.get("updated_at"), datetime):
-                item["updated_at"] = item["updated_at"].isoformat()
-            item["viability_score"] = round(item["viability_score"], 4)
-        
-        return {
-            "opportunities": result,
-            "count": len(result)
-        }
-        
+        return await patentpulse_service.get_top_opportunities(limit=limit)
     except Exception as e:
         logger.error(f"Top opportunities fetch failed: {e}")
         raise HTTPException(
