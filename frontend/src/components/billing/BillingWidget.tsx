@@ -1,7 +1,7 @@
 // User Billing Widget Component - Auth-aware with credit refresh
 import React, { useEffect, useState, useRef } from 'react';
-import { fetchBillingState, startCheckout } from '../../lib/billing.ts';
-import { redirectToLogin } from '../../lib/http.ts';
+import { fetchBillingState, startCheckout } from '../../lib/billing';
+import { redirectToLogin } from '../../lib/http';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
