@@ -69,43 +69,14 @@ async def get_patent_items(
     check_feature_enabled()
     
     try:
-        # Build query
-        query = {}
-        
-        if status_filter:
-            query["status"] = status_filter
-        
-        if country:
-            query["country"] = country
-        
-        if min_commercial_score is not None:
-            query["commercial_score"] = {"$gte": min_commercial_score}
-        
-        # Execute query with pagination
-        cursor = patentpulse_items.find(query).sort("commercial_score", -1).skip(skip).limit(limit)
-        items = await cursor.to_list(limit)
-        
-        # Convert ObjectIds and dates to strings
-        for item in items:
-            item["_id"] = str(item["_id"])
-            if isinstance(item.get("expiry_date"), datetime):
-                item["expiry_date"] = item["expiry_date"].isoformat()
-            if isinstance(item.get("created_at"), datetime):
-                item["created_at"] = item["created_at"].isoformat()
-            if isinstance(item.get("updated_at"), datetime):
-                item["updated_at"] = item["updated_at"].isoformat()
-        
-        # Get total count
-        total = await patentpulse_items.count_documents(query)
-        
-        return {
-            "items": items,
-            "count": len(items),
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
-        
+        result = await patentpulse_service.get_patent_items(
+            status_filter=status_filter,
+            country=country,
+            min_commercial_score=min_commercial_score,
+            limit=limit,
+            skip=skip
+        )
+        return result
     except Exception as e:
         logger.error(f"PatentPulse items fetch failed: {e}")
         raise HTTPException(
