@@ -27,25 +27,15 @@ from analytics.partner_analytics import track_event, get_share_analytics, get_da
 from watermark.pdf_watermark import watermark_pdf, add_json_watermark_headers
 from middleware.auth import get_current_user, require_role
 from services.settings import is_feature_enabled
+from services import partner_share_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/patentpulse/partner", tags=["partner_shares"])
 
-# MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-db_name = os.environ.get('DB_NAME', 'peptimancer_db')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
-
 # Configuration from environment
-PARTNER_SIGNING_SECRET = os.environ.get('PARTNER_SIGNING_SECRET', 'change_this_secret_in_production')
-PARTNER_SHARE_TTL_DAYS = int(os.environ.get('PARTNER_SHARE_TTL_DAYS', '14'))
-PARTNER_MAX_DOWNLOADS = int(os.environ.get('PARTNER_MAX_DOWNLOADS', '10'))
-RATE_LIMIT_PER_IP = os.environ.get('RATE_LIMIT_PER_IP', '30/min')
-WATERMARK_ENABLED = os.environ.get('WATERMARK_ENABLED', 'true').lower() == 'true'
-PARTNER_STORAGE = os.environ.get('PARTNER_STORAGE', 'disk')
 SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'support@peptimancer.com')
+RATE_LIMIT_PER_IP = os.environ.get('RATE_LIMIT_PER_IP', '30/min')
 
 # Rate limiting in-memory store (simple implementation)
 rate_limit_store: Dict[str, List[datetime]] = {}
