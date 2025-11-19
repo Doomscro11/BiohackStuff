@@ -111,64 +111,37 @@ async def request_magic_code(request: Request, body: EmailRequest):
 @auth_router.post("/magic/verify")
 async def verify_magic_code(request: Request, response: Response, body: VerifyRequest):
     """Verify magic code and create session"""
-    email = normalize_email(body.email)
+    email = auth_service.normalize_email(body.email)
     client_ip = request.client.host if request.client else "unknown"
     
     try:
-        # Check if user is locked out
-        if await is_user_locked_out(email):
+        # Check rate limit
+        rate_limit_result = await auth_service.check_rate_limit(email)
+        if not rate_limit_result['allowed']:
+            retry_after = rate_limit_result.get('retry_after')
+            if retry_after:
+                retry_minutes = int((retry_after - datetime.now()).total_seconds() / 60)
+                detail = f"Too many failed attempts. Try again in {retry_minutes} minutes."
+            else:
+                detail = f"Too many failed attempts. Try again in {LOCKOUT_DURATION_MINUTES} minutes."
+            
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Too many failed attempts. Try again in {LOCKOUT_DURATION_MINUTES} minutes."
+                detail=detail
             )
         
-        # Find and verify code
-        code_record = await magic_codes_collection.find_one({"email": email})
+        # Verify code
+        user_data = await auth_service.verify_magic_code(email, body.code)
         
-        if (not code_record or 
-            code_record.get("code") != body.code or 
-            code_record.get("expires") < datetime.utcnow() or
-            code_record.get("used", False)):
-            
-            await log_login_attempt(email, False, client_ip)
+        if not user_data:
+            await auth_service.record_login_attempt(email, False, {'ip': client_ip})
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired magic code"
             )
         
-        # Mark code as used
-        await magic_codes_collection.update_one(
-            {"email": email},
-            {"$set": {"used": True, "used_at": datetime.utcnow()}}
-        )
-        
-        # Determine user role
-        role = "admin" if email in ADMIN_EMAILS else "researcher"
-        logger.info(f"Role determination: email={email}, ADMIN_EMAILS={ADMIN_EMAILS}, role={role}")
-        
-        # Create or update user
-        now = datetime.utcnow()
-        user_doc = await users_collection.find_one_and_update(
-            {"email": email},
-            {
-                "$setOnInsert": {
-                    "email": email,
-                    "created_at": now,
-                    "org_id": "default"
-                },
-                "$set": {
-                    "last_login": now,
-                    "role": role  # Update role in case admin list changed
-                }
-            },
-            upsert=True,
-            return_document=True
-        )
-        
-        user_id = str(user_doc["_id"])
-        
         # Create JWT token
-        token = create_admin_token(user_id, email, role)
+        token = auth_service.create_jwt_token(user_data)
         
         # Set HTTP-only cookie
         cookie_secure = os.getenv("REQUIRE_HTTPS_COOKIES", "false").lower() == "true"
@@ -176,21 +149,21 @@ async def verify_magic_code(request: Request, response: Response, body: VerifyRe
             "pmnc_jwt",
             token,
             httponly=True,
-            secure=cookie_secure,  # Set to True in production with HTTPS
+            secure=cookie_secure,
             samesite="Lax",
             max_age=60 * 60 * int(os.getenv("JWT_EXPIRES_HOURS", "72")),
             path="/"
         )
         
         # Log successful attempt
-        await log_login_attempt(email, True, client_ip)
+        await auth_service.record_login_attempt(email, True, {'ip': client_ip})
         
-        logger.info(f"User authenticated: {email} (role: {role})")
+        logger.info(f"User authenticated: {email} (role: {user_data['role']})")
         
         return {
             "success": True,
-            "role": role,
-            "email": email,
+            "role": user_data['role'],
+            "email": user_data['email'],
             "message": "Authentication successful"
         }
     
@@ -198,7 +171,7 @@ async def verify_magic_code(request: Request, response: Response, body: VerifyRe
         raise
     except Exception as e:
         logger.error(f"Failed to verify magic code for {email}: {e}")
-        await log_login_attempt(email, False, client_ip)
+        await auth_service.record_login_attempt(email, False, {'ip': client_ip, 'error': str(e)})
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Authentication failed"
