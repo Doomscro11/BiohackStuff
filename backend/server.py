@@ -1126,7 +1126,7 @@ from api.patentpulse.reclaim import router as patentpulse_reclaim_router
 app.include_router(patentpulse_reclaim_router)
 
 # Include Phase IXf+ Partner Portal routes
-from routes.partner_shares import router as partner_shares_router
+from api.patentpulse.partner_shares import router as partner_shares_router
 app.include_router(partner_shares_router)
 
 # Add authentication middleware
