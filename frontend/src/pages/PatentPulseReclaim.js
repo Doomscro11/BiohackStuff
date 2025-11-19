@@ -52,7 +52,7 @@ export default function PatentPulseReclaim() {
   
   const loadExports = async () => {
     try {
-      const result = await fetchJSON<{ exports: ReclaimExport[] }>(
+      const result = await fetchJSON(
         `${BACKEND_URL}/api/patentpulse/reclaim/list?limit=20`,
         { credentials: 'include' }
       );
@@ -88,7 +88,7 @@ export default function PatentPulseReclaim() {
       if (country) params.append('country', country);
       if (status) params.append('status', status);
       
-      const result = await fetchJSON<ReclaimExport>(
+      const result = await fetchJSON(
         `${BACKEND_URL}/api/patentpulse/reclaim/export?${params.toString()}`,
         { 
           credentials: 'include',
