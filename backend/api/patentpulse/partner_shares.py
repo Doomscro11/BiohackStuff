@@ -47,66 +47,9 @@ def check_feature_flag():
         raise HTTPException(status_code=503, detail="Partner portal feature not enabled")
 
 
-def generate_share_token(share_id: str, file_id: str, expires_at: datetime) -> str:
-    """
-    Generate HMAC-signed share token
-    
-    Format: share_id|file_id|expires_at|signature
-    """
-    expires_ts = int(expires_at.timestamp())
-    message = f"{share_id}|{file_id}|{expires_ts}"
-    signature = hmac.new(
-        PARTNER_SIGNING_SECRET.encode(),
-        message.encode(),
-        hashlib.sha256
-    ).hexdigest()
-    
-    token = f"{share_id}|{file_id}|{expires_ts}|{signature}"
-    return token
-
-
-def verify_share_token(token: str) -> Optional[Dict[str, Any]]:
-    """
-    Verify share token and extract data
-    
-    Returns:
-        Dict with share_id, file_id, expires_at or None if invalid
-    """
-    try:
-        parts = token.split('|')
-        if len(parts) != 4:
-            return None
-        
-        share_id, file_id, expires_ts_str, signature = parts
-        expires_ts = int(expires_ts_str)
-        
-        # Verify signature
-        message = f"{share_id}|{file_id}|{expires_ts}"
-        expected_signature = hmac.new(
-            PARTNER_SIGNING_SECRET.encode(),
-            message.encode(),
-            hashlib.sha256
-        ).hexdigest()
-        
-        if not hmac.compare_digest(signature, expected_signature):
-            logger.warning(f"Invalid signature for token: {share_id}")
-            return None
-        
-        # Check expiry
-        expires_at = datetime.fromtimestamp(expires_ts, tz=timezone.utc)
-        if datetime.now(timezone.utc) > expires_at:
-            logger.info(f"Token expired: {share_id}")
-            return None
-        
-        return {
-            "share_id": share_id,
-            "file_id": file_id,
-            "expires_at": expires_at
-        }
-    
-    except Exception as e:
-        logger.error(f"Token verification error: {e}")
-        return None
+# Token generation and verification are now handled by partner_share_service
+generate_share_token = partner_share_service.generate_share_token
+verify_share_token = partner_share_service.verify_share_token
 
 
 def check_rate_limit(ip: str) -> bool:
