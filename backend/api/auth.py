@@ -1,41 +1,19 @@
 # Authentication Routes for Peptimancer Enterprise
 import os
-import re
-import random
-import string
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, status, Response, Depends
 from pydantic import BaseModel, EmailStr, validator
-from motor.motor_asyncio import AsyncIOMotorClient
 
-from auth.jwt import sign_jwt, create_admin_token
+from services import auth_service
 
 logger = logging.getLogger(__name__)
 
-# Configuration
-ADMIN_EMAILS = [
-    email.strip().lower() 
-    for email in os.getenv("ADMIN_EMAILS", "").split(",") 
-    if email.strip()
-]
-OTP_LENGTH = int(os.getenv("OTP_LENGTH", "6"))
-OTP_EXPIRES_MINUTES = int(os.getenv("OTP_EXPIRES_MINUTES", "10"))
-MAX_LOGIN_ATTEMPTS = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
-LOCKOUT_DURATION_MINUTES = int(os.getenv("LOCKOUT_DURATION_MINUTES", "30"))
+# Configuration from service
 ENABLE_DEMO_OTP = os.getenv("ENABLE_DEMO_OTP", "true").lower() == "true"
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
-
-# Collections
-magic_codes_collection = db['_magic_codes']
-users_collection = db['users']
-login_attempts_collection = db['_login_attempts']
+OTP_EXPIRES_MINUTES = int(os.getenv("OTP_EXPIRES_MINUTES", "10"))
+LOCKOUT_DURATION_MINUTES = int(os.getenv("LOCKOUT_DURATION_MINUTES", "30"))
 
 # Create router
 auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
