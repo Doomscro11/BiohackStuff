@@ -24,11 +24,11 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Import admin routes and auth system (after loading .env)
-from routes_admin import admin_router
-from routes_auth import auth_router
-from routes_admin_health import router as admin_health_router
-from routes_admin_users import router as admin_users_router
+# Import routes from new api structure (after loading .env)
+from api.admin.modes import admin_router
+from api.auth import auth_router
+from api.admin.health import router as admin_health_router
+from api.admin.users import router as admin_users_router
 from services.settings import get_settings, is_feature_enabled
 from middleware.auth import AuthMiddleware
 
