@@ -10,10 +10,7 @@ export async function fetchBillingState() {
   return result;
 }
 
-export async function startCheckout(payload: {
-  plan?: 'basic' | 'pro' | 'enterprise';
-  purchase_credits?;
-}) {
+export async function startCheckout(payload) {
   const result = await fetchJSON(`${BACKEND_URL}/api/billing/checkout`, {
     method: 'POST',
     headers: {
