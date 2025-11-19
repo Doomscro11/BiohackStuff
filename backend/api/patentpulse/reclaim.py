@@ -112,8 +112,8 @@ async def download_export(
     check_feature_flag()
     
     try:
-        # Find export metadata
-        export = await patentpulse_exports.find_one({"file_id": file_id})
+        # Get export metadata
+        export = await reclaim_service.get_export_metadata(file_id)
         
         if not export:
             raise HTTPException(
@@ -121,22 +121,22 @@ async def download_export(
                 detail=f"Export {file_id} not found"
             )
         
-        # Check if expired
-        if export.get("expires_at") and export["expires_at"] < datetime.now(timezone.utc):
-            raise HTTPException(
-                status_code=status.HTTP_410_GONE,
-                detail="Export has expired"
-            )
-        
-        # Check if file exists
-        file_path = Path(export["file_path"])
-        if not file_path.exists():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Export file not found on disk"
-            )
+        # Validate access
+        validation = await reclaim_service.validate_export_access(export)
+        if not validation['allowed']:
+            if 'expired' in validation['reason']:
+                raise HTTPException(
+                    status_code=status.HTTP_410_GONE,
+                    detail=validation['reason']
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=validation['reason']
+                )
         
         # Return file
+        file_path = Path(export["file_path"])
         media_type = "application/pdf" if export["format"] == "pdf" else "application/json"
         
         return FileResponse(
