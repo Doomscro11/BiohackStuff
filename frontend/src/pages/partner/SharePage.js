@@ -167,9 +167,10 @@ const SharePage = () => {
               </div>
             )}
             
-            <p className="support-info">
-              Need help? Contact <a href="mailto:support@peptologic.ai">support@peptologic.ai</a>
-            </p>
+              <p className="support-info">
+                Need help? Contact <a href="mailto:support@peptologic.ai">support@peptologic.ai</a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
