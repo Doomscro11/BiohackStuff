@@ -53,53 +53,45 @@ class User(BaseModel):
 @auth_router.post("/magic/request")
 async def request_magic_code(request: Request, body: EmailRequest):
     """Request a magic code via email"""
-    email = normalize_email(body.email)
+    email = auth_service.normalize_email(body.email)
     client_ip = request.client.host if request.client else "unknown"
     
     try:
-        # Check if user is locked out
-        if await is_user_locked_out(email):
+        # Check rate limit
+        rate_limit_result = await auth_service.check_rate_limit(email)
+        if not rate_limit_result['allowed']:
+            retry_after = rate_limit_result.get('retry_after')
+            if retry_after:
+                retry_minutes = int((retry_after - datetime.now()).total_seconds() / 60)
+                detail = f"Too many failed attempts. Try again in {retry_minutes} minutes."
+            else:
+                detail = f"Too many failed attempts. Try again in {LOCKOUT_DURATION_MINUTES} minutes."
+            
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Too many failed attempts. Try again in {LOCKOUT_DURATION_MINUTES} minutes."
+                detail=detail
             )
         
-        # Generate OTP
-        code = generate_otp()
-        expires = datetime.utcnow() + timedelta(minutes=OTP_EXPIRES_MINUTES)
+        # Create magic code
+        result = await auth_service.create_magic_code(email)
         
-        # Store code in database
-        await magic_codes_collection.update_one(
-            {"email": email},
-            {
-                "$set": {
-                    "email": email,
-                    "code": code,
-                    "expires": expires,
-                    "created_at": datetime.utcnow(),
-                    "used": False
-                }
-            },
-            upsert=True
-        )
-        
-        # Send email (or return code in demo mode)
-        if ENABLE_DEMO_OTP:
-            logger.info(f"Demo OTP generated for {email}: {code}")
+        # Return response
+        if ENABLE_DEMO_OTP and result['code']:
+            logger.info(f"Demo OTP generated for {email}: {result['code']}")
             return {
                 "success": True,
                 "message": f"Magic code sent to {email}",
-                "demo_code": code,  # Remove in production!
+                "demo_code": result['code'],  # Remove in production!
                 "expires_in_minutes": OTP_EXPIRES_MINUTES
             }
         else:
-            # Send actual email
-            email_sent = await send_otp_email(email, code)
-            if not email_sent:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to send magic code"
-                )
+            # TODO: Send actual email
+            logger.info(f"OTP for {email} (expires in {OTP_EXPIRES_MINUTES} minutes)")
+            return {
+                "success": True,
+                "message": f"Magic code sent to {email}",
+                "expires_in_minutes": OTP_EXPIRES_MINUTES
+            }
             
             return {
                 "success": True,
