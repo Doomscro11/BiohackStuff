@@ -91,23 +91,7 @@ async def list_exports(
     check_feature_flag()
     
     try:
-        cursor = patentpulse_exports.find().sort("generated_at", -1).limit(limit)
-        exports = await cursor.to_list(length=limit)
-        
-        # Convert ObjectId to string
-        for exp in exports:
-            exp["_id"] = str(exp["_id"])
-            
-            # Convert datetime fields
-            for date_field in ["generated_at", "expires_at"]:
-                if date_field in exp and isinstance(exp[date_field], datetime):
-                    exp[date_field] = exp[date_field].isoformat()
-        
-        return {
-            "exports": exports,
-            "count": len(exports)
-        }
-    
+        return await reclaim_service.list_exports(limit=limit)
     except Exception as e:
         logger.error(f"Failed to list exports: {e}")
         raise HTTPException(
