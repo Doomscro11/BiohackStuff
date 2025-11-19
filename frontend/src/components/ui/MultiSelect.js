@@ -4,20 +4,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
-export interface MultiSelectOption {
-  label: string;
-  value: string;
-}
-
-interface MultiSelectProps {
-  options: MultiSelectOption[];
-  value: string[];
-  onChange: (values: string[]) => void;
-  max?: number;
-  placeholder?: string;
-  className?: string;
-}
-
 export default function MultiSelect({
   options,
   value,
@@ -25,7 +11,7 @@ export default function MultiSelect({
   max,
   placeholder = 'Select options...',
   className = ''
-}: MultiSelectProps) {
+}) {
   const [isOpen, setIsOpen] = useState(false);
   
   const handleToggle = (optionValue: string) => {
