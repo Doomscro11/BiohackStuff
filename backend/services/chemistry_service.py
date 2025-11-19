@@ -6,39 +6,54 @@ Handles chemistry options and tier-based filtering logic
 import logging
 from typing import List, Dict, Any, Optional
 
-from constants.chemistry import MODIFICATIONS, EXCLUSIONS
+from constants.chemistry import ALLOWED_MOD_OPTIONS, EXCLUSION_OPTIONS, TIER_ORDER
 
 logger = logging.getLogger(__name__)
 
 
-def get_chemistry_options(tier: str = 'basic') -> Dict[str, Any]:
+def get_chemistry_options(tier: str = 'basic', user_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Get chemistry options filtered by user tier
     
     Args:
         tier: User tier (basic, pro, enterprise)
+        user_id: Optional user ID for billing lookup
         
     Returns:
-        Dict with 'modifications' and 'exclusions' lists
+        Dict with 'tier', 'mods' and 'exclusions'
     """
     tier = tier.lower()
     
+    # If user_id provided, try to get tier from billing
+    if user_id:
+        from billing.service import get_billing_state
+        try:
+            import asyncio
+            billing = asyncio.run(get_billing_state(user_id))
+            tier = billing.get("tier", "basic")
+        except Exception as e:
+            logger.warning(f"Failed to get billing tier for user {user_id}: {e}")
+            tier = "basic"
+    
     # Filter modifications by tier
     filtered_mods = [
-        mod for mod in MODIFICATIONS
-        if _tier_allows_access(tier, mod.get('tier', 'basic'))
+        {"key": k, **v}
+        for k, v in ALLOWED_MOD_OPTIONS.items()
+        if _tier_allows_access(tier, v.get('tier', 'basic'))
     ]
     
     # Filter exclusions by tier
     filtered_exclusions = [
-        excl for excl in EXCLUSIONS
-        if _tier_allows_access(tier, excl.get('tier', 'basic'))
+        {"key": k, **v}
+        for k, v in EXCLUSION_OPTIONS.items()
+        if _tier_allows_access(tier, v.get('tier', 'basic'))
     ]
     
     logger.info(f"Chemistry options for tier '{tier}': {len(filtered_mods)} mods, {len(filtered_exclusions)} exclusions")
     
     return {
-        'modifications': filtered_mods,
+        'tier': tier,
+        'mods': filtered_mods,
         'exclusions': filtered_exclusions
     }
 
