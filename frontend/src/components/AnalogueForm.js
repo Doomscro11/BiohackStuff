@@ -120,7 +120,7 @@ export default function AnalogueForm({
                 <div key={group} className="bg-gray-50 rounded-lg p-3">
                   <div className="text-xs font-semibold text-gray-700 mb-2">{group}</div>
                   <div className="space-y-2">
-                    {items.map((m: any) => {
+                    {items.map((m) => {
                       const isLocked = !canAccess(m.tier);
                       const isSelected = formData.allowed_mods?.includes(m.key);
                       const isDisabled = isLocked || (!isSelected && (formData.allowed_mods?.length || 0) >= 3);
