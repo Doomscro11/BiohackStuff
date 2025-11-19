@@ -5,29 +5,14 @@ Endpoints for generating and managing patent export reports
 
 import os
 import logging
-from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Request, HTTPException, status, Depends, Query
 from fastapi.responses import FileResponse
-from motor.motor_asyncio import AsyncIOMotorClient
 from pathlib import Path
 
-# Import generator
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from jobs.reclaim_pack_generator import ReclaimPackGenerator
-from models.reclaim_pack import ExportCriteria, ReclaimPackExport
+from services import reclaim_service
 
 logger = logging.getLogger(__name__)
-
-# Database
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'peptimancer_db')]
-patentpulse_exports = db['patentpulse_exports']
-
-# Config
-EXPORT_DIR = os.environ.get('RECLAIM_EXPORT_DIR', '/app/exports')
 
 router = APIRouter(prefix="/api/patentpulse/reclaim", tags=["patentpulse_reclaim"])
 
