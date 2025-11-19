@@ -36,6 +36,7 @@ class VerifyRequest(BaseModel):
     
     @validator("code")
     def validate_code(cls, v):
+        OTP_LENGTH = int(os.getenv("OTP_LENGTH", "6"))
         if not v or not v.isdigit() or len(v) != OTP_LENGTH:
             raise ValueError(f"Code must be {OTP_LENGTH} digits")
         return v
@@ -47,43 +48,6 @@ class User(BaseModel):
     org_id: str = "default"
     created_at: datetime
     last_login: datetime
-
-# Utility functions
-def normalize_email(email: str) -> str:
-    """Normalize email address"""
-    return email.strip().lower()
-
-def generate_otp() -> str:
-    """Generate a random OTP code"""
-    return ''.join(random.choices(string.digits, k=OTP_LENGTH))
-
-async def is_user_locked_out(email: str) -> bool:
-    """Check if user is currently locked out due to failed attempts"""
-    cutoff_time = datetime.utcnow() - timedelta(minutes=LOCKOUT_DURATION_MINUTES)
-    
-    recent_attempts = await login_attempts_collection.count_documents({
-        "email": email,
-        "success": False,
-        "timestamp": {"$gte": cutoff_time}
-    })
-    
-    return recent_attempts >= MAX_LOGIN_ATTEMPTS
-
-async def log_login_attempt(email: str, success: bool, ip_address: str = None):
-    """Log a login attempt for rate limiting"""
-    await login_attempts_collection.insert_one({
-        "email": email,
-        "success": success,
-        "timestamp": datetime.utcnow(),
-        "ip_address": ip_address
-    })
-
-async def send_otp_email(email: str, code: str) -> bool:
-    """Send OTP via email (implement SMTP in production)"""
-    # TODO: Implement SMTP email sending
-    # For now, just log the code
-    logger.info(f"OTP for {email}: {code} (expires in {OTP_EXPIRES_MINUTES} minutes)")
-    return True
 
 # Auth endpoints
 @auth_router.post("/magic/request")
