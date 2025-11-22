@@ -36,12 +36,12 @@ function MainApp() {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await fetchJSON('/api/auth/logout', { method: 'POST' });
+    const result = await fetchJSON('/api/auth/logout', { method: 'POST' });
+    if (result.ok) {
       setUser(null);
       window.location.href = '/login';
-    } catch (err) {
-      console.error('Logout failed:', err);
+    } else {
+      console.error('Logout failed:', result);
     }
   };
 
