@@ -366,6 +366,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING: Global Login & RBAC system fully functional (17/17 tests passed, 100% success rate). Authentication flow working correctly: (1) Magic code request/verify for both admin and non-admin users, (2) JWT cookies properly set with correct roles, (3) Session endpoint returns proper user data (email, role, tier, credits, feature_level), (4) Protected endpoints enforce authentication (billing returns 401 without auth, works with auth), (5) Admin endpoints enforce RBAC (feature flags return 403 for non-admin, require 2FA for admin), (6) Public endpoints accessible without auth (chemistry options, partner share), (7) Logout working, (8) Edge cases handled (invalid OTP returns 401, invalid email returns 422). FIXED: Timezone comparison issue in auth service, JWT signing parameter mismatch, billing service ObjectId compatibility with string user IDs, async feature flag checking in partner shares."
+      - working: true
+        agent: "testing"
+        comment: "FRONTEND TESTED & WORKING: Login page functioning correctly with OTP demo codes. Two-step flow working (email → OTP verification). Demo mode displays codes properly. Successful authentication redirects users appropriately. Login form validation working. Mobile-responsive design confirmed. Core login functionality operational."
 
   - task: "ProtectedRoute Component (Global Login Phase)"
     implemented: true
