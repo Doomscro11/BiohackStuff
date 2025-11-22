@@ -260,8 +260,8 @@ const PartnerSharesAdmin = () => {
                 >
                   <option value="">Select an export...</option>
                   {exports.map(exp => (
-                    <option key={exp.file_id} value={exp.file_id}>
-                      {exp.file_name} ({exp.format.toUpperCase()}) - {formatDate(exp.generated_at)}
+                    <option key={exp.export_id} value={exp.export_id}>
+                      {exp.filename} ({exp.format.toUpperCase()}) - {formatDate(exp.generated_at)}
                     </option>
                   ))}
                 </select>
