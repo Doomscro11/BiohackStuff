@@ -33,6 +33,7 @@ function ProtectedRoute({ children }) {
   };
 
   if (loading) {
+    console.log('[ProtectedRoute] Loading auth state...');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -46,8 +47,11 @@ function ProtectedRoute({ children }) {
   if (!isAuthenticated) {
     // Redirect to login with returnTo parameter
     const returnTo = location.pathname + location.search;
+    console.log('[ProtectedRoute] Redirecting to login, returnTo:', returnTo);
     return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
+
+  console.log('[ProtectedRoute] User authenticated, rendering children');
 
   // Render children with user context
   return <>{children}</>;
