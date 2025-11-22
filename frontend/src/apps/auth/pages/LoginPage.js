@@ -23,7 +23,7 @@ function LoginPage() {
   }, []);
 
   const checkSession = async () => {
-    const result = await fetchJSON('/api/auth/session');
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
     if (result.ok && result.data) {
       // Already logged in, redirect
       navigate(returnTo);
