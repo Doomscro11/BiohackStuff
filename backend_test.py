@@ -4054,4 +4054,55 @@ def main():
         sys.exit(0 if results["enterprise_ready"] else 1)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if len(sys.argv) > 1:
+        test_type = sys.argv[1].lower()
+        
+        if test_type == "global-login" or test_type == "rbac":
+            # Run Global Login & RBAC tests
+            rbac_test = GlobalLoginRBACTest()
+            results = rbac_test.run_comprehensive_global_login_rbac_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["global_login_rbac_working"] else 1)
+            
+        elif test_type == "auth":
+            # Run authentication tests (legacy)
+            auth_test = GlobalLoginRBACTest()
+            results = auth_test.run_comprehensive_global_login_rbac_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["global_login_rbac_working"] else 1)
+            
+        elif test_type == "billing":
+            # Run Phase 8.2 billing tests
+            billing_test = Phase82BillingTest()
+            
+            # Authenticate first
+            if not billing_test.authenticate_admin_user():
+                print("❌ Failed to authenticate admin user - cannot run billing tests")
+                sys.exit(1)
+            
+            results = billing_test.run_all_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["billing_working"] else 1)
+            
+        elif test_type == "chemistry":
+            # Run Phase 8 Final chemistry tests
+            chemistry_test = Phase8ChemistryTest()
+            results = chemistry_test.run_all_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["chemistry_api_working"] else 1)
+            
+        else:
+            print(f"Unknown test type: {test_type}")
+            print("Available test types: global-login, rbac, auth, billing, chemistry, enterprise")
+            sys.exit(1)
+    else:
+        # Run Global Login & RBAC tests by default
+        rbac_test = GlobalLoginRBACTest()
+        results = rbac_test.run_comprehensive_global_login_rbac_tests()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["global_login_rbac_working"] else 1)
