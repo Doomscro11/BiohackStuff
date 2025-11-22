@@ -26,7 +26,7 @@ export async function requestMagicCode(email): Promise<AuthResponse> {
  * Verify the magic code and authenticate the user
  */
 export async function verifyMagicCode(email, code): Promise<VerifyResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/magic/verify`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/verify`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -35,24 +35,11 @@ export async function verifyMagicCode(email, code): Promise<VerifyResponse> {
     body: JSON.stringify({ email, code })
   });
 
-  if (!response.ok) {
-    let errorMessage = 'Failed to verify magic code';
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.detail || errorData.message || errorMessage;
-    } catch (e) {
-      // If JSON parsing fails, try text
-      try {
-        errorMessage = await response.text() || errorMessage;
-      } catch (textError) {
-        // If both fail, use default message
-        errorMessage = `Verification failed with status ${response.status}`;
-      }
-    }
-    throw new Error(errorMessage);
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to verify magic code');
   }
 
-  return response.json();
+  return result.data;
 }
 
 /**
