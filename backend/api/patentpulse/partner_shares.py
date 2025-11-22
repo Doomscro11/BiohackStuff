@@ -41,9 +41,9 @@ RATE_LIMIT_PER_IP = os.environ.get('RATE_LIMIT_PER_IP', '30/min')
 rate_limit_store: Dict[str, List[datetime]] = {}
 
 
-def check_feature_flag():
+async def check_feature_flag():
     """Check if partner portal feature is enabled"""
-    if not is_feature_enabled('FEATURE_PATENTPULSE_PARTNER'):
+    if not await is_feature_enabled('FEATURE_PATENTPULSE_PARTNER'):
         raise HTTPException(status_code=503, detail="Partner portal feature not enabled")
 
 
