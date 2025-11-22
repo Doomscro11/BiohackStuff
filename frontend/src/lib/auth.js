@@ -46,21 +46,16 @@ export async function verifyMagicCode(email, code): Promise<VerifyResponse> {
  * Get current user information
  */
 export async function getCurrentUser(): Promise<UserInfo | null> {
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-      credentials: 'include'
-    });
+  const result = await fetchJSON(`${BACKEND_URL}/api/auth/me`, {
+    credentials: 'include'
+  });
 
-    if (!response.ok) {
-      // Silently return null for unauthorized requests
-      return null;
-    }
-
-    return response.json();
-  } catch (error) {
-    // Silently handle errors - expected when not authenticated
+  if (!result.ok) {
+    // Silently return null for unauthorized requests
     return null;
   }
+
+  return result.data;
 }
 
 /**
