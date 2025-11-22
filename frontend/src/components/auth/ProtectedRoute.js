@@ -18,18 +18,19 @@ function ProtectedRoute({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    try {
-      const session = await fetchJSON('/api/auth/session');
-      console.log('[ProtectedRoute] Auth check passed:', session);
+    const result = await fetchJSON('/api/auth/session');
+    
+    if (result.ok && result.data) {
+      console.log('[ProtectedRoute] Auth check passed:', result.data);
       setIsAuthenticated(true);
-      setUser(session);
-    } catch (err) {
-      console.log('[ProtectedRoute] Auth check failed:', err.message);
+      setUser(result.data);
+    } else {
+      console.log('[ProtectedRoute] Auth check failed:', result);
       setIsAuthenticated(false);
       setUser(null);
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   if (loading) {
