@@ -60,17 +60,14 @@ const PartnerSharesAdmin = () => {
   };
 
   const fetchExports = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/patentpulse/reclaim/exports`, {
-        credentials: 'include'
-      });
+    const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/reclaim/exports`, {
+      credentials: 'include'
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        setExports(data.exports || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch exports:', err);
+    if (result.ok) {
+      setExports(result.data.exports || []);
+    } else {
+      console.error('Failed to fetch exports:', result.text);
     }
   };
 
