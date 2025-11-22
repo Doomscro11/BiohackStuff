@@ -20,18 +20,19 @@ function AdminRoute({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    try {
-      const session = await fetchJSON('/api/auth/session');
+    const result = await fetchJSON('/api/auth/session');
+    
+    if (result.ok && result.data) {
       setIsAuthenticated(true);
-      setUser(session);
-      setIsAdmin(session.role === 'admin');
-    } catch (err) {
+      setUser(result.data);
+      setIsAdmin(result.data.role === 'admin');
+    } else {
       setIsAuthenticated(false);
       setIsAdmin(false);
       setUser(null);
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   if (loading) {
