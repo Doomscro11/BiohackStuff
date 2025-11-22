@@ -38,30 +38,25 @@ const PartnerSharesAdmin = () => {
   }, [filter]);
 
   const fetchShares = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filter !== 'all') {
-        params.append('state', filter);
-      }
-
-      const response = await fetch(
-        `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch shares');
-      }
-
-      const data = await response.json();
-      setShares(data.shares || []);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (filter !== 'all') {
+      params.append('state', filter);
     }
+
+    const result = await fetchJSON(
+      `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
+      { credentials: 'include' }
+    );
+
+    if (result.ok) {
+      setShares(result.data.shares || []);
+      setError(null);
+    } else {
+      setError(result.text || 'Failed to fetch shares');
+    }
+    
+    setLoading(false);
   };
 
   const fetchExports = async () => {
