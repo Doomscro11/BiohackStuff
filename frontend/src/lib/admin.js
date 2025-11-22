@@ -7,37 +7,37 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
  * Get system health metrics
  */
 export async function getHealth() {
-  const response = await fetch(`${BACKEND_URL}/api/admin/health`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/admin/health`, {
     credentials: 'include'
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch health metrics');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to fetch health metrics');
   }
   
-  return response.json();
+  return result.data;
 }
 
 /**
  * List all users with their tier and credits
  */
 export async function listUsers() {
-  const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/admin/users`, {
     credentials: 'include'
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch users');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to fetch users');
   }
   
-  return response.json();
+  return result.data;
 }
 
 /**
  * Adjust user credits
  */
 export async function adjustCredits(payload) {
-  const response = await fetch(`${BACKEND_URL}/api/admin/users/adjust-credits`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/admin/users/adjust-credits`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -46,19 +46,18 @@ export async function adjustCredits(payload) {
     body: JSON.stringify(payload)
   });
   
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || 'Failed to adjust credits');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to adjust credits');
   }
   
-  return response.json();
+  return result.data;
 }
 
 /**
  * Set user tier
  */
 export async function setTier(payload) {
-  const response = await fetch(`${BACKEND_URL}/api/admin/users/set-tier`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/admin/users/set-tier`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -67,10 +66,9 @@ export async function setTier(payload) {
     body: JSON.stringify(payload)
   });
   
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || 'Failed to set tier');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to set tier');
   }
   
-  return response.json();
+  return result.data;
 }
