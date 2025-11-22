@@ -59,7 +59,7 @@ async def ensure_seed_plans():
 
 async def get_user(user_id: str) -> dict:
     """Get user document"""
-    return await users.find_one({"_id": ObjectId(user_id)})
+    return await users.find_one(get_user_query(user_id))
 
 async def set_user_tier(user_id: str, tier: str):
     """Update user tier"""
