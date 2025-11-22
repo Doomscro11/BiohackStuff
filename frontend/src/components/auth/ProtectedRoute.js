@@ -20,7 +20,7 @@ function ProtectedRoute({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    const result = await fetchJSON('/api/auth/session');
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
     
     if (result.ok && result.data) {
       console.log('[ProtectedRoute] Auth check passed:', result.data);
