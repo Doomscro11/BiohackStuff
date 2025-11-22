@@ -59,7 +59,7 @@ function LoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await fetchJSON('/api/auth/magic/verify', {
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code })
