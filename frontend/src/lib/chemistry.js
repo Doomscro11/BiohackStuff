@@ -8,15 +8,15 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
  * Options are already filtered by user's tier
  */
 export async function fetchChemistryOptions(): Promise<ChemistryOptions> {
-  const response = await fetch(`${BACKEND_URL}/api/chemistry/options`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/chemistry/options`, {
     credentials: 'include' // Include JWT cookie
   });
   
-  if (!response.ok) {
-    throw new Error(await response.text());
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to fetch chemistry options');
   }
   
-  return response.json();
+  return result.data;
 }
 
 /**
