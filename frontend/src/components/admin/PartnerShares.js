@@ -165,23 +165,17 @@ const PartnerSharesAdmin = () => {
   };
 
   const viewAnalytics = async (shareId) => {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/analytics`,
-        { credentials: 'include' }
-      );
+    const result = await fetchJSON(
+      `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/analytics`,
+      { credentials: 'include' }
+    );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
-      }
-
-      const data = await response.json();
-      setAnalytics(data);
-      
+    if (result.ok) {
+      setAnalytics(result.data);
       const share = shares.find(s => s.share_id === shareId);
       setSelectedShare(share || null);
-    } catch (err) {
-      alert(`Error: ${err.message}`);
+    } else {
+      alert(`Error: ${result.text || 'Failed to fetch analytics'}`);
     }
   };
 
