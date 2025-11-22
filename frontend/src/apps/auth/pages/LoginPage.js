@@ -18,17 +18,26 @@ function LoginPage() {
   const returnTo = searchParams.get('returnTo') || '/';
 
   useEffect(() => {
-    // Check if already authenticated
-    checkSession();
+    // Check if already authenticated, but avoid race condition with MainApp
+    const timer = setTimeout(() => {
+      checkSession();
+    }, 100); // Small delay to avoid race condition with MainApp session check
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const checkSession = async () => {
-    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
-    if (result.ok && result.data) {
-      // Already logged in, redirect
-      navigate(returnTo);
+    try {
+      const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
+      if (result.ok && result.data) {
+        // Already logged in, redirect
+        navigate(returnTo);
+      }
+      // Not logged in, stay on login page
+    } catch (error) {
+      console.log('Session check failed:', error);
+      // Stay on login page if session check fails
     }
-    // Not logged in, stay on login page
   };
 
   const handleRequestCode = async (e) => {
