@@ -17,12 +17,33 @@ import { fetchSession } from './lib/session';
 import { fetchJSON } from './lib/http';
 
 function MainApp() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Bootstrap: fetch session on app load
   useEffect(() => {
-    fetchSession().catch(() => {
-      // User not authenticated - this is fine
-    });
+    fetchSession()
+      .then((session) => {
+        setUser(session);
+      })
+      .catch(() => {
+        // User not authenticated - this is fine
+        setUser(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetchJSON('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   return (
     <Router>
@@ -34,44 +55,70 @@ function MainApp() {
               🧬 Peptimancer
             </Link>
             <div className="flex items-center gap-3">
-              <CreditBadge />
-              <Link to="/billing">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Billing & Credits
-                </Button>
-              </Link>
-              <Link to="/admin/analytics">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Analytics
-                </Button>
-              </Link>
-              <Link to="/admin/patentpulse">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  PatentPulse
-                </Button>
-              </Link>
-              <Link to="/admin">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Admin
-                </Button>
-              </Link>
+              {user && (
+                <>
+                  <CreditBadge />
+                  <Link to="/billing">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Billing & Credits
+                    </Button>
+                  </Link>
+                  <Link to="/admin/analytics">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Analytics
+                    </Button>
+                  </Link>
+                  <Link to="/admin/patentpulse">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      PatentPulse
+                    </Button>
+                  </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                </>
+              )}
+              {!user && !isLoading && (
+                <Link to="/login">
+                  <Button size="sm">Sign In</Button>
+                </Link>
+              )}
             </div>
           </div>
         </nav>
 
         {/* Routes */}
         <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/admin/analytics" element={<AnalyticsPage />} />
-          <Route path="/admin/patentpulse" element={<PatentPulsePage />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/share/:token" element={<SharePage />} />
+          
+          {/* Protected Routes */}
+          <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
+          <Route path="/test" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          <Route path="/admin/patentpulse" element={<ProtectedRoute><PatentPulsePage /></ProtectedRoute>} />
+          
+          {/* Admin-Only Routes */}
+          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         </Routes>
       </div>
     </Router>
