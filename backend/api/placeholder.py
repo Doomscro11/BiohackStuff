@@ -36,7 +36,7 @@ async def advanced_preview(user=Depends(get_current_user)):
         level=feature_level
     )
     
-    # Return mock placeholder data
+    # Return richer mock placeholder data
     return {
         "status": "preview_mode",
         "feature_level": feature_level,
@@ -49,7 +49,22 @@ async def advanced_preview(user=Depends(get_current_user)):
         "mock_data": {
             "example_field_1": "placeholder_value_1",
             "example_field_2": 42,
-            "example_field_3": [1, 2, 3, 4, 5]
+            "example_field_3": [1, 2, 3, 4, 5],
+            "mock_parameters": {
+                "param_a": 0.75,
+                "param_b": "preset_1",
+                "param_c": ["option_1", "option_2", "option_3"]
+            },
+            "mock_results": [
+                {"id": "r1", "type": "placeholder", "value": 42.5, "status": "mock"},
+                {"id": "r2", "type": "placeholder", "value": 38.2, "status": "mock"},
+                {"id": "r3", "type": "placeholder", "value": 51.8, "status": "mock"}
+            ],
+            "mock_visualization": {
+                "chart_type": "bar",
+                "data_points": [60, 80, 40, 90, 50],
+                "labels": ["A", "B", "C", "D", "E"]
+            }
         },
         "message": "This is placeholder data only. No actual computation performed."
     }
