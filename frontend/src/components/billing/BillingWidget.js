@@ -1,7 +1,7 @@
 // User Billing Widget Component - Auth-aware with credit refresh
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchBillingState, startCheckout } from '../../lib/billing';
-import { redirectToLogin } from '../../lib/http';
+import { fetchJSON, redirectToLogin } from '../../lib/http';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,19 +21,10 @@ export default function BillingWidget() {
     
     // First check if user is authenticated
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-    try {
-      const sessionResult = await fetch(`${BACKEND_URL}/api/auth/session`, {
-        credentials: 'include'
-      });
-      
-      if (!sessionResult.ok) {
-        // User not authenticated
-        setAuthError(true);
-        setLoading(false);
-        return;
-      }
-    } catch (error) {
-      console.error('Session check failed:', error);
+    const sessionResult = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
+    
+    if (!sessionResult.ok) {
+      // User not authenticated
       setAuthError(true);
       setLoading(false);
       return;

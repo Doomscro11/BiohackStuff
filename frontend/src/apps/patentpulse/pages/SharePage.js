@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { fetchJSON } from '@/lib/http';
 import '../styles/SharePage.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
@@ -28,24 +29,17 @@ const SharePage = () => {
       return;
     }
 
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/patentpulse/partner/share/${token}`, {
-        credentials: 'include'
-      });
+    const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/share/${token}`);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Invalid or expired share link' }));
-        throw new Error(errorData.detail || 'Invalid or expired share link');
-      }
-      
-      const data = await response.json();
-      setMetadata(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message || 'Failed to load share');
-    } finally {
+    if (!result.ok) {
+      setError(result.text || 'Invalid or expired share link');
       setLoading(false);
+      return;
     }
+    
+    setMetadata(result.data);
+    setError(null);
+    setLoading(false);
   };
 
   const handleDownload = async () => {
@@ -54,13 +48,14 @@ const SharePage = () => {
     setDownloading(true);
 
     try {
+      // For downloads, we still need to use native fetch to get blob
       const response = await fetch(`${BACKEND_URL}/api/patentpulse/partner/share/${token}/download`, {
         credentials: 'include'
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Download failed' }));
-        throw new Error(errorData.detail || `Error ${response.status}`);
+        const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/share/${token}/download`);
+        throw new Error(result.text || `Error ${response.status}`);
       }
 
       // Get filename from Content-Disposition or use default
