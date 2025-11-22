@@ -178,7 +178,7 @@ async def get_billing_state(user_id: str) -> dict:
     """
     # Get user data
     user_doc = await users.find_one(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"tier": 1, "credits": 1, "email": 1}
     )
     
