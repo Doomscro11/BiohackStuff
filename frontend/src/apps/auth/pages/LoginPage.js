@@ -36,7 +36,7 @@ function LoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await fetchJSON('/api/auth/magic/request', {
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
