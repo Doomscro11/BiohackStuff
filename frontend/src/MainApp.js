@@ -43,7 +43,8 @@ function MainApp() {
   }, []);
 
   const handleLogout = async () => {
-    const result = await fetchJSON('/api/auth/logout', { method: 'POST' });
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/logout`, { method: 'POST' });
     if (result.ok) {
       setUser(null);
       window.location.href = '/login';
