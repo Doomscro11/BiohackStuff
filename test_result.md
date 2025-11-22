@@ -384,6 +384,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING: ProtectedRoute functionality verified through backend API testing. Session endpoint correctly returns 401 for unauthenticated requests and proper user data for authenticated requests. Protected endpoints (billing) enforce authentication correctly - return 401 without auth, work properly with valid JWT cookies. Authentication state properly maintained across requests."
+      - working: true
+        agent: "testing"
+        comment: "FRONTEND TESTED & WORKING: ProtectedRoute component functioning correctly. Unauthenticated access to protected routes (/, /billing, /admin/analytics) properly redirects to /login with returnTo parameter. Authenticated users can access protected routes successfully. Loading states working properly during auth checks."
 
   - task: "AdminRoute Component (Global Login Phase)"
     implemented: true
