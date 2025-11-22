@@ -554,14 +554,17 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
-  run_ui: false
+  test_sequence: 3
+  run_ui: true
 
 test_plan:
   current_focus:
-    - "Partner Portal Frontend (Phase IXf+)"
+    - "Login Page (Global Login Phase)"
+    - "ProtectedRoute Component (Global Login Phase)"
+    - "AdminRoute Component (Global Login Phase)"
+    - "MainApp Routing & Navigation (Global Login Phase)"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
