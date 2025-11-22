@@ -128,8 +128,8 @@ const PartnerSharesAdmin = () => {
       const shareUrl = `${window.location.origin}/share/${result.data.new_token}`;
       alert(`Token rotated successfully!\n\nNew Share URL:\n${shareUrl}`);
       fetchShares();
-    } catch (err) {
-      alert(`Error: ${err.message}`);
+    } else {
+      alert(`Error: ${result.text || 'Failed to rotate token'}`);
     }
   };
 
