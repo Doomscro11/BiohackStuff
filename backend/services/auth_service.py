@@ -154,7 +154,12 @@ async def verify_magic_code(email: str, code: str) -> Optional[Dict[str, Any]]:
         return None
     
     # Check expiry
-    if datetime.now(timezone.utc) > magic_code_doc['expires_at']:
+    expires_at = magic_code_doc['expires_at']
+    # Ensure expires_at is timezone-aware
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    
+    if datetime.now(timezone.utc) > expires_at:
         logger.warning(f"Expired magic code for {normalized}")
         await magic_codes_collection.delete_one({'email': normalized})
         return None
