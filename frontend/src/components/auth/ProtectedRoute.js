@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { fetchJSON } from '@/lib/http';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
 /**
  * ProtectedRoute component
  * Wraps routes that require authentication
