@@ -22,17 +22,24 @@ function MainApp() {
 
   // Bootstrap: fetch session on app load
   useEffect(() => {
-    fetchSession()
-      .then((session) => {
-        setUser(session);
-      })
-      .catch(() => {
-        // User not authenticated - this is fine
+    const loadSession = async () => {
+      try {
+        const session = await fetchSession();
+        console.log('[MainApp] Session loaded:', session);
+        if (session) {
+          setUser(session);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.log('[MainApp] Session load failed:', err);
         setUser(null);
-      })
-      .finally(() => {
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+    
+    loadSession();
   }, []);
 
   const handleLogout = async () => {
