@@ -189,11 +189,24 @@ async def verify_magic_code(email: str, code: str) -> Optional[Dict[str, Any]]:
         await users_collection.insert_one(user)
         logger.info(f"Created new user: {normalized} with role {role}")
     else:
-        # Update last login
-        await users_collection.update_one(
-            {'email': normalized},
-            {'$set': {'last_login': datetime.now(timezone.utc)}}
-        )
+        # Check if user has an id field, if not add it (for legacy users)
+        if not user.get('id'):
+            user_id = f"user_{normalized.split('@')[0]}_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+            await users_collection.update_one(
+                {'email': normalized},
+                {'$set': {
+                    'id': user_id,
+                    'last_login': datetime.now(timezone.utc)
+                }}
+            )
+            user['id'] = user_id
+            logger.info(f"Added missing id field to existing user: {normalized}")
+        else:
+            # Update last login
+            await users_collection.update_one(
+                {'email': normalized},
+                {'$set': {'last_login': datetime.now(timezone.utc)}}
+            )
     
     return {
         'id': user['id'],
