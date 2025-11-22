@@ -506,6 +506,13 @@ function App() {
                 </CardContent>
               </Card>
             )}
+
+            {/* DAC Advanced Features Panel (UI Scaffolding Only) */}
+            {featureLevel > 0 && (
+              <div className="mt-8">
+                <DACTabPanel featureLevel={featureLevel} />
+              </div>
+            )}
           </div>
         </div>
       </div>
