@@ -79,13 +79,52 @@ async def generate_export(
         )
 
 
+@router.get("/exports")
+async def get_exports_list(
+    limit: int = Query(50, ge=1, le=100)
+):
+    """
+    Get list of available exports (no auth required for dropdown population)
+    Returns list of export metadata for selection
+    """
+    try:
+        from motor.motor_asyncio import AsyncIOMotorClient
+        import os
+        
+        mongo_url = os.environ['MONGO_URL']
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[os.environ['DB_NAME']]
+        
+        # Fetch exports directly from database
+        exports = []
+        async for export in db.reclaim_pack_exports.find().sort("generated_at", -1).limit(limit):
+            exports.append({
+                "export_id": export.get("export_id"),
+                "filename": export.get("filename"),
+                "format": export.get("format"),
+                "generated_at": export.get("generated_at"),
+                "item_count": export.get("item_count"),
+                "file_size_kb": export.get("file_size_kb"),
+                "metadata": export.get("metadata", {})
+            })
+        
+        client.close()
+        return {"exports": exports}
+    except Exception as e:
+        logger.error(f"Failed to list exports: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list exports: {str(e)}"
+        )
+
+
 @router.get("/list")
 async def list_exports(
     limit: int = Query(20, ge=1, le=100),
     user=Depends(require_admin_2fa)
 ):
     """
-    List recent exports
+    List recent exports (admin only, with 2FA)
     Returns list of export metadata, sorted by generated_at DESC
     """
     check_feature_flag()
