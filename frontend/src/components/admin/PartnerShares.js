@@ -33,8 +33,18 @@ const PartnerSharesAdmin = () => {
   });
 
   useEffect(() => {
-    fetchShares();
-    fetchExports();
+    const loadData = async () => {
+      try {
+        // Load shares first, then exports to avoid concurrent API calls
+        await fetchShares();
+        await fetchExports();
+      } catch (error) {
+        console.error('Error loading partner shares data:', error);
+        setError('Failed to load data');
+      }
+    };
+    
+    loadData();
   }, [filter]);
 
   const fetchShares = async () => {
