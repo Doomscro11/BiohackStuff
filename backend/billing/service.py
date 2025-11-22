@@ -64,7 +64,7 @@ async def get_user(user_id: str) -> dict:
 async def set_user_tier(user_id: str, tier: str):
     """Update user tier"""
     await users.update_one(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"$set": {"tier": tier}}
     )
     logger.info(f"User {user_id} tier set to {tier}")
