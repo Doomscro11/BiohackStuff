@@ -76,13 +76,13 @@ export async function logout(): Promise<void> {
  * Check admin configuration status
  */
 export async function getAdminStatus() {
-  const response = await fetch(`${BACKEND_URL}/api/auth/admin/status`);
+  const result = await fetchJSON(`${BACKEND_URL}/api/auth/admin/status`);
   
-  if (!response.ok) {
-    throw new Error('Failed to get admin status');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to get admin status');
   }
 
-  return response.json();
+  return result.data;
 }
 
 /**
