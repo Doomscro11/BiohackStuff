@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement secure Admin Mode Switch with Email OTP authentication and RBAC for runtime configuration. Admin users should be able to log in via magic code (OTP), access the AdminModeSwitch, and change runtime settings (mock/sandbox/live modes). System includes JWT authentication, audit trails, and RBAC protection on admin endpoints."
+user_problem_statement: "Implement comprehensive Global Login & Role-Based Access Control (RBAC) system. Create /login page with OTP authentication, ProtectedRoute component for authenticated pages, AdminRoute component for admin-only pages. All private routes (HomePage, Billing, Analytics, PatentPulse) require authentication. Admin routes require admin role. Public routes (/login, /share/:token) remain accessible. Navigation shows role-based links."
 
 backend:
   - task: "JWT Authentication System"
