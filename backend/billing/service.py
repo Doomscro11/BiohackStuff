@@ -76,7 +76,7 @@ async def add_credits(user_id: str, delta: int, reason: str, meta: Optional[Dict
     """
     # Update user credits
     result = await users.find_one_and_update(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"$inc": {"credits": delta}},
         return_document=True
     )
