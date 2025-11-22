@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys
 
 # Use production endpoint from frontend .env
-BACKEND_URL = "https://peptimancer-share.preview.emergentagent.com"
+BACKEND_URL = "https://rbac-portal-6.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class PeptimancerEnterpriseTest:

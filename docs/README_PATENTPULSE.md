@@ -61,7 +61,7 @@
 
 ### Base URL
 ```
-https://peptimancer-share.preview.emergentagent.com/api/patentpulse
+https://rbac-portal-6.preview.emergentagent.com/api/patentpulse
 ```
 
 ### 1. GET /items
