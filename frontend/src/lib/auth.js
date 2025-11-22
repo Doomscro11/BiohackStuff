@@ -62,13 +62,13 @@ export async function getCurrentUser(): Promise<UserInfo | null> {
  * Logout the current user
  */
 export async function logout(): Promise<void> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/auth/logout`, {
     method: 'POST',
     credentials: 'include'
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to logout');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to logout');
   }
 }
 
