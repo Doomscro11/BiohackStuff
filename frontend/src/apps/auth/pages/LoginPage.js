@@ -34,22 +34,22 @@ function LoginPage() {
     setError('');
     setLoading(true);
 
-    try {
-      const response = await fetchJSON('/api/auth/magic/request', {
-        method: 'POST',
-        body: JSON.stringify({ email })
-      });
+    const result = await fetchJSON('/api/auth/magic/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
 
-      if (response.demo_code) {
-        setDemoCode(response.demo_code);
+    if (result.ok && result.data) {
+      if (result.data.demo_code) {
+        setDemoCode(result.data.demo_code);
       }
-
       setStep('code');
-    } catch (err) {
-      setError(err.message || 'Failed to send magic code');
-    } finally {
-      setLoading(false);
+    } else {
+      setError(result.text || 'Failed to send magic code');
     }
+
+    setLoading(false);
   };
 
   const handleVerifyCode = async (e) => {
