@@ -402,6 +402,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING: AdminRoute functionality verified through backend RBAC testing. Admin endpoints correctly enforce role-based access: (1) Return 401 for unauthenticated requests, (2) Return 403 for non-admin users (researcher role), (3) Admin users with proper JWT can access admin endpoints (though some require 2FA and return 403 as expected). Role determination working correctly - admin emails (founder@peptologic.ai, cto@peptologic.ai) get admin role, others get researcher role."
+      - working: true
+        agent: "testing"
+        comment: "FRONTEND TESTED & WORKING: AdminRoute component functioning correctly. Non-admin users (test@example.com with researcher role) correctly see 'Access Denied' page when accessing /admin route. Admin users can access admin-only routes successfully. Role-based access control working as expected."
 
   - task: "MainApp Routing & Navigation (Global Login Phase)"
     implemented: true
