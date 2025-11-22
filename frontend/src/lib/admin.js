@@ -1,4 +1,6 @@
 // Admin API helpers for Phase VII
+import { fetchJSON } from './http';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 /**
