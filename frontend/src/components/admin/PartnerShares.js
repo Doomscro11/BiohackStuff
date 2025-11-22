@@ -116,22 +116,16 @@ const PartnerSharesAdmin = () => {
       return;
     }
 
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/rotate`,
-        {
-          method: 'POST',
-          credentials: 'include'
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to rotate token');
+    const result = await fetchJSON(
+      `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/rotate`,
+      {
+        method: 'POST',
+        credentials: 'include'
       }
+    );
 
-      const result = await response.json();
-      const shareUrl = `${window.location.origin}/share/${result.new_token}`;
-      
+    if (result.ok) {
+      const shareUrl = `${window.location.origin}/share/${result.data.new_token}`;
       alert(`Token rotated successfully!\n\nNew Share URL:\n${shareUrl}`);
       fetchShares();
     } catch (err) {
