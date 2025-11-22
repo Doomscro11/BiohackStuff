@@ -1129,6 +1129,12 @@ app.include_router(patentpulse_reclaim_router)
 from api.patentpulse.partner_shares import router as partner_shares_router
 app.include_router(partner_shares_router)
 
+# Include Feature Flags routes (Phase DAC-Zero)
+from api.admin.feature_flags import router as feature_flags_router
+from api.placeholder import router as placeholder_router
+app.include_router(feature_flags_router)
+app.include_router(placeholder_router)
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 
