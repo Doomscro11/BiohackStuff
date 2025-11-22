@@ -589,8 +589,8 @@ class PeptimancerEnterpriseTest:
             "enterprise_ready": self.tests_passed >= self.tests_run * 0.9
         }
 
-class AuthenticationTest:
-    """Test Admin Authentication with Email OTP and RBAC"""
+class GlobalLoginRBACTest:
+    """Test Global Login & RBAC Implementation Comprehensively"""
     
     def __init__(self):
         self.tests_run = 0
@@ -599,7 +599,10 @@ class AuthenticationTest:
         self.test_results = {}
         self.jwt_cookie = None
         self.admin_email = "founder@peptologic.ai"
-        self.non_admin_email = "user@example.com"
+        self.cto_email = "cto@peptologic.ai"
+        self.test_email = "test@example.com"
+        self.admin_jwt_cookie = None
+        self.non_admin_jwt_cookie = None
         
     def log_test(self, test_name, success, details="", error_details=""):
         """Log test results"""
