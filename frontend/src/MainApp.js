@@ -62,7 +62,7 @@ function MainApp() {
               🧬 Peptimancer
             </Link>
             <div className="flex items-center gap-3">
-              {user && (
+              {!isLoading && user && (
                 <>
                   <CreditBadge />
                   <Link to="/billing">
@@ -102,7 +102,7 @@ function MainApp() {
                   </Button>
                 </>
               )}
-              {!user && !isLoading && (
+              {!isLoading && !user && (
                 <Link to="/login">
                   <Button size="sm">Sign In</Button>
                 </Link>
