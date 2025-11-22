@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { fetchJSON } from '@/lib/http';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
