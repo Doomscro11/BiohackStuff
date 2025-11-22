@@ -8,6 +8,15 @@ from bson import ObjectId
 
 logger = logging.getLogger(__name__)
 
+def get_user_query(user_id: str) -> Dict[str, Any]:
+    """Get user query that works with both ObjectId and string IDs"""
+    try:
+        # Try to use as ObjectId first (legacy users)
+        return {"_id": ObjectId(user_id)}
+    except:
+        # Fall back to string ID (new users)
+        return {"id": user_id}
+
 # Database connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
