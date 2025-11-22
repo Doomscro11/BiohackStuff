@@ -168,6 +168,18 @@ backend:
         agent: "testing"
         comment: "TESTED & WORKING: GET /api/auth/session endpoint working correctly. Authenticated requests return proper user data with email, role, tier, and credits. Unauthenticated requests correctly return 401 Unauthorized. Session data properly fetched from billing service."
 
+  - task: "Backend RBAC Helpers (Global Login Phase)"
+    implemented: true
+    working: true
+    file: "/app/backend/middleware/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Backend auth protection already complete with require_auth, require_admin, and require_role helpers. All sensitive endpoints (billing, admin, patentpulse) already properly protected. PatentPulse uses require_admin_2fa. Partner share admin endpoints use require_role(['admin']). Public endpoints (/share/:token, /api/chemistry/options for basic tier) remain accessible."
+
   - task: "Mock Billing System (Phase 8)"
     implemented: true
     working: true
