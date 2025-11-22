@@ -122,7 +122,7 @@ async def create_partner_share(
     """
     Create a new partner share (Admin only, 2FA required)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         # Verify file exists
@@ -196,7 +196,7 @@ async def list_partner_shares(
     """
     List partner shares with filters (Admin only)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         query = {}
@@ -232,7 +232,7 @@ async def get_partner_share(share_id: str) -> Dict[str, Any]:
     """
     Get partner share details (Admin only)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         share = await db.partner_shares.find_one({"share_id": share_id})
@@ -257,7 +257,7 @@ async def rotate_share_token(
     Rotate share token (Admin only)
     Generates new token, invalidates old one
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         share = await db.partner_shares.find_one({"share_id": share_id})
@@ -307,7 +307,7 @@ async def revoke_share(
     """
     Revoke a share (Admin only)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         share = await db.partner_shares.find_one({"share_id": share_id})
@@ -357,7 +357,7 @@ async def get_share_analytics_endpoint(share_id: str) -> Dict[str, Any]:
     """
     Get analytics for a specific share (Admin only)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         analytics = await get_share_analytics(share_id)
@@ -374,7 +374,7 @@ async def get_dashboard_metrics_endpoint(
     """
     Get dashboard metrics (Admin only)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     try:
         start_date = datetime.now(timezone.utc) - timedelta(days=days)
@@ -394,7 +394,7 @@ async def get_share_metadata(token: str, request: Request) -> Dict[str, Any]:
     """
     Get share metadata for partner landing page (Public)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     client_ip = request.client.host if request.client else "unknown"
     
@@ -461,7 +461,7 @@ async def download_shared_file(token: str, request: Request):
     """
     Download shared file with policy enforcement (Public)
     """
-    check_feature_flag()
+    await check_feature_flag()
     
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent")
