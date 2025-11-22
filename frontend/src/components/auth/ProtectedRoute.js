@@ -47,8 +47,8 @@ function ProtectedRoute({ children }) {
     return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
 
-  // Clone children and pass user data
-  return React.cloneElement(children, { user });
+  // Render children with user context
+  return <>{children}</>;
 }
 
 export default ProtectedRoute;
