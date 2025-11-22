@@ -57,26 +57,25 @@ function LoginPage() {
     setError('');
     setLoading(true);
 
-    try {
-      const response = await fetchJSON('/api/auth/magic/verify', {
-        method: 'POST',
-        body: JSON.stringify({ email, code })
-      });
+    const result = await fetchJSON('/api/auth/magic/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    });
 
-      if (response.success) {
-        // Redirect based on role and returnTo
-        if (response.role === 'admin' && returnTo === '/') {
-          navigate('/admin');
-        } else {
-          navigate(returnTo);
-        }
+    if (result.ok && result.data && result.data.success) {
+      // Redirect based on role and returnTo
+      if (result.data.role === 'admin' && returnTo === '/') {
+        navigate('/admin');
+      } else {
+        navigate(returnTo);
       }
-    } catch (err) {
-      setError(err.message || 'Invalid or expired code');
+    } else {
+      setError(result.text || 'Invalid or expired code');
       setCode('');
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   const handleBack = () => {
