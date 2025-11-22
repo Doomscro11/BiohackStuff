@@ -74,8 +74,8 @@ function AdminRoute({ children }) {
     );
   }
 
-  // Clone children and pass user data
-  return React.cloneElement(children, { user });
+  // Render children with user context
+  return <>{children}</>;
 }
 
 export default AdminRoute;
