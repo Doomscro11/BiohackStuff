@@ -349,6 +349,54 @@ frontend:
         agent: "testing"
         comment: "TESTED & WORKING: Phase 8.2 Billing Widget Stability - ALL TESTS PASSING (8/8, 100% success rate). Complete billing flow operational: (1) Session endpoint working correctly with proper user data (email, role, tier, credits), (2) Billing state endpoint returning proper billing state with tier, credits, renewsAt, and history, (3) Mock credit purchase working - credits increased by 100 with proper redirect to /billing?success=1, (4) Mock pro plan upgrade working - tier set to 'pro', 200 monthly credits granted, subscription created with renewal date, (5) Chemistry options after pro upgrade showing 9 total modifications including pro-tier options (pegylation, lipidation, n_methylation), (6) Mock enterprise upgrade working - tier set to 'enterprise', 5000 monthly credits granted, (7) Combined plan + credits working - both plan upgrade and bonus credits applied correctly. All mock webhooks redirect properly, credits and tier updates persist, no infinite loops or hangs detected."
 
+  - task: "Login Page (Global Login Phase)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/apps/auth/pages/LoginPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created dedicated /login page with two-step OTP flow. Uses existing /api/auth/magic/request and /api/auth/magic/verify endpoints. Email input step with validation, code verification step with 6-digit input, demo mode support showing OTP code, automatic session check on mount, redirect after successful login based on role (admin → /admin, others → returnTo param or /). Mobile-responsive design with gradient background."
+
+  - task: "ProtectedRoute Component (Global Login Phase)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/auth/ProtectedRoute.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created ProtectedRoute wrapper component that checks authentication via /api/auth/session. Shows loading spinner during auth check. Redirects to /login?returnTo=<current-path> if not authenticated. Renders children if authenticated. Properly handles fetchJSON response format (checks result.ok)."
+
+  - task: "AdminRoute Component (Global Login Phase)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/auth/AdminRoute.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created AdminRoute wrapper component for admin-only pages. Checks authentication and admin role via /api/auth/session. Redirects to /login if not authenticated. Shows 'Access Denied' error page if authenticated but not admin. Renders children only if authenticated and role === 'admin'."
+
+  - task: "MainApp Routing & Navigation (Global Login Phase)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/MainApp.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated MainApp.js with comprehensive auth integration: (1) Added /login route (public), (2) Wrapped protected routes (/, /test, /billing, /admin/analytics, /admin/patentpulse) with <ProtectedRoute>, (3) Wrapped admin routes (/admin) with <AdminRoute>, (4) Public routes (/login, /share/:token) remain unwrapped, (5) Navigation bar now fetches session on mount and stores user state, (6) Conditionally shows 'Admin' link only if user.role === 'admin', (7) Shows Logout button for authenticated users, shows Sign In button for unauthenticated users, (8) Logout handler clears session and redirects to /login. Auth state properly managed at app level."
+
 
   - task: "PatentPulse Production Collector (Phase IXc)"
     implemented: true
