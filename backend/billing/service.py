@@ -104,7 +104,7 @@ async def consume_credits(user_id: str, amount: int, reason: str) -> int:
     Raises ValueError if insufficient credits
     Returns new balance
     """
-    user_doc = await users.find_one({"_id": ObjectId(user_id)})
+    user_doc = await users.find_one(get_user_query(user_id))
     current_balance = int(user_doc.get("credits", 0)) if user_doc else 0
     
     if current_balance < amount:
