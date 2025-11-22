@@ -21,13 +21,12 @@ function LoginPage() {
   }, []);
 
   const checkSession = async () => {
-    try {
-      await fetchJSON('/api/auth/session');
+    const result = await fetchJSON('/api/auth/session');
+    if (result.ok && result.data) {
       // Already logged in, redirect
       navigate(returnTo);
-    } catch (err) {
-      // Not logged in, stay on login page
     }
+    // Not logged in, stay on login page
   };
 
   const handleRequestCode = async (e) => {
