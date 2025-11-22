@@ -23,19 +23,19 @@ export async function startCheckout(payload) {
 }
 
 export async function getPlans() {
-  const response = await fetch(`${BACKEND_URL}/api/billing/admin/plans`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/billing/admin/plans`, {
     credentials: 'include'
   });
   
-  if (!response.ok) {
-    throw new Error(await response.text() || 'Failed to fetch plans');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to fetch plans');
   }
   
-  return response.json();
+  return result.data;
 }
 
 export async function upsertPlan(plan) {
-  const response = await fetch(`${BACKEND_URL}/api/billing/admin/plans`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/billing/admin/plans`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -44,9 +44,9 @@ export async function upsertPlan(plan) {
     body: JSON.stringify(plan)
   });
   
-  if (!response.ok) {
-    throw new Error(await response.text() || 'Failed to update plan');
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to update plan');
   }
   
-  return response.json();
+  return result.data;
 }
