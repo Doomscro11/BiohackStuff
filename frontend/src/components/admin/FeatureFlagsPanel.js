@@ -168,6 +168,31 @@ function FeatureFlagsPanel() {
         </div>
       </div>
 
+      <div className="presets-section">
+        <h3>Feature Flag Presets</h3>
+        <p className="section-description">
+          Quick apply predefined feature flag configurations
+        </p>
+        <div className="preset-buttons">
+          <button onClick={() => applyPreset('baseline')} className="preset-btn baseline">
+            Baseline
+            <span className="preset-desc">All features off</span>
+          </button>
+          <button onClick={() => applyPreset('preview')} className="preset-btn preview">
+            Preview Mode
+            <span className="preset-desc">Basic UI scaffolding</span>
+          </button>
+          <button onClick={() => applyPreset('extended')} className="preset-btn extended">
+            Extended UI
+            <span className="preset-desc">Additional panels</span>
+          </button>
+          <button onClick={() => applyPreset('full_scaffold')} className="preset-btn full">
+            Full Scaffold
+            <span className="preset-desc">Complete framework</span>
+          </button>
+        </div>
+      </div>
+
       <div className="level-descriptions">
         <h4>Feature Level Descriptions</h4>
         <ul>
@@ -183,6 +208,27 @@ function FeatureFlagsPanel() {
       </div>
     </div>
   );
+
+  async function applyPreset(presetName) {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/apply-preset?preset_name=${presetName}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setMessage(`Preset '${presetName}' applied successfully`);
+        loadFeatureFlags(); // Reload flags
+      } else {
+        setMessage(`Failed to apply preset '${presetName}'`);
+      }
+    } catch (error) {
+      console.error('Failed to apply preset:', error);
+      setMessage('Error applying preset');
+    }
+
+    setTimeout(() => setMessage(''), 3000);
+  }
 }
 
 export default FeatureFlagsPanel;
