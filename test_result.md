@@ -408,9 +408,9 @@ frontend:
 
   - task: "MainApp Routing & Navigation (Global Login Phase)"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/MainApp.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -420,6 +420,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING: MainApp routing and navigation verified through comprehensive backend testing. All route protection working correctly: (1) Public routes accessible without auth (chemistry options, partner share endpoints), (2) Protected routes enforce authentication (session, billing endpoints), (3) Admin routes enforce RBAC (admin feature flags), (4) Logout endpoint working properly. Navigation state management verified through session endpoint which returns proper user data including role for conditional navigation display."
+      - working: false
+        agent: "testing"
+        comment: "FRONTEND TESTED - NAVIGATION ISSUES FOUND: ✅ Route protection working correctly (public routes accessible, protected routes redirect to login). ❌ CRITICAL NAVIGATION ISSUES: (1) Admin link incorrectly visible for non-admin users (should be hidden based on role), (2) Navigation links (Billing & Credits, Analytics, PatentPulse, Logout) not visible for authenticated users, (3) Logout functionality not working properly. Session data shows correct role (researcher vs admin) but navigation state management has bugs. Core routing functional but navigation UX broken."
 
 
   - task: "PatentPulse Production Collector (Phase IXc)"
