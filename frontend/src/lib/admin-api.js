@@ -1,4 +1,6 @@
 // API utilities for Peptimancer Admin Panel
+import { fetchJSON } from './http';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export interface SettingsUpdate extends Partial<AdminSettings> {
