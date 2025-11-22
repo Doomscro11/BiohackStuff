@@ -36,8 +36,9 @@ function App() {
   const [exportLoading, setExportLoading] = useState(false);
   const [synthesisLoading, setSynthesisLoading] = useState(null);
   const [currentMode, setCurrentMode] = useState(null);
+  const [featureLevel, setFeatureLevel] = useState(0);
 
-  // Load current mode on component mount
+  // Load current mode and feature level on component mount
   useEffect(() => {
     const loadCurrentMode = async () => {
       try {
@@ -47,7 +48,20 @@ function App() {
         console.error('Failed to load current mode:', error);
       }
     };
+    
+    const loadFeatureLevel = async () => {
+      try {
+        const session = await fetchSession();
+        if (session && session.feature_level !== undefined) {
+          setFeatureLevel(session.feature_level);
+        }
+      } catch (error) {
+        console.debug('Feature level not available:', error);
+      }
+    };
+    
     loadCurrentMode();
+    loadFeatureLevel();
   }, []);
 
   // Load chemistry options on mount
