@@ -49,24 +49,36 @@ const PartnerSharesAdmin = () => {
 
   const fetchShares = async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (filter !== 'all') {
-      params.append('state', filter);
-    }
-
-    const result = await fetchJSON(
-      `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
-      { credentials: 'include' }
-    );
-
-    if (result.ok) {
-      setShares(result.data.shares || []);
-      setError(null);
-    } else {
-      setError(result.text || 'Failed to fetch shares');
-    }
+    setError(null); // Clear previous errors
     
-    setLoading(false);
+    try {
+      const params = new URLSearchParams();
+      if (filter !== 'all') {
+        params.append('state', filter);
+      }
+
+      const result = await fetchJSON(
+        `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
+        { credentials: 'include' }
+      );
+
+      if (result.ok) {
+        setShares(result.data.shares || []);
+        setError(null);
+      } else {
+        // Provide user-friendly error message instead of technical details
+        const errorMsg = result.status === 401 ? 'Authentication required' :
+                        result.status === 403 ? 'Access denied' :
+                        result.status >= 500 ? 'Server error - please try again' :
+                        'Failed to load partner shares';
+        setError(errorMsg);
+      }
+    } catch (error) {
+      console.error('Error fetching shares:', error);
+      setError('Network error - please check your connection');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchExports = async () => {
