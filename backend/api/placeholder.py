@@ -108,6 +108,74 @@ async def advanced_action(user=Depends(get_current_user)):
     }
 
 
+@router.post("/start-mock-job")
+async def start_mock_job(user=Depends(get_current_user)):
+    """
+    Start a mock job with simulated progress
+    Returns job ID - no actual processing occurs
+    """
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    feature_level = await feature_flags_service.get_user_feature_level(user['id'])
+    
+    # Log access
+    await feature_flags_service.log_feature_access(
+        user_id=user['id'],
+        feature_key='mock_job',
+        level=feature_level
+    )
+    
+    # Generate mock job ID
+    import uuid
+    job_id = str(uuid.uuid4())[:8]
+    
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "progress": 0,
+        "started_at": datetime.now().isoformat(),
+        "estimated_completion": (datetime.now() + timedelta(seconds=10)).isoformat(),
+        "message": "Mock job created - no actual processing"
+    }
+
+
+@router.get("/mock-job/{job_id}")
+async def get_mock_job_status(job_id: str, user=Depends(get_current_user)):
+    """
+    Get mock job status
+    Returns simulated progress - no actual job exists
+    """
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    # Simulate random progress
+    import random
+    progress = random.randint(0, 100)
+    status_options = ["queued", "running", "completed"] if progress == 100 else ["queued", "running"]
+    
+    return {
+        "job_id": job_id,
+        "status": status_options[-1],
+        "progress": progress,
+        "mock_output": {
+            "result_count": 3 if progress == 100 else 0,
+            "placeholder_metrics": {
+                "metric_1": round(random.uniform(30, 70), 2),
+                "metric_2": round(random.uniform(40, 90), 2),
+                "metric_3": round(random.uniform(20, 60), 2)
+            }
+        } if progress == 100 else None,
+        "message": "Mock job status - no actual computation performed"
+    }
+
+
 @router.get("/feature-status")
 async def feature_status(user=Depends(get_current_user)):
     """
