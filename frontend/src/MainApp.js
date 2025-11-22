@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import App from './apps/peptimancer/pages/HomePage';
 import TestPage from './pages/TestPage';
@@ -7,10 +7,14 @@ import BillingPage from './apps/account/pages/BillingPage';
 import AnalyticsPage from './apps/admin/pages/AnalyticsPage';
 import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
 import SharePage from './apps/patentpulse/pages/SharePage';
+import LoginPage from './apps/auth/pages/LoginPage';
 import CreditBadge from './components/CreditBadge';
-import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
+import { Shield, CreditCard, BarChart3, FileText, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSession } from './lib/session';
+import { fetchJSON } from './lib/http';
 
 function MainApp() {
   // Bootstrap: fetch session on app load
