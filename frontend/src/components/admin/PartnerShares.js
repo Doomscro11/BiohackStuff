@@ -74,30 +74,23 @@ const PartnerSharesAdmin = () => {
   const createShare = async (e) => {
     e.preventDefault();
 
-    try {
-      const payload = {
-        ...formData,
-        ip_allowlist: formData.ip_allowlist
-          ? formData.ip_allowlist.split(',').map(ip => ip.trim()).filter(Boolean)
-          : []
-      };
+    const payload = {
+      ...formData,
+      ip_allowlist: formData.ip_allowlist
+        ? formData.ip_allowlist.split(',').map(ip => ip.trim()).filter(Boolean)
+        : []
+    };
 
-      const response = await fetch(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
+    const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Failed to create share' }));
-        throw new Error(errorData.detail);
-      }
-
-      const result = await response.json();
-      
+    if (result.ok) {
       // Show share URL
-      alert(`Share created successfully!\n\nShare URL:\n${result.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
+      alert(`Share created successfully!\n\nShare URL:\n${result.data.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
 
       // Reset form and refresh
       setShowCreateForm(false);
@@ -113,8 +106,8 @@ const PartnerSharesAdmin = () => {
         internal_notes: ''
       });
       fetchShares();
-    } catch (err) {
-      alert(`Error creating share: ${err.message}`);
+    } else {
+      alert(`Error creating share: ${result.text || 'Failed to create share'}`);
     }
   };
 
