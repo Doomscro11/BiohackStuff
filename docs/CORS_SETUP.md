@@ -41,7 +41,7 @@ Access-Control-Allow-Origin header must not be '*' when credentials mode is 'inc
 
 ✅ **CORRECT**:
 ```
-CORS_ORIGINS="http://localhost:3000,https://rbac-portal-6.preview.emergentagent.com"
+CORS_ORIGINS="http://localhost:3000,https://auth-role-control.preview.emergentagent.com"
 allow_credentials=True
 ```
 **Result**: Browser allows requests with credentials
@@ -64,7 +64,7 @@ CORS_ORIGINS="http://localhost:3000"
 
 **Backend `.env`**:
 ```bash
-CORS_ORIGINS="http://localhost:3000,https://rbac-portal-6.preview.emergentagent.com"
+CORS_ORIGINS="http://localhost:3000,https://auth-role-control.preview.emergentagent.com"
 ```
 
 **Use Case**:
@@ -371,7 +371,7 @@ Before deploying to production:
 | Environment | Frontend Origin | CORS_ORIGINS Value |
 |-------------|----------------|-------------------|
 | Local Dev | `http://localhost:3000` | `"http://localhost:3000"` |
-| Preview | `https://rbac-portal-6.preview.emergentagent.com` | `"http://localhost:3000,https://rbac-portal-6.preview.emergentagent.com"` |
+| Preview | `https://auth-role-control.preview.emergentagent.com` | `"http://localhost:3000,https://auth-role-control.preview.emergentagent.com"` |
 | Production | TBD | `"https://app.peptimancer.com"` |
 
 ### Required Headers for Credentials

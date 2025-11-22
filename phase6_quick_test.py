@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime
 
-BACKEND_URL = "https://rbac-portal-6.preview.emergentagent.com"
+BACKEND_URL = "https://auth-role-control.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_critical_endpoints():
