@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { fetchJSON } from '@/lib/http';
 import './FeatureFlagsPanel.css';
 
 function FeatureFlagsPanel() {
@@ -19,50 +20,39 @@ function FeatureFlagsPanel() {
   }, []);
 
   const loadFeatureFlags = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`, {
-        credentials: 'include'
-      });
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setFlags(data.flags || {});
-      }
-    } catch (error) {
-      console.error('Failed to load feature flags:', error);
-    } finally {
-      setLoading(false);
+    if (result.ok && result.data) {
+      setFlags(result.data.flags || {});
+    } else {
+      console.error('Failed to load feature flags:', result.text);
     }
+    
+    setLoading(false);
   };
 
   const toggleFlag = async (flagKey) => {
-    try {
-      const currentValue = flags[flagKey] || false;
-      
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          flag_key: flagKey,
-          enabled: !currentValue
-        })
-      });
+    const currentValue = flags[flagKey] || false;
+    
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        flag_key: flagKey,
+        enabled: !currentValue
+      })
+    });
 
-      if (response.ok) {
-        setFlags(prev => ({
-          ...prev,
-          [flagKey]: !currentValue
-        }));
-        setMessage(`Flag '${flagKey}' ${!currentValue ? 'enabled' : 'disabled'} successfully`);
-      } else {
-        setMessage(`Failed to update flag '${flagKey}'`);
-      }
-    } catch (error) {
-      console.error('Failed to toggle flag:', error);
-      setMessage('Error updating flag');
+    if (result.ok) {
+      setFlags(prev => ({
+        ...prev,
+        [flagKey]: !currentValue
+      }));
+      setMessage(`Flag '${flagKey}' ${!currentValue ? 'enabled' : 'disabled'} successfully`);
+    } else {
+      setMessage(`Failed to update flag '${flagKey}'`);
     }
 
     setTimeout(() => setMessage(''), 3000);
@@ -74,30 +64,38 @@ function FeatureFlagsPanel() {
       return;
     }
 
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/user-level`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          user_id: selectedUserId,
-          feature_level: parseInt(selectedLevel)
-        })
-      });
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/user-level`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: selectedUserId,
+        feature_level: parseInt(selectedLevel)
+      })
+    });
 
-      if (response.ok) {
-        setMessage(`User ${selectedUserId} feature level set to ${selectedLevel}`);
-        setSelectedUserId('');
-        setSelectedLevel(0);
-      } else {
-        const error = await response.json();
-        setMessage(`Failed: ${error.detail || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Failed to update user level:', error);
-      setMessage('Error updating user level');
+    if (result.ok) {
+      setMessage(`User ${selectedUserId} feature level set to ${selectedLevel}`);
+      setSelectedUserId('');
+      setSelectedLevel(0);
+    } else {
+      setMessage(`Failed: ${result.text || 'Unknown error'}`);
+    }
+
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const applyPreset = async (presetName) => {
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/apply-preset?preset_name=${presetName}`, {
+      method: 'POST'
+    });
+
+    if (result.ok) {
+      setMessage(`Preset '${presetName}' applied successfully`);
+      loadFeatureFlags(); // Reload flags
+    } else {
+      setMessage(`Failed to apply preset '${presetName}'`);
     }
 
     setTimeout(() => setMessage(''), 3000);
@@ -208,27 +206,6 @@ function FeatureFlagsPanel() {
       </div>
     </div>
   );
-
-  async function applyPreset(presetName) {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/apply-preset?preset_name=${presetName}`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        setMessage(`Preset '${presetName}' applied successfully`);
-        loadFeatureFlags(); // Reload flags
-      } else {
-        setMessage(`Failed to apply preset '${presetName}'`);
-      }
-    } catch (error) {
-      console.error('Failed to apply preset:', error);
-      setMessage('Error applying preset');
-    }
-
-    setTimeout(() => setMessage(''), 3000);
-  }
 }
 
 export default FeatureFlagsPanel;

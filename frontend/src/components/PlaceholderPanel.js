@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { fetchJSON } from '@/lib/http';
 import './PlaceholderPanel.css';
 
 function PlaceholderPanel({ featureLevel = 0 }) {
@@ -19,39 +20,30 @@ function PlaceholderPanel({ featureLevel = 0 }) {
 
   const loadPreviewData = async () => {
     setLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/placeholder/advanced-preview`, {
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPreviewData(data);
-      }
-    } catch (error) {
-      console.error('Failed to load preview data:', error);
-    } finally {
-      setLoading(false);
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/placeholder/advanced-preview`);
+    
+    if (result.ok && result.data) {
+      setPreviewData(result.data);
+    } else {
+      console.error('Failed to load preview data:', result.text);
     }
+    
+    setLoading(false);
   };
 
   const handlePlaceholderAction = async () => {
     setLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/placeholder/advanced-action`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`Action completed: ${JSON.stringify(data.status)}\n\nThis is placeholder data only.`);
-      }
-    } catch (error) {
-      console.error('Action failed:', error);
-    } finally {
-      setLoading(false);
+    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/placeholder/advanced-action`, {
+      method: 'POST'
+    });
+    
+    if (result.ok && result.data) {
+      alert(`Action completed: ${JSON.stringify(result.data.status)}\n\nThis is placeholder data only.`);
+    } else {
+      console.error('Action failed:', result.text);
     }
+    
+    setLoading(false);
   };
 
   if (featureLevel === 0) {

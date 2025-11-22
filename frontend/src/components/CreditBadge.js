@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Coins } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { fetchJSON } from '@/lib/http';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -10,20 +11,14 @@ export default function CreditBadge() {
   const [loading, setLoading] = useState(true);
 
   const fetchCredits = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/billing/state`, {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCredits(data.credits);
-      }
-    } catch (err) {
-      // Silently fail - user might not be authenticated
-    } finally {
-      setLoading(false);
+    const result = await fetchJSON(`${BACKEND_URL}/api/billing/state`);
+    
+    if (result.ok && result.data) {
+      setCredits(result.data.credits);
     }
+    // Silently fail - user might not be authenticated
+    
+    setLoading(false);
   };
 
   useEffect(() => {
