@@ -223,8 +223,11 @@ def create_jwt_token(user: Dict[str, Any]) -> str:
             role=user['role']
         )
     else:
-        return sign_jwt(
-            user_id=user['id'],
-            email=user['email'],
-            role=user['role']
-        )
+        claims = {
+            "sub": user['id'],
+            "email": user['email'],
+            "role": user['role'],
+            "orgId": user.get('org_id', 'default'),
+            "scope": "user"
+        }
+        return sign_jwt(claims)
