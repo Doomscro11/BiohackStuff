@@ -7,7 +7,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
  * Request a magic code (OTP) to be sent to the user's email
  */
 export async function requestMagicCode(email): Promise<AuthResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/magic/request`, {
+  const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/request`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -15,24 +15,11 @@ export async function requestMagicCode(email): Promise<AuthResponse> {
     body: JSON.stringify({ email })
   });
 
-  if (!response.ok) {
-    let errorMessage = 'Failed to request magic code';
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.detail || errorData.message || errorMessage;
-    } catch (e) {
-      // If JSON parsing fails, try text
-      try {
-        errorMessage = await response.text() || errorMessage;
-      } catch (textError) {
-        // If both fail, use default message
-        errorMessage = `Request failed with status ${response.status}`;
-      }
-    }
-    throw new Error(errorMessage);
+  if (!result.ok) {
+    throw new Error(result.text || 'Failed to request magic code');
   }
 
-  return response.json();
+  return result.data;
 }
 
 /**
