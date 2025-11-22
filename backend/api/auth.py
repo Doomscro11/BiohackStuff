@@ -315,10 +315,11 @@ async def twofa_verify(body: TwoFAVerifyBody, response: Response, request: Reque
 async def auth_session(request: Request):
     """
     Lightweight session endpoint for frontend state
-    Returns user info, tier, and credits
+    Returns user info, tier, credits, and feature level
     """
     from middleware.auth import get_current_user
     from billing.service import get_billing_state
+    from services import feature_flags_service
     
     user = get_current_user(request)
     if not user:
@@ -330,9 +331,13 @@ async def auth_session(request: Request):
     # Get billing state
     billing = await get_billing_state(user["id"])
     
+    # Get feature level
+    feature_level = await feature_flags_service.get_user_feature_level(user["id"])
+    
     return {
         "email": user["email"],
         "role": user.get("role", "researcher"),
         "tier": billing.get("tier", "basic"),
-        "credits": billing.get("credits", 0)
+        "credits": billing.get("credits", 0),
+        "feature_level": feature_level
     }
