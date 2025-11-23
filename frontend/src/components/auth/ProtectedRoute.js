@@ -16,15 +16,13 @@ function ProtectedRoute({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    const abortController = new AbortController();
     let mounted = true;
     
-    checkAuth(abortController.signal, mounted);
+    checkAuth(null, mounted);
     
     // Cleanup function
     return () => {
       mounted = false;
-      abortController.abort();
     };
   }, []);
 
