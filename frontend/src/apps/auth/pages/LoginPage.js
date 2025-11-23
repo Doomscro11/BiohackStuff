@@ -54,24 +54,16 @@ function LoginPage() {
       body: JSON.stringify({ email, code })
     });
 
-    console.log('[LoginPage] Verify result:', result);
-    
     if (result.ok && result.data && result.data.success) {
-      console.log('[LoginPage] Verification successful, redirecting...');
-      console.log('[LoginPage] returnTo:', returnTo);
-      console.log('[LoginPage] role:', result.data.role);
-      
       // Determine redirect destination
       const redirectUrl = (result.data.role === 'admin' && returnTo === '/') ? '/admin' : returnTo;
-      console.log('[LoginPage] Redirecting to:', redirectUrl);
       
       // Wait a moment for cookie to be properly set before redirecting
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Force full page reload with replace to avoid back button issues
-      window.location.replace(redirectUrl);
+      // Use React Router navigate for smoother client-side navigation
+      navigate(redirectUrl, { replace: true });
     } else {
-      console.log('[LoginPage] Verification failed:', result);
       setError(result.text || 'Invalid or expired code');
       setCode('');
     }
