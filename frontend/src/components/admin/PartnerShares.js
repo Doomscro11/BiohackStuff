@@ -100,10 +100,11 @@ const PartnerSharesAdmin = () => {
     }
   };
 
-  const fetchExports = async () => {
+  const fetchExports = async (signal = null) => {
     try {
       const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/reclaim/exports`, {
-        credentials: 'include'
+        credentials: 'include',
+        ...(signal && { signal })
       });
 
       if (result.ok) {
