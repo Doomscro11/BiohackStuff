@@ -118,15 +118,15 @@ function MainApp() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/share/:token" element={<SharePage />} />
           
-          {/* Protected Routes */}
+          {/* Protected Routes - Any authenticated user */}
           <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
           <Route path="/test" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-          <Route path="/admin/patentpulse" element={<ProtectedRoute><PatentPulsePage /></ProtectedRoute>} />
           
-          {/* Admin-Only Routes */}
+          {/* Admin-Only Routes - Require admin role */}
           <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
+          <Route path="/admin/patentpulse" element={<AdminRoute><PatentPulsePage /></AdminRoute>} />
         </Routes>
       </div>
     </Router>
