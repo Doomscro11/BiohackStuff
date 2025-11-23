@@ -99,7 +99,8 @@ function App() {
       const response = await axios.post(`${API}/generate-analogues`, requestData);
       setResults(response.data);
     } catch (error) {
-      setError(error.response?.data?.detail || 'Failed to generate analogues');
+      // Use error normalizer to safely handle all error types
+      setError(getAxiosErrorMessage(error, 'Failed to generate analogues'));
     } finally {
       setLoading(false);
     }
