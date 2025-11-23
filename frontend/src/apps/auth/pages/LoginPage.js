@@ -64,8 +64,10 @@ function LoginPage() {
         // Wait a moment for cookie to be properly set before redirecting
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Use React Router navigate for smoother client-side navigation
-        navigate(redirectUrl, { replace: true });
+        // Force a full page reload to ensure session state is properly hydrated
+        // This prevents the logout-on-tab-click issue where client-side navigation
+        // doesn't refresh the MainApp session state
+        window.location.href = redirectUrl;
       } else {
         console.log('[LoginPage] Verification failed:', result);
         setError(result.text || 'Invalid or expired code');
