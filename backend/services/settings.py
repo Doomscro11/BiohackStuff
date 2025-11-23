@@ -194,6 +194,14 @@ async def get_rate_limit() -> int:
 
 async def is_feature_enabled(feature: str) -> bool:
     """Check if a specific feature is enabled"""
+    import os
+    
+    # First check environment variables for feature flags
+    if feature.startswith('FEATURE_'):
+        env_value = os.environ.get(feature, 'false').lower()
+        return env_value == 'true'
+    
+    # Fallback to settings-based features
     settings = await get_settings()
     feature_map = {
         "cro": "croEnabled",
