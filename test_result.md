@@ -399,11 +399,11 @@ frontend:
 
   - task: "AdminRoute Component (Global Login Phase)"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/components/auth/AdminRoute.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -417,6 +417,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "CRITICAL ISSUE FOUND: AdminRoute component has session persistence problems. Authenticated admin users (founder@peptologic.ai) are redirected to login when accessing admin routes (/admin, /admin/analytics, /admin/patentpulse) despite successful authentication and visible admin navigation. ProtectedRoute works correctly for basic routes (/billing, home), but AdminRoute fails session validation. Possible causes: (1) Race condition in AdminRoute session check, (2) Cookie handling issues for admin-level authentication, (3) AbortController interference with session API calls. NEEDS INVESTIGATION: AdminRoute.js session validation logic."
+      - working: true
+        agent: "testing"
+        comment: "ADMINROUTE FIX VERIFICATION COMPLETE - ALL TESTS PASSING (7/7, 100% success rate): ✅ CRITICAL FIX CONFIRMED: AbortController removal from AdminRoute.js has successfully resolved the authentication redirect issue. ✅ PRIMARY TESTS PASSED: (1) Admin user login working with demo OTP codes (founder@peptologic.ai), (2) /admin route access working - no redirect to login, (3) /admin/analytics route access working - no redirect to login, (4) /admin/patentpulse route access working - no redirect to login, (5) Multiple admin tab navigation stress test passed - no session loss during navigation cycles. ✅ SECONDARY TESTS PASSED: (6) Non-admin user (test@example.com) correctly sees 'Access Denied' page instead of login redirect, (7) ProtectedRoute regression test passed - billing page access works correctly. ✅ CONSOLE VERIFICATION: AdminRoute logs show successful auth checks with role: 'admin' and isAdmin: true. ✅ NO CRITICAL ISSUES: No infinite redirect loops, no 401 Unauthorized errors, no session persistence problems. The fix has completely resolved the AdminRoute authentication issues and the system is now production-ready."
 
   - task: "MainApp Routing & Navigation (Global Login Phase)"
     implemented: true
