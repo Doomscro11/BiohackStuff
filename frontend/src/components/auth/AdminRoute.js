@@ -30,7 +30,13 @@ function AdminRoute({ children }) {
     };
   }, []);
 
-  const checkAuth = async (signal, mounted) => {
+  const checkAuth = async (signal, mounted, retryCount = 0) => {
+    // Small delay before first check to allow MainApp session to initialize
+    // This prevents race condition where AdminRoute checks before MainApp completes
+    if (retryCount === 0) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
     const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`, {
       ...(signal && { signal })
     });
@@ -42,13 +48,22 @@ function AdminRoute({ children }) {
       setIsAuthenticated(true);
       setUser(result.data);
       setIsAdmin(result.data.role === 'admin');
+      setLoading(false);
     } else {
+      // If first attempt fails and we just logged in, retry once after a short delay
+      // This handles the race condition between login redirect and session initialization
+      if (retryCount === 0) {
+        console.log('[AdminRoute] Initial auth check failed, retrying...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return checkAuth(signal, mounted, retryCount + 1);
+      }
+      
+      // After retry, if still no session, user is not authenticated
       setIsAuthenticated(false);
       setIsAdmin(false);
       setUser(null);
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   if (loading) {
