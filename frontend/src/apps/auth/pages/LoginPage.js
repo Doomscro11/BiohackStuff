@@ -61,8 +61,9 @@ function LoginPage() {
         
         console.log('[LoginPage] Authentication successful, redirecting to:', redirectUrl);
         
-        // Wait a moment for cookie to be properly set before redirecting
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait for cookie to be properly set and persisted by browser
+        // Increased delay to ensure cookie is fully committed before page reload
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Force a full page reload to ensure session state is properly hydrated
         // This prevents the logout-on-tab-click issue where client-side navigation
