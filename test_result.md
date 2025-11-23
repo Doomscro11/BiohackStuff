@@ -612,10 +612,8 @@ test_plan:
   current_focus:
     - "Login Page (Global Login Phase)"
     - "ProtectedRoute Component (Global Login Phase)"
-    - "AdminRoute Component (Global Login Phase)"
     - "MainApp Routing & Navigation (Global Login Phase)"
-  stuck_tasks:
-    - "AdminRoute Component (Global Login Phase)"
+  stuck_tasks: []
   test_all: true
   test_priority: "high_first"
 
