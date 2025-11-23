@@ -61,7 +61,7 @@ const PartnerSharesAdmin = () => {
     };
   }, [filter]);
 
-  const fetchShares = async () => {
+  const fetchShares = async (signal = null) => {
     setLoading(true);
     setError(null); // Clear previous errors
     
@@ -73,7 +73,10 @@ const PartnerSharesAdmin = () => {
 
       const result = await fetchJSON(
         `${BACKEND_URL}/api/patentpulse/partner/shares?${params.toString()}`,
-        { credentials: 'include' }
+        { 
+          credentials: 'include',
+          ...(signal && { signal })
+        }
       );
 
       if (result.ok) {
@@ -88,8 +91,10 @@ const PartnerSharesAdmin = () => {
         setError(errorMsg);
       }
     } catch (error) {
-      console.error('Error fetching shares:', error);
-      setError('Network error - please check your connection');
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching shares:', error);
+        setError('Network error - please check your connection');
+      }
     } finally {
       setLoading(false);
     }
