@@ -61,25 +61,22 @@ function LoginPage() {
       console.log('[LoginPage] returnTo:', returnTo);
       console.log('[LoginPage] role:', result.data.role);
       
+      // Determine redirect destination
+      const redirectUrl = (result.data.role === 'admin' && returnTo === '/') ? '/admin' : returnTo;
+      console.log('[LoginPage] Redirecting to:', redirectUrl);
+      
       // Wait a moment for cookie to be properly set before redirecting
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Use window.location for full page reload to ensure cookie is picked up
-      if (result.data.role === 'admin' && returnTo === '/') {
-        console.log('[LoginPage] Redirecting to /admin');
-        window.location.href = '/admin';
-      } else {
-        console.log('[LoginPage] Redirecting to:', returnTo);
-        window.location.href = returnTo;
-      }
+      // Force full page reload with replace to avoid back button issues
+      window.location.replace(redirectUrl);
     } else {
       console.log('[LoginPage] Verification failed:', result);
       setError(result.text || 'Invalid or expired code');
       setCode('');
-      setLoading(false);
     }
-
-    // Don't set loading to false if redirecting
+    
+    setLoading(false);
   };
 
   const handleBack = () => {
