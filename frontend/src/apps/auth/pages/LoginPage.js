@@ -48,23 +48,32 @@ function LoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code })
-    });
+    try {
+      const result = await fetchJSON(`${BACKEND_URL}/api/auth/magic/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
 
-    if (result.ok && result.data && result.data.success) {
-      // Determine redirect destination
-      const redirectUrl = (result.data.role === 'admin' && returnTo === '/') ? '/admin' : returnTo;
-      
-      // Wait a moment for cookie to be properly set before redirecting
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Use React Router navigate for smoother client-side navigation
-      navigate(redirectUrl, { replace: true });
-    } else {
-      setError(result.text || 'Invalid or expired code');
+      if (result.ok && result.data && result.data.success) {
+        // Determine redirect destination - default to home page for admin users
+        const redirectUrl = result.data.role === 'admin' ? '/' : (returnTo || '/');
+        
+        console.log('[LoginPage] Authentication successful, redirecting to:', redirectUrl);
+        
+        // Wait a moment for cookie to be properly set before redirecting
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Use React Router navigate for smoother client-side navigation
+        navigate(redirectUrl, { replace: true });
+      } else {
+        console.log('[LoginPage] Verification failed:', result);
+        setError(result.text || 'Invalid or expired code');
+        setCode('');
+      }
+    } catch (error) {
+      console.error('[LoginPage] Verification error:', error);
+      setError('Verification failed. Please try again.');
       setCode('');
     }
     
