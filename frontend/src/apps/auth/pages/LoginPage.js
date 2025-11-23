@@ -55,18 +55,22 @@ function LoginPage() {
     });
 
     if (result.ok && result.data && result.data.success) {
-      // Redirect based on role and returnTo
+      // Wait a moment for cookie to be properly set before redirecting
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Use window.location for full page reload to ensure cookie is picked up
       if (result.data.role === 'admin' && returnTo === '/') {
-        navigate('/admin');
+        window.location.href = '/admin';
       } else {
-        navigate(returnTo);
+        window.location.href = returnTo;
       }
     } else {
       setError(result.text || 'Invalid or expired code');
       setCode('');
+      setLoading(false);
     }
 
-    setLoading(false);
+    // Don't set loading to false if redirecting
   };
 
   const handleBack = () => {
