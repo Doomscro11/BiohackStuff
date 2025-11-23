@@ -399,11 +399,11 @@ frontend:
 
   - task: "AdminRoute Component (Global Login Phase)"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/auth/AdminRoute.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -414,6 +414,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "FRONTEND TESTED & WORKING: AdminRoute component functioning correctly. Non-admin users (test@example.com with researcher role) correctly see 'Access Denied' page when accessing /admin route. Admin users can access admin-only routes successfully. Role-based access control working as expected."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE FOUND: AdminRoute component has session persistence problems. Authenticated admin users (founder@peptologic.ai) are redirected to login when accessing admin routes (/admin, /admin/analytics, /admin/patentpulse) despite successful authentication and visible admin navigation. ProtectedRoute works correctly for basic routes (/billing, home), but AdminRoute fails session validation. Possible causes: (1) Race condition in AdminRoute session check, (2) Cookie handling issues for admin-level authentication, (3) AbortController interference with session API calls. NEEDS INVESTIGATION: AdminRoute.js session validation logic."
 
   - task: "MainApp Routing & Navigation (Global Login Phase)"
     implemented: true
