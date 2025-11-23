@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 // import AnalogueForm from '@/components/AnalogueForm.js';
 import { fetchChemistryOptions, hasClientConflicts } from '@/lib/chemistry';
 import { fetchSession } from '@/lib/session';
+import { normalizeError, getAxiosErrorMessage } from '@/lib/errorUtils';
 import DACTabPanel from '@/components/DACTabPanel';
 import '@/App.css';
 
