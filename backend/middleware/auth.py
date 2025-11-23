@@ -174,14 +174,26 @@ def require_role(allowed_roles: list):
                 detail=f"Requires one of: {', '.join(allowed_roles)}"
             )
         
-        # For admin role, require 2FA
+        # For admin role, require 2FA (skip in development/demo mode)
         if "admin" in allowed_roles and user_role == "admin":
-            admin2fa = getattr(request.state, 'admin2fa', False)
-            if not admin2fa:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Admin 2FA required"
-                )
+            import os
+            
+            # Check if we're in development/demo mode
+            # In development, skip 2FA requirement for easier testing
+            env = os.getenv("ENV", "development").lower()
+            demo_mode = os.getenv("DEMO_MODE", "true").lower() == "true"
+            
+            if env != "development" and not demo_mode:
+                # Production: require 2FA
+                admin2fa = getattr(request.state, 'admin2fa', False)
+                if not admin2fa:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Admin 2FA required"
+                    )
+            else:
+                # Development/Demo: log but allow access
+                logger.info(f"Admin 2FA skipped for {user.get('email')} (env={env}, demo_mode={demo_mode})")
         
         return user
     
