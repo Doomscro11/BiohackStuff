@@ -175,6 +175,22 @@ def require_role(allowed_roles: list):
             )
         
         # For admin role, require 2FA (skip in development/demo mode)
+        # 
+        # 2FA BYPASS DOCUMENTATION:
+        # ========================
+        # In non-production environments (ENV != "production" or DEMO_MODE=true),
+        # admin 2FA is bypassed to enable easier testing of admin flows.
+        # 
+        # SECURITY REQUIREMENTS:
+        # - Production environment MUST set ENV="production" and DEMO_MODE="false"
+        # - In production, admin endpoints will enforce 2FA via admin2fa JWT cookie
+        # - 2FA bypass is logged for audit purposes
+        # 
+        # TO DISABLE BYPASS FOR PRODUCTION:
+        # Set environment variables:
+        #   ENV=production
+        #   DEMO_MODE=false
+        #
         if "admin" in allowed_roles and user_role == "admin":
             import os
             
@@ -183,17 +199,17 @@ def require_role(allowed_roles: list):
             env = os.getenv("ENV", "development").lower()
             demo_mode = os.getenv("DEMO_MODE", "true").lower() == "true"
             
-            if env != "development" and not demo_mode:
-                # Production: require 2FA
+            if env == "production" and not demo_mode:
+                # PRODUCTION MODE: Enforce 2FA requirement
                 admin2fa = getattr(request.state, 'admin2fa', False)
                 if not admin2fa:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
-                        detail="Admin 2FA required"
+                        detail="Admin 2FA required for production access"
                     )
             else:
-                # Development/Demo: log but allow access
-                logger.info(f"Admin 2FA skipped for {user.get('email')} (env={env}, demo_mode={demo_mode})")
+                # DEVELOPMENT/DEMO MODE: Bypass 2FA but log for audit
+                logger.info(f"[DEV/DEMO] Admin 2FA bypassed for {user.get('email')} (env={env}, demo_mode={demo_mode})")
         
         return user
     
