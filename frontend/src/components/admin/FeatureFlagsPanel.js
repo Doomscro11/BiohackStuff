@@ -20,13 +20,19 @@ function FeatureFlagsPanel() {
   const isMountedRef = React.useRef(false);
 
   useEffect(() => {
-    // Prevent double-loading in React StrictMode
-    if (isMountedRef.current) {
-      return;
-    }
-    isMountedRef.current = true;
+    // Create AbortController for cleanup
+    const abortController = new AbortController();
     
-    loadFeatureFlags();
+    // Prevent double-loading in React StrictMode
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      loadFeatureFlags(abortController.signal);
+    }
+    
+    // Cleanup function
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   const loadFeatureFlags = async () => {
