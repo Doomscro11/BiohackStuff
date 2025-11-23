@@ -369,6 +369,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "FRONTEND TESTED & WORKING: Login page functioning correctly with OTP demo codes. Two-step flow working (email → OTP verification). Demo mode displays codes properly. Successful authentication redirects users appropriately. Login form validation working. Mobile-responsive design confirmed. Core login functionality operational."
+      - working: true
+        agent: "testing"
+        comment: "LOGIN FLOW FIX COMPLETE - COMPREHENSIVE TESTING RESULTS: ✅ CORE LOGIN FLOW WORKING: Successfully tested complete login flow with founder@peptologic.ai. All 8 requested steps working: (1) Navigate to /login ✅, (2) Enter email ✅, (3) Click Send Magic Code ✅, (4) Demo code appears ✅, (5) Extract demo code ✅, (6) Enter demo code ✅, (7) Click Verify ✅, (8) User redirected away from /login to home page (/) ✅. FIXED CRITICAL ISSUE: ProtectedRoute component was incorrectly redirecting authenticated users due to AbortController race condition. Removed AbortController from auth check to prevent request cancellation. AUTHENTICATION VERIFIED: JWT cookies properly set (pmnc_jwt), session API returns correct admin user data, protected routes accessible after login. Minor: Navigation state management has timing issues - MainApp doesn't immediately show admin badge after redirect, but core authentication and route protection working correctly."
 
   - task: "ProtectedRoute Component (Global Login Phase)"
     implemented: true
