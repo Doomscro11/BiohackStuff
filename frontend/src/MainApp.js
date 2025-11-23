@@ -9,12 +9,14 @@ import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
 import SharePage from './apps/patentpulse/pages/SharePage';
 import LoginPage from './apps/auth/pages/LoginPage';
 import CreditBadge from './components/CreditBadge';
+import RoleBadge from './components/auth/RoleBadge';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import { Shield, CreditCard, BarChart3, FileText, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSession } from './lib/session';
 import { fetchJSON } from './lib/http';
+import { canAccessAdmin } from './lib/roles';
 
 function MainApp() {
   const [user, setUser] = useState(null);
