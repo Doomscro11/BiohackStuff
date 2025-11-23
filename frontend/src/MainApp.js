@@ -67,33 +67,43 @@ function MainApp() {
             <div className="flex items-center gap-3">
               {!isLoading && user && (
                 <>
+                  {/* Role Badge - shows current user role */}
+                  <RoleBadge user={user} size="sm" />
+                  
                   <CreditBadge />
+                  
+                  {/* Standard User Navigation */}
                   <Link to="/billing">
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <CreditCard className="h-4 w-4" />
                       Billing & Credits
                     </Button>
                   </Link>
-                  <Link to="/admin/analytics">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Analytics
-                    </Button>
-                  </Link>
-                  <Link to="/admin/patentpulse">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      PatentPulse
-                    </Button>
-                  </Link>
-                  {user.role === 'admin' && (
-                    <Link to="/admin">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Admin
-                      </Button>
-                    </Link>
+                  
+                  {/* Admin-Only Navigation - hidden for non-admins */}
+                  {canAccessAdmin(user) && (
+                    <>
+                      <Link to="/admin/analytics">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Analytics
+                        </Button>
+                      </Link>
+                      <Link to="/admin/patentpulse">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          PatentPulse
+                        </Button>
+                      </Link>
+                      <Link to="/admin">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          Admin
+                        </Button>
+                      </Link>
+                    </>
                   )}
+                  
                   <Button
                     variant="ghost"
                     size="sm"
