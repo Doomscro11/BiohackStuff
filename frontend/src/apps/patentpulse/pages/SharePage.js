@@ -48,14 +48,23 @@ const SharePage = () => {
     setDownloading(true);
 
     try {
-      // For downloads, we still need to use native fetch to get blob
+      // For downloads, we need to use native fetch to get blob
+      // Note: Can't use fetchJSON here because we need the raw blob response
       const response = await fetch(`${BACKEND_URL}/api/patentpulse/partner/share/${token}/download`, {
         credentials: 'include'
       });
 
       if (!response.ok) {
-        const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/share/${token}/download`);
-        throw new Error(result.text || `Error ${response.status}`);
+        // Read error response ONCE from the original response
+        let errorMessage = `Error ${response.status}`;
+        try {
+          const errorText = await response.text();
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch {
+          // If parsing fails, use default error message
+        }
+        throw new Error(errorMessage);
       }
 
       // Get filename from Content-Disposition or use default
