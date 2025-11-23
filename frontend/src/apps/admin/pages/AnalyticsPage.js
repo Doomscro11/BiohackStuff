@@ -26,18 +26,25 @@ export default function AnalyticsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadAnalytics();
+    // Create AbortController for cleanup
+    const abortController = new AbortController();
+    loadAnalytics(abortController.signal);
+    
+    // Cleanup function
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
-  const loadAnalytics = async () => {
+  const loadAnalytics = async (signal = null) => {
     setLoading(true);
     setError(null);
 
     try {
-      // Load live and historical data
+      // Load live and historical data with cancellation support
       const [liveResult, snapshotsResult] = await Promise.all([
-        getLiveAnalytics(),
-        getSnapshots(30)
+        getLiveAnalytics(signal),
+        getSnapshots(30, signal)
       ]);
 
       if (!liveResult.ok) {
@@ -51,7 +58,9 @@ export default function AnalyticsPage() {
       setLive(liveResult.data);
       setSnapshots(snapshotsResult.data.snapshots);
     } catch (err) {
-      setError(err.message || 'Failed to load analytics');
+      if (err.name !== 'AbortError') {
+        setError(err.message || 'Failed to load analytics');
+      }
     } finally {
       setLoading(false);
     }
