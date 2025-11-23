@@ -152,6 +152,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Phase 8 Patch 1: Added GET /api/auth/session endpoint to expose user tier and credits to frontend. Returns {email, role, tier, credits}. Used by frontend to set window.__USER_TIER__."
+      - working: true
+        agent: "testing"
+        comment: "LOGIN FLOW COMPREHENSIVE TEST COMPLETE - ALL TESTS PASSING (5/5, 100% success rate): ✅ STEP 1: POST /api/auth/magic/request with founder@peptologic.ai successfully returns demo_code (083252) with 10 minute expiry. ✅ STEP 2: Demo code extraction working correctly. ✅ STEP 3: POST /api/auth/magic/verify with demo_code successfully sets JWT cookie (pmnc_jwt) and returns admin role and success=true. ✅ STEP 4: GET /api/auth/session with JWT cookie returns complete admin user data (email: founder@peptologic.ai, role: admin, tier: pro, credits: 5838, feature_level: 0). ✅ STEP 5: GET /api/admin/features/flags with JWT cookie successfully returns 4 feature flags (admin access working without 2FA requirement). Complete login and admin navigation flow verified and working correctly."
 
   - task: "Session Endpoint for Frontend State (Phase 8 Patch 1)"
     implemented: true
