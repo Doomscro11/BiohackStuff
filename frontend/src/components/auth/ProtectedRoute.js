@@ -29,12 +29,19 @@ function ProtectedRoute({ children }) {
   }, []);
 
   const checkAuth = async (signal, mounted) => {
+    console.log('[ProtectedRoute] Starting auth check...');
+    
     const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`, {
       ...(signal && { signal })
     });
     
+    console.log('[ProtectedRoute] Auth check result:', result);
+    
     // Only update state if component is still mounted
-    if (!mounted) return;
+    if (!mounted) {
+      console.log('[ProtectedRoute] Component unmounted, skipping state update');
+      return;
+    }
     
     if (result.ok && result.data) {
       console.log('[ProtectedRoute] Auth check passed:', result.data);
@@ -49,6 +56,7 @@ function ProtectedRoute({ children }) {
     }
     
     setLoading(false);
+    console.log('[ProtectedRoute] Auth check completed, loading set to false');
   };
 
   if (loading) {
