@@ -29,9 +29,7 @@ function ProtectedRoute({ children }) {
   const checkAuth = async (signal, mounted) => {
     console.log('[ProtectedRoute] Starting auth check...');
     
-    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`, {
-      ...(signal && { signal })
-    });
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
     
     console.log('[ProtectedRoute] Auth check result:', result);
     
@@ -46,9 +44,7 @@ function ProtectedRoute({ children }) {
       setIsAuthenticated(true);
       setUser(result.data);
     } else {
-      if (result.text !== 'Request cancelled') {
-        console.log('[ProtectedRoute] Auth check failed:', result);
-      }
+      console.log('[ProtectedRoute] Auth check failed:', result);
       setIsAuthenticated(false);
       setUser(null);
     }
