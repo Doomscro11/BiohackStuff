@@ -33,18 +33,32 @@ const PartnerSharesAdmin = () => {
   });
 
   useEffect(() => {
+    // Create AbortController for cleanup on unmount or re-render
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    
     const loadData = async () => {
       try {
         // Load shares first, then exports to avoid concurrent API calls
-        await fetchShares();
-        await fetchExports();
+        // Pass signal for cleanup on unmount
+        await fetchShares(signal);
+        if (!signal.aborted) {
+          await fetchExports(signal);
+        }
       } catch (error) {
-        console.error('Error loading partner shares data:', error);
-        setError('Failed to load data');
+        if (error.name !== 'AbortError') {
+          console.error('Error loading partner shares data:', error);
+          setError('Failed to load data');
+        }
       }
     };
     
     loadData();
+    
+    // Cleanup function to abort pending requests
+    return () => {
+      abortController.abort();
+    };
   }, [filter]);
 
   const fetchShares = async () => {
