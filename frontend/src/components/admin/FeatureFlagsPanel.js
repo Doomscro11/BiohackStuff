@@ -35,7 +35,7 @@ function FeatureFlagsPanel() {
     };
   }, []);
 
-  const loadFeatureFlags = async () => {
+  const loadFeatureFlags = async (signal = null) => {
     // Prevent concurrent calls using ref (persists across renders)
     if (isLoadingRef.current) {
       console.log('[FeatureFlagsPanel] Already loading, skipping duplicate request');
@@ -45,12 +45,18 @@ function FeatureFlagsPanel() {
     isLoadingRef.current = true;
     
     try {
-      const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`);
+      const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`, {
+        ...(signal && { signal })
+      });
 
       if (result.ok && result.data) {
         setFlags(result.data.flags || {});
       } else {
         console.error('[FeatureFlagsPanel] Failed to load feature flags:', result.text);
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[FeatureFlagsPanel] Error loading flags:', error);
       }
     } finally {
       setLoading(false);
