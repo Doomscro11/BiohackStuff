@@ -14,21 +14,33 @@ function FeatureFlagsPanel() {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedLevel, setSelectedLevel] = useState(0);
   const [message, setMessage] = useState('');
+  const [isLoadingFlags, setIsLoadingFlags] = useState(false); // Guard against concurrent calls
 
   useEffect(() => {
     loadFeatureFlags();
   }, []);
 
   const loadFeatureFlags = async () => {
-    const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`);
-
-    if (result.ok && result.data) {
-      setFlags(result.data.flags || {});
-    } else {
-      console.error('Failed to load feature flags:', result.text);
+    // Prevent concurrent calls
+    if (isLoadingFlags) {
+      console.log('Feature flags already loading, skipping duplicate request');
+      return;
     }
     
-    setLoading(false);
+    setIsLoadingFlags(true);
+    
+    try {
+      const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`);
+
+      if (result.ok && result.data) {
+        setFlags(result.data.flags || {});
+      } else {
+        console.error('Failed to load feature flags:', result.text);
+      }
+    } finally {
+      setLoading(false);
+      setIsLoadingFlags(false);
+    }
   };
 
   const toggleFlag = async (flagKey) => {
