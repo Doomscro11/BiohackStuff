@@ -31,6 +31,10 @@ from services import partner_share_service
 
 logger = logging.getLogger(__name__)
 
+# Initialize MongoDB connection
+client = AsyncIOMotorClient(os.environ['MONGO_URL'])
+db = client[os.environ['DB_NAME']]
+
 router = APIRouter(prefix="/api/patentpulse/partner", tags=["partner_shares"])
 
 # Configuration from environment
