@@ -4,13 +4,16 @@
  * Safe JSON fetch - reads response body exactly once
  * Returns result object instead of throwing
  * Always includes credentials by default
+ * Supports AbortController for request cancellation (React StrictMode safe)
  */
 export async function fetchJSON(input, init) {
   try {
     // Merge init with default credentials: 'include'
     const config = {
       credentials: 'include',
-      ...init
+      ...init,
+      // Support AbortController signal for request cancellation
+      ...(init?.signal && { signal: init.signal })
     };
     
     const response = await fetch(input, config);
@@ -32,6 +35,15 @@ export async function fetchJSON(input, init) {
       data 
     };
   } catch (error) {
+    // Check if error is due to abort
+    if (error.name === 'AbortError') {
+      return {
+        ok: false,
+        status: 0,
+        text: 'Request cancelled'
+      };
+    }
+    
     return {
       ok: false,
       status: 0,
