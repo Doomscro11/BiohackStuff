@@ -16,18 +16,34 @@ function ProtectedRoute({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    checkAuth();
+    const abortController = new AbortController();
+    let mounted = true;
+    
+    checkAuth(abortController.signal, mounted);
+    
+    // Cleanup function
+    return () => {
+      mounted = false;
+      abortController.abort();
+    };
   }, []);
 
-  const checkAuth = async () => {
-    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
+  const checkAuth = async (signal, mounted) => {
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`, {
+      ...(signal && { signal })
+    });
+    
+    // Only update state if component is still mounted
+    if (!mounted) return;
     
     if (result.ok && result.data) {
       console.log('[ProtectedRoute] Auth check passed:', result.data);
       setIsAuthenticated(true);
       setUser(result.data);
     } else {
-      console.log('[ProtectedRoute] Auth check failed:', result);
+      if (result.text !== 'Request cancelled') {
+        console.log('[ProtectedRoute] Auth check failed:', result);
+      }
       setIsAuthenticated(false);
       setUser(null);
     }
