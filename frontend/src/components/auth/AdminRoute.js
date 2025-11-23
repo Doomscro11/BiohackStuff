@@ -18,33 +18,43 @@ function AdminRoute({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    const abortController = new AbortController();
     let mounted = true;
     
-    checkAuth(abortController.signal, mounted);
+    checkAuth(mounted);
     
     // Cleanup function
     return () => {
       mounted = false;
-      abortController.abort();
     };
   }, []);
 
-  const checkAuth = async (signal, mounted, retryCount = 0) => {
+  const checkAuth = async (mounted, retryCount = 0) => {
+    console.log('[AdminRoute] Starting auth check...', { retryCount });
+    
     // Small delay before first check to allow MainApp session to initialize
     // This prevents race condition where AdminRoute checks before MainApp completes
     if (retryCount === 0) {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`, {
-      ...(signal && { signal })
-    });
+    // DO NOT use AbortController signal here - it causes premature request cancellation
+    // Follow ProtectedRoute pattern for consistent behavior
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
+    
+    console.log('[AdminRoute] Auth check result:', result);
     
     // Only update state if component is still mounted
-    if (!mounted) return;
+    if (!mounted) {
+      console.log('[AdminRoute] Component unmounted, skipping state update');
+      return;
+    }
     
     if (result.ok && result.data) {
+      console.log('[AdminRoute] Auth check passed:', { 
+        email: result.data.email, 
+        role: result.data.role,
+        isAdmin: result.data.role === 'admin'
+      });
       setIsAuthenticated(true);
       setUser(result.data);
       setIsAdmin(result.data.role === 'admin');
@@ -55,9 +65,10 @@ function AdminRoute({ children }) {
       if (retryCount === 0) {
         console.log('[AdminRoute] Initial auth check failed, retrying...');
         await new Promise(resolve => setTimeout(resolve, 500));
-        return checkAuth(signal, mounted, retryCount + 1);
+        return checkAuth(mounted, retryCount + 1);
       }
       
+      console.log('[AdminRoute] Auth check failed after retry:', result);
       // After retry, if still no session, user is not authenticated
       setIsAuthenticated(false);
       setIsAdmin(false);
