@@ -295,6 +295,123 @@ function App() {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Base Peptide Sequence */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Base Peptide Sequence
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border rounded-md font-mono text-sm"
+                    rows="3"
+                    value={formData.base_molecule}
+                    onChange={(e) => handleInputChange('base_molecule', e.target.value)}
+                    placeholder="Enter peptide sequence (e.g., HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR)"
+                  />
+                  {sequenceValidation && (
+                    <p className={`text-xs mt-1 ${sequenceValidation.is_valid ? 'text-green-600' : 'text-red-600'}`}>
+                      {sequenceValidation.is_valid ? '✓ Valid sequence' : sequenceValidation.error}
+                    </p>
+                  )}
+                </div>
+
+                {/* Number of Analogues */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Number of Analogues
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    className="w-full px-3 py-2 border rounded-md"
+                    value={formData.num_analogues}
+                    onChange={(e) => handleInputChange('num_analogues', parseInt(e.target.value))}
+                  />
+                </div>
+
+                {/* Target Use */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Target Use
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded-md"
+                    value={formData.target_use}
+                    onChange={(e) => handleInputChange('target_use', e.target.value)}
+                    placeholder="e.g., Metabolic Research / GLP-1R"
+                  />
+                </div>
+
+                {/* Allowed Modifications */}
+                {chemOptions && chemOptions.mods && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Allowed Modifications
+                      {chemOptions.tier && (
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          Tier: {chemOptions.tier}
+                        </Badge>
+                      )}
+                    </label>
+                    
+                    {/* Group modifications by PK intent */}
+                    {Object.entries(groupedMods).map(([groupName, mods]) => (
+                      <div key={groupName} className="mb-4">
+                        <h4 className="text-xs font-semibold text-gray-600 mb-2">{groupName}</h4>
+                        <div className="space-y-2">
+                          {mods.map((mod) => (
+                            <label key={mod.value} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50">
+                              <input
+                                type="checkbox"
+                                checked={formData.allowed_mods.includes(mod.value)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    handleInputChange('allowed_mods', [...formData.allowed_mods, mod.value]);
+                                  } else {
+                                    handleInputChange('allowed_mods', formData.allowed_mods.filter(v => v !== mod.value));
+                                  }
+                                }}
+                                className="mt-1"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium">{mod.label}</span>
+                                {mod.notes && (
+                                  <p className="text-xs text-gray-500 mt-1">{mod.notes}</p>
+                                )}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Exclusion Clauses */}
+                {chemOptions && chemOptions.exclusions && chemOptions.exclusions.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Exclusion Clauses
+                    </label>
+                    <MultiSelect
+                      options={chemOptions.exclusions.map(exc => ({ value: exc.value, label: exc.label }))}
+                      value={formData.exclusions}
+                      onChange={(val) => handleInputChange('exclusions', val)}
+                      max={6}
+                      placeholder="Select exclusions (optional)"
+                    />
+                  </div>
+                )}
+
+                {/* Conflict Warning */}
+                {conflictMsg && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{conflictMsg}</AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
