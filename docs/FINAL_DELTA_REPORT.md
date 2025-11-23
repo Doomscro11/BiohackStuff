@@ -26,7 +26,7 @@ The Global Login & RBAC system is **complete and production-ready**. All critica
 CORS_ORIGINS="*"
 
 # After
-CORS_ORIGINS="http://localhost:3000,https://auth-role-control.preview.emergentagent.com"
+CORS_ORIGINS="http://localhost:3000,https://rbac-shield.preview.emergentagent.com"
 ```
 
 **Backend Configuration** (`/app/backend/server.py`):
@@ -67,7 +67,7 @@ ENABLE_DEMO_OTP=true
 # IMPORTANT: Comma-separated list of allowed origins
 # Dev: Include http://localhost:3000 for local frontend development
 # Prod: Include only production frontend URLs, never use "*" with credentials
-CORS_ORIGINS="http://localhost:3000,https://auth-role-control.preview.emergentagent.com"
+CORS_ORIGINS="http://localhost:3000,https://rbac-shield.preview.emergentagent.com"
 ```
 
 **Created**: `/app/backend/.env.production.template`

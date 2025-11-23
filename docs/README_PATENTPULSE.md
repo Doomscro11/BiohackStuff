@@ -61,7 +61,7 @@
 
 ### Base URL
 ```
-https://auth-role-control.preview.emergentagent.com/api/patentpulse
+https://rbac-shield.preview.emergentagent.com/api/patentpulse
 ```
 
 ### 1. GET /items
