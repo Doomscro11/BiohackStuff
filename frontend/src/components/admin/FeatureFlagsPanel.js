@@ -14,20 +14,29 @@ function FeatureFlagsPanel() {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedLevel, setSelectedLevel] = useState(0);
   const [message, setMessage] = useState('');
-  const [isLoadingFlags, setIsLoadingFlags] = useState(false); // Guard against concurrent calls
+  
+  // Use ref to prevent concurrent calls across renders (React StrictMode)
+  const isLoadingRef = React.useRef(false);
+  const isMountedRef = React.useRef(false);
 
   useEffect(() => {
+    // Prevent double-loading in React StrictMode
+    if (isMountedRef.current) {
+      return;
+    }
+    isMountedRef.current = true;
+    
     loadFeatureFlags();
   }, []);
 
   const loadFeatureFlags = async () => {
-    // Prevent concurrent calls
-    if (isLoadingFlags) {
-      console.log('Feature flags already loading, skipping duplicate request');
+    // Prevent concurrent calls using ref (persists across renders)
+    if (isLoadingRef.current) {
+      console.log('[FeatureFlagsPanel] Already loading, skipping duplicate request');
       return;
     }
     
-    setIsLoadingFlags(true);
+    isLoadingRef.current = true;
     
     try {
       const result = await fetchJSON(`${process.env.REACT_APP_BACKEND_URL}/api/admin/features/flags`);
@@ -35,11 +44,11 @@ function FeatureFlagsPanel() {
       if (result.ok && result.data) {
         setFlags(result.data.flags || {});
       } else {
-        console.error('Failed to load feature flags:', result.text);
+        console.error('[FeatureFlagsPanel] Failed to load feature flags:', result.text);
       }
     } finally {
       setLoading(false);
-      setIsLoadingFlags(false);
+      isLoadingRef.current = false;
     }
   };
 
