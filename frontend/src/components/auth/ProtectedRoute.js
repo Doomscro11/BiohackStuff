@@ -26,8 +26,13 @@ function ProtectedRoute({ children }) {
     };
   }, []);
 
-  const checkAuth = async (signal, mounted) => {
+  const checkAuth = async (signal, mounted, retryCount = 0) => {
     console.log('[ProtectedRoute] Starting auth check...');
+    
+    // Small delay before first check to allow MainApp session to initialize
+    if (retryCount === 0) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
     
     const result = await fetchJSON(`${BACKEND_URL}/api/auth/session`);
     
@@ -43,13 +48,21 @@ function ProtectedRoute({ children }) {
       console.log('[ProtectedRoute] Auth check passed:', result.data);
       setIsAuthenticated(true);
       setUser(result.data);
+      setLoading(false);
     } else {
-      console.log('[ProtectedRoute] Auth check failed:', result);
+      // If first attempt fails, retry once after a short delay
+      if (retryCount === 0) {
+        console.log('[ProtectedRoute] Initial auth check failed, retrying...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return checkAuth(signal, mounted, retryCount + 1);
+      }
+      
+      console.log('[ProtectedRoute] Auth check failed after retry:', result);
       setIsAuthenticated(false);
       setUser(null);
+      setLoading(false);
     }
     
-    setLoading(false);
     console.log('[ProtectedRoute] Auth check completed, loading set to false');
   };
 
