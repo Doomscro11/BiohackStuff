@@ -22,15 +22,15 @@ function MainApp() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Bootstrap: fetch session on app load with React StrictMode protection
+  // Bootstrap: fetch session on app load
+  // Note: No AbortController here - MainApp is top-level and should complete its session fetch
   useEffect(() => {
-    const abortController = new AbortController();
     let mounted = true;
     
     const loadSession = async () => {
       try {
-        const session = await fetchSession(abortController.signal);
-        if (mounted && !abortController.signal.aborted) {
+        const session = await fetchSession();
+        if (mounted) {
           console.log('[MainApp] Session loaded:', session);
           if (session) {
             setUser(session);
@@ -39,7 +39,7 @@ function MainApp() {
           }
         }
       } catch (err) {
-        if (err.name !== 'AbortError' && mounted) {
+        if (mounted) {
           console.log('[MainApp] Session load failed:', err);
           setUser(null);
         }
@@ -52,10 +52,9 @@ function MainApp() {
     
     loadSession();
     
-    // Cleanup function
+    // Cleanup function - just mark as unmounted
     return () => {
       mounted = false;
-      abortController.abort();
     };
   }, []);
 
