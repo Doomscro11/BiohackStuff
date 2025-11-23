@@ -170,6 +170,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "TESTED & WORKING: GET /api/auth/session endpoint working correctly. Authenticated requests return proper user data with email, role, tier, and credits. Unauthenticated requests correctly return 401 Unauthorized. Session data properly fetched from billing service."
+      - working: true
+        agent: "testing"
+        comment: "LOGIN FLOW TEST VERIFIED: Session endpoint tested as part of comprehensive login flow test. With valid JWT cookie from magic code verification, endpoint returns complete admin user data: email=founder@peptologic.ai, role=admin, tier=pro, credits=5838, feature_level=0. All required fields present and correct."
 
   - task: "Backend RBAC Helpers (Global Login Phase)"
     implemented: true
