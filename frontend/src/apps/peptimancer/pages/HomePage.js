@@ -11,6 +11,7 @@ import { fetchChemistryOptions, hasClientConflicts } from '@/lib/chemistry';
 import { fetchSession } from '@/lib/session';
 import { normalizeError, getAxiosErrorMessage } from '@/lib/errorUtils';
 import DACTabPanel from '@/components/DACTabPanel';
+import MultiSelect from '@/components/ui/MultiSelect';
 import '@/App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
