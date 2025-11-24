@@ -77,6 +77,7 @@ async def billing_checkout(body: CheckoutBody, request: Request):
             "email": user["email"],
             "plan": body.plan,
             "purchase_credits": body.purchase_credits,
+            "package_id": body.package_id,
             "provider": result.provider,
             "created_at": datetime.utcnow()
         })
