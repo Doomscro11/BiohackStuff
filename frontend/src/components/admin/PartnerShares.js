@@ -130,6 +130,8 @@ const PartnerSharesAdmin = () => {
           : []
       };
 
+      console.log('[PartnerShares] Creating share with payload:', payload);
+
       // Use fetchJSON which reads response body exactly once
       const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
         method: 'POST',
@@ -138,7 +140,15 @@ const PartnerSharesAdmin = () => {
         body: JSON.stringify(payload)
       });
 
+      console.log('[PartnerShares] Create share result:', {
+        ok: result.ok,
+        status: result.status,
+        hasData: !!result.data,
+        textLength: result.text ? result.text.length : 0
+      });
+
       if (result.ok && result.data) {
+        console.log('[PartnerShares] Share created successfully');
         // Show share URL
         alert(`Share created successfully!\n\nShare URL:\n${result.data.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
 
@@ -160,14 +170,18 @@ const PartnerSharesAdmin = () => {
         await fetchShares();
       } else {
         // Safe error message - result.text is already a string from fetchJSON
+        console.error('[PartnerShares] Create share failed:', result);
         const errorMsg = result.text || 'Failed to create share';
         alert(`Error creating share: ${errorMsg}`);
       }
     } catch (error) {
-      // Handle any unexpected errors
-      console.error('Error creating share:', error);
-      const errorMsg = error.message || 'An unexpected error occurred';
-      alert(`Error creating share: ${errorMsg}`);
+      // Unexpected errors
+      console.error('[PartnerShares] createShare caught error:', {
+        errorType: error && error.name,
+        errorMessage: error && error.message,
+        errorStack: error && error.stack
+      });
+      alert(`Error creating share: ${error.message || 'Failed to create share'}`);
     }
   };
 
