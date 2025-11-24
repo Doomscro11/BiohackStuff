@@ -993,7 +993,13 @@ class PartnerSharesDeprecationTest:
     def test_patentpulse_stats(self):
         """Test GET /api/patentpulse/stats"""
         try:
+            # Try without auth first, then with auth if needed
             response = requests.get(f"{API_BASE}/patentpulse/stats", timeout=10)
+            
+            if response.status_code == 401 and self.admin_jwt_cookie:
+                # Try with authentication
+                cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+                response = requests.get(f"{API_BASE}/patentpulse/stats", cookies=cookies, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
