@@ -4249,17 +4249,7 @@ class Phase8BillingTest:
             "phase8_working": self.tests_passed >= self.tests_run * 0.85
         }
 
-if __name__ == "__main__":
-    # Run Phase 8 Final: Chemistry Options API tests
-    chemistry_tester = Phase8ChemistryTest()
-    chemistry_results = chemistry_tester.run_all_tests()
-    
-    # Save results
-    with open('/app/phase8_chemistry_test_results.json', 'w') as f:
-        json.dump(chemistry_results, f, indent=2)
-    
-    # Exit with appropriate code
-    sys.exit(0 if chemistry_results['chemistry_api_working'] else 1)
+# Removed duplicate main section
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
