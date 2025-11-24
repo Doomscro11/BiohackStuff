@@ -14,7 +14,7 @@ import {
   getPatentStats, 
   getTopOpportunities
 } from '@/lib/patentpulse';
-import PartnerSharesAdmin from '@/components/admin/PartnerShares.js';
+// PartnerSharesAdmin removed - feature deprecated
 
 export default function PatentPulsePage() {
   const [stats, setStats] = useState(null);
