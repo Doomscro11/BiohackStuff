@@ -152,7 +152,7 @@ function TierAwareModPanel({
               <p className="text-xs text-yellow-700 dark:text-yellow-300 mb-2">
                 Upgrade to Pro to access PK Extension, advanced protease resistance, and affinity tuning features.
               </p>
-              <Button size="sm" variant="outline" className="text-xs">
+              <Button type="button" size="sm" variant="outline" className="text-xs">
                 View Pro Features →
               </Button>
             </div>
