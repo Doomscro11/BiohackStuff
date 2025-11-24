@@ -24,7 +24,21 @@ export async function fetchJSON(input, init) {
     // CRITICAL: Read body as text EXACTLY ONCE
     // This prevents "Response body is already used" errors that occur when
     // multiple .json() calls are made or when error handlers try to re-read the body
-    const text = await response.text().catch(() => "");
+    let text = "";
+    try {
+      text = await response.text();
+    } catch (textError) {
+      // If response.text() fails (e.g., body already consumed), log and continue
+      console.error('[fetchJSON] Failed to read response body:', textError.message);
+      console.error('[fetchJSON] URL:', input, 'Status:', response.status);
+      // Return a descriptive error instead of the cryptic clone message
+      return {
+        ok: false,
+        status: response.status || 0,
+        text: 'Failed to read server response. The response body may have been consumed prematurely.',
+        data: null
+      };
+    }
     
     // Parse JSON from text (safe, doesn't touch Response object)
     let data = null;
