@@ -101,7 +101,7 @@ function TierAwareModPanel({
             </div>
           </div>
           {userTier === 'basic' && (
-            <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+            <Button type="button" size="sm" className="bg-purple-600 hover:bg-purple-700">
               Upgrade to Pro
             </Button>
           )}
