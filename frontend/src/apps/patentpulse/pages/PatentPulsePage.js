@@ -258,7 +258,7 @@ export default function PatentPulsePage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Patent Database</CardTitle>
-                <CardDescription>Browse and filter tracked patents</CardDescription>
+                <CardDescription>Browse and filter tracked patterns</CardDescription>
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
@@ -309,6 +309,7 @@ export default function PatentPulsePage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
