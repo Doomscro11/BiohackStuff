@@ -141,7 +141,7 @@ function MainApp() {
           
           {/* Admin-Only Routes - Require admin role */}
           <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
-          <Route path="/admin/analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
+          {/* Analytics route removed - may be reintroduced as embedded panel */}
           <Route path="/admin/patentpulse" element={<AdminRoute><PatentPulseStandalonePage /></AdminRoute>} />
           <Route path="/admin/guardrails" element={<AdminRoute><GuardrailEditorPage /></AdminRoute>} />
         </Routes>
