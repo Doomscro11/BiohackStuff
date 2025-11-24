@@ -634,9 +634,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Response Body Fix Verification - Analytics Page"
-    - "Response Body Fix Verification - Partner Shares"
-    - "Response Body Fix Verification - Regression Test"
+    - "Partner Shares Feature Deprecation (Backend)"
+    - "Partner Shares Feature Deprecation (Frontend)"
+    - "Core App Stabilization - Login/RBAC Flow"
+    - "Core App Stabilization - Peptimancer Home"
+    - "Core App Stabilization - PatentPulse Page"
+    - "Core App Stabilization - Settings Page"
+    - "Core App Stabilization - Analytics Dashboard"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
