@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Use production endpoint from frontend .env
-BACKEND_URL = "https://rbac-shield.preview.emergentagent.com"
+BACKEND_URL = "https://partner-purge.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class LoginAdminNavigationTest:
