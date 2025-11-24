@@ -389,16 +389,30 @@ function App() {
                 {/* Base Peptide Sequence */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Base Peptide Sequence
+                    Base Peptide Sequence <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 border rounded-md font-mono text-sm"
+                    className={`w-full px-3 py-2 border rounded-md font-mono text-sm ${
+                      fieldErrors.base_molecule ? 'border-red-500 bg-red-50' : ''
+                    }`}
                     rows="3"
                     value={formData.base_molecule}
-                    onChange={(e) => handleInputChange('base_molecule', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('base_molecule', e.target.value);
+                      // Clear field error when user types
+                      if (fieldErrors.base_molecule) {
+                        setFieldErrors(prev => ({ ...prev, base_molecule: undefined }));
+                      }
+                    }}
                     placeholder="Enter peptide sequence (e.g., HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR)"
                   />
-                  {sequenceValidation && (
+                  {fieldErrors.base_molecule && (
+                    <p className="text-xs mt-1 text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldErrors.base_molecule}
+                    </p>
+                  )}
+                  {!fieldErrors.base_molecule && sequenceValidation && (
                     <p className={`text-xs mt-1 ${sequenceValidation.is_valid ? 'text-green-600' : 'text-red-600'}`}>
                       {sequenceValidation.is_valid ? '✓ Valid sequence' : sequenceValidation.error}
                     </p>
