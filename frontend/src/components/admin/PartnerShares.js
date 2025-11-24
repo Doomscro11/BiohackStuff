@@ -1,8 +1,8 @@
 /**
  * DEPRECATED: Partner Shares Admin Interface
  * 
- * This component has been deprecated and is no longer used.
- * Partner Shares feature has been removed from the application.
+ * This component has been deprecated and is no longer used in the application.
+ * Partner Shares feature has been removed.
  * 
  * TODO: Future external sharing/export will be implemented as a separate
  * "Export to PDF / Share Report" feature with a cleaner architecture.
@@ -12,27 +12,23 @@ import React from 'react';
 
 const PartnerSharesAdmin = () => {
   return (
-    <div className="partner-shares-admin">
-      <div className="admin-header">
-        <h2>Partner Shares (Deprecated)</h2>
-      </div>
-      
-      <div className="deprecation-notice" style={{
-        padding: '20px',
-        backgroundColor: '#fff3cd',
-        border: '1px solid #ffeaa7',
-        borderRadius: '4px',
-        margin: '20px 0'
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div style={{ 
+        background: '#fef3c7',
+        border: '1px solid #f59e0b',
+        borderRadius: '8px',
+        padding: '1.5rem',
+        marginBottom: '2rem'
       }}>
-        <h3>⚠️ Feature Deprecated</h3>
-        <p>
-          The Partner Shares feature has been deprecated and is no longer available.
-          This functionality will be replaced with a new "Export to PDF / Share Report" 
-          feature in a future release.
+        <h3 style={{ color: '#92400e', marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: '600' }}>
+          ⚠️ Feature Deprecated
+        </h3>
+        <p style={{ color: '#78350f', marginBottom: '0.5rem' }}>
+          Partner Shares have been deprecated in this version.
         </p>
-        <p>
-          If you need to share reports externally, please use the standard export 
-          functionality and share files through your preferred secure channels.
+        <p style={{ color: '#78350f', fontSize: '0.875rem' }}>
+          External sharing and export functionality will be reintroduced in a future release 
+          with improved security and user experience.
         </p>
       </div>
     </div>
