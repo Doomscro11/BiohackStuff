@@ -518,6 +518,18 @@ frontend:
         agent: "main"
         comment: "Appended comprehensive documentation for Phase IXc and IXd to README_PATENTPULSE.md including: Architecture diagrams, CLI usage examples, data quality rules, DLQ reprocessor guide, run metadata schema, SLO gates, market factor calculation formula, API endpoints, TTL cache explanation, floor clamp protection, troubleshooting guides, monitoring metrics, change log updated to v1.1 and v1.2."
 
+  - task: "Partner Shares Feature Deprecation (Backend)"
+    implemented: true
+    working: true
+    file: "/app/backend/api/patentpulse/partner_shares.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Partner Shares backend API deprecated. All endpoints now return HTTP 410 GONE status with clear deprecation message. Feature removed due to persistent 'Response body is already used' bugs. Future external sharing will be reimplemented as separate Export/Share system."
+
   - task: "Partner Portal Backend (Phase IXf+)"
     implemented: true
     working: true
