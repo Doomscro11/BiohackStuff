@@ -4,6 +4,7 @@ import App from './apps/peptimancer/pages/HomePage';
 import TestPage from './pages/TestPage';
 import AdminPage from './apps/admin/pages/AdminPage';
 import BillingPage from './apps/account/pages/BillingPage';
+import SettingsPage from './apps/account/pages/SettingsPage';
 import AnalyticsPage from './apps/admin/pages/AnalyticsPage';
 import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
 import PatentPulseStandalonePage from './apps/patentpulse/pages/PatentPulseStandalonePage';
