@@ -33,6 +33,7 @@ class PlanUpsert(BaseModel):
 class CheckoutBody(BaseModel):
     plan: Optional[str] = Field(None, pattern=r"^(basic|pro|enterprise)$")
     purchase_credits: Optional[int] = Field(None, ge=10)
+    package_id: Optional[str] = Field(None, pattern=r"^credits_(100|250|500|1000)$")
 
 class BillingState(BaseModel):
     tier: str
