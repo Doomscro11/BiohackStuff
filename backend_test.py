@@ -4741,9 +4741,17 @@ if __name__ == "__main__":
             # Exit with appropriate code
             sys.exit(0 if results["chemistry_api_working"] else 1)
             
+        elif test_type == "partner-shares" or test_type == "deprecation":
+            # Run Partner Shares Deprecation & Core App Stabilization tests
+            partner_test = PartnerSharesDeprecationTest()
+            results = partner_test.run_comprehensive_test()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["overall_success"] else 1)
+            
         else:
             print(f"Unknown test type: {test_type}")
-            print("Available test types: global-login, rbac, auth, billing, chemistry, enterprise")
+            print("Available test types: global-login, rbac, auth, billing, chemistry, partner-shares, deprecation, enterprise")
             sys.exit(1)
     else:
         # Run Global Login & RBAC tests by default
