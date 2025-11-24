@@ -117,22 +117,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-red-900">
-                <AlertCircle className="h-5 w-5" />
-                <span>{error}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // Note: We don't return early on error anymore - we show mock data with a warning banner
 
   if (!live) {
     return null;
