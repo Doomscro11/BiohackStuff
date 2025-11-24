@@ -610,11 +610,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Login Page (Global Login Phase)"
-    - "ProtectedRoute Component (Global Login Phase)"
-    - "MainApp Routing & Navigation (Global Login Phase)"
+    - "Response Body Fix Verification - Analytics Page"
+    - "Response Body Fix Verification - Partner Shares"
+    - "Response Body Fix Verification - Regression Test"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
