@@ -43,6 +43,7 @@ function RationalePopover({ warning, onClose, isOpen }) {
               </div>
             </div>
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={onClose}
