@@ -340,14 +340,14 @@ export default function BillingWidget() {
         <CardContent>
           <div className="flex flex-wrap gap-3">
             {[
-              { amount: 100, price: 5 },
-              { amount: 250, price: 12 },
-              { amount: 500, price: 20 },
-              { amount: 1000, price: 35 }
-            ].map(({ amount, price }) => (
+              { id: 'credits_100', amount: 100, price: 5 },
+              { id: 'credits_250', amount: 250, price: 12 },
+              { id: 'credits_500', amount: 500, price: 20 },
+              { id: 'credits_1000', amount: 1000, price: 35 }
+            ].map(({ id, amount, price }) => (
               <Button
-                key={amount}
-                onClick={() => buyCredits(amount)}
+                key={id}
+                onClick={() => buyCredits(id)}
                 disabled={actionLoading}
                 variant="outline"
                 className="flex-1 min-w-[150px] h-auto py-4 flex-col hover:border-amber-500"
