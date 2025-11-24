@@ -31,7 +31,7 @@ import {
 import { fetchSession } from '@/lib/session';
 import { canAccessAdmin } from '@/lib/roles';
 import { getRoleLabel, getRoleColor } from '@/lib/roles';
-import BillingWidget from '@/components/BillingWidget';
+import BillingWidget from '@/components/billing/BillingWidget';
 
 function SettingsPage() {
   const [user, setUser] = useState(null);
