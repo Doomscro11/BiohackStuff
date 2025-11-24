@@ -124,10 +124,13 @@ function App() {
     setResults(null);
 
     try {
+      // Flatten selectedModifications from category structure to array
+      const allSelectedMods = Object.values(selectedModifications || {}).flat();
+      
       // Convert arrays to comma-separated strings for backend
       const requestData = {
         ...formData,
-        allowed_mods: formData.allowed_mods.join(', '),
+        allowed_mods: allSelectedMods.join(', '),
         exclusions: formData.exclusions.join(', ')
       };
       
