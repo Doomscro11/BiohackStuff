@@ -72,6 +72,7 @@ function ModAccordionPanel({
         <div className="flex gap-2">
           {!isAllExpanded && (
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={expandAll}
@@ -83,6 +84,7 @@ function ModAccordionPanel({
           )}
           {!isAllCollapsed && (
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={collapseAll}
