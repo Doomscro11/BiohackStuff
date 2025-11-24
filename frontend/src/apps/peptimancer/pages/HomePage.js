@@ -638,6 +638,7 @@ function App() {
                   ))}
                 </CardContent>
               </Card>
+              </>
             )}
 
             {loading && (
