@@ -451,15 +451,29 @@ function App() {
                 {/* Target Use */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Target Use
+                    Target Use <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border rounded-md"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      fieldErrors.target_use ? 'border-red-500 bg-red-50' : ''
+                    }`}
                     value={formData.target_use}
-                    onChange={(e) => handleInputChange('target_use', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('target_use', e.target.value);
+                      // Clear field error when user types
+                      if (fieldErrors.target_use) {
+                        setFieldErrors(prev => ({ ...prev, target_use: undefined }));
+                      }
+                    }}
                     placeholder="e.g., Metabolic Research / GLP-1R"
                   />
+                  {fieldErrors.target_use && (
+                    <p className="text-xs mt-1 text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldErrors.target_use}
+                    </p>
+                  )}
                 </div>
 
                 {/* New Accordion-Based Modification UI */}
