@@ -427,16 +427,27 @@ function App() {
           {/* Results Display */}
           <div className="space-y-4">
             {results && (
-              <Card data-testid="results-container">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                    Generated Analogues
-                  </CardTitle>
-                  <CardDescription>
-                    {results.analogues?.length || 0} novel peptide analogues generated for: {results.base_molecule}
-                  </CardDescription>
-                </CardHeader>
+              <>
+                {/* Helper Text for PatentPulse Handoff */}
+                {user && (
+                  <Alert className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                    <Shield className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Explore IP implications:</strong> Choose an analogue, click "Copy for PatentPulse", then toggle to PatentPulse and paste it into the candidate field for mock IP analysis.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <Card data-testid="results-container">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                      Generated Analogues
+                    </CardTitle>
+                    <CardDescription>
+                      {results.analogues?.length || 0} novel peptide analogues generated for: {results.base_molecule}
+                    </CardDescription>
+                  </CardHeader>
                 
                 <CardContent className="space-y-4">
                   {results.analogues?.map((analogue, index) => (
