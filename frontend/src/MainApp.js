@@ -154,6 +154,7 @@ function MainApp() {
           <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
           <Route path="/admin/analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
           <Route path="/admin/patentpulse" element={<AdminRoute><PatentPulsePage /></AdminRoute>} />
+          <Route path="/admin/guardrails" element={<AdminRoute><GuardrailEditorPage /></AdminRoute>} />
         </Routes>
       </div>
     </Router>
