@@ -6,6 +6,7 @@ import AdminPage from './apps/admin/pages/AdminPage';
 import BillingPage from './apps/account/pages/BillingPage';
 import AnalyticsPage from './apps/admin/pages/AnalyticsPage';
 import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
+import PatentPulseStandalonePage from './apps/patentpulse/pages/PatentPulseStandalonePage';
 import SharePage from './apps/patentpulse/pages/SharePage';
 import LoginPage from './apps/auth/pages/LoginPage';
 import GuardrailEditorPage from './apps/admin/pages/GuardrailEditorPage';
