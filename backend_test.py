@@ -918,18 +918,18 @@ class PartnerSharesDeprecationTest:
             
             if response.status_code == 200:
                 data = response.json()
-                if "modifications" in data and "exclusions" in data:
+                if "mods" in data and "exclusions" in data:
                     self.log_test(
                         "Chemistry Options",
                         True,
-                        f"Returned {len(data.get('modifications', []))} modifications, {len(data.get('exclusions', []))} exclusions"
+                        f"Returned {len(data.get('mods', []))} modifications, {len(data.get('exclusions', []))} exclusions"
                     )
                     return True
                 else:
                     self.log_test(
                         "Chemistry Options",
                         False,
-                        error_details="Missing modifications or exclusions in response"
+                        error_details="Missing mods or exclusions in response"
                     )
                     return False
             else:
