@@ -145,6 +145,7 @@ function MainApp() {
           <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
           <Route path="/test" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           
           {/* Admin-Only Routes - Require admin role */}
           <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
