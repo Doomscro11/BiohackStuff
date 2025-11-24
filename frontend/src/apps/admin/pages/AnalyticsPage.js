@@ -1,4 +1,13 @@
-// Admin Analytics Dashboard
+/**
+ * Admin Analytics Dashboard
+ * 
+ * NOTE: This page is currently not routed (as of stabilization patch).
+ * Analytics is admin-only and will be reintroduced (if needed)
+ * as an embedded panel inside admin tools rather than a standalone route.
+ * 
+ * Keeping this file for future reference but it is dormant and cannot be
+ * reached through routing.
+ */
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
