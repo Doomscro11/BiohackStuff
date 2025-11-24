@@ -254,31 +254,8 @@ function SettingsPage() {
                 </Alert>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Analytics */}
-                  <Card className="bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
-                          <BarChart3 className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-sm">Analytics Dashboard</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            View platform metrics and user statistics
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => navigate('/admin/analytics')}
-                      >
-                        Open Analytics →
-                      </Button>
-                    </CardContent>
-                  </Card>
-
+                  {/* Analytics - Removed as standalone page, may be reintroduced as embedded panel */}
+                  
                   {/* Feature Flags */}
                   <Card className="bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
                     <CardContent className="pt-6">
