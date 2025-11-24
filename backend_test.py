@@ -589,6 +589,652 @@ class PeptimancerEnterpriseTest:
             "enterprise_ready": self.tests_passed >= self.tests_run * 0.9
         }
 
+class PartnerSharesDeprecationTest:
+    """Test Partner Shares Deprecation & Core App Stabilization"""
+    
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.admin_jwt_cookie = None
+        self.admin_email = "founder@peptologic.ai"
+        self.demo_code = None
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+
+    def test_partner_shares_get_deprecation(self):
+        """Test GET /api/patentpulse/partner/shares returns 410 GONE"""
+        try:
+            response = requests.get(f"{API_BASE}/patentpulse/partner/shares", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares GET Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares GET Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares GET Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares GET Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_post_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares returns 410 GONE"""
+        try:
+            payload = {"test": "data"}
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares", json=payload, timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares POST Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares POST Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares POST Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares POST Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_rotate_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares/{share_id}/rotate returns 410 GONE"""
+        try:
+            share_id = "test_share_123"
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares/{share_id}/rotate", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares Rotate Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares Rotate Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares Rotate Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares Rotate Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_revoke_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares/{share_id}/revoke returns 410 GONE"""
+        try:
+            share_id = "test_share_123"
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares/{share_id}/revoke", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares Revoke Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares Revoke Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares Revoke Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares Revoke Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_magic_request(self):
+        """Test POST /api/auth/magic/request with admin email"""
+        try:
+            payload = {"email": self.admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "demo_code" in data:
+                    self.demo_code = data["demo_code"]
+                    self.log_test(
+                        "Auth Magic Request",
+                        True,
+                        f"Demo code: {self.demo_code}, expires in {data.get('expires_in_minutes')} minutes"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Auth Magic Request",
+                        False,
+                        error_details="Response missing demo_code or success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Auth Magic Request",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Magic Request",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_magic_verify(self):
+        """Test POST /api/auth/magic/verify with demo code"""
+        if not self.demo_code:
+            self.log_test(
+                "Auth Magic Verify",
+                False,
+                error_details="No demo code available (request must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {"email": self.admin_email, "code": self.demo_code}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                cookies = response.cookies
+                if "pmnc_jwt" in cookies:
+                    self.admin_jwt_cookie = cookies["pmnc_jwt"]
+                    self.log_test(
+                        "Auth Magic Verify",
+                        True,
+                        f"JWT cookie set, role: {data.get('role')}, email: {data.get('email')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Auth Magic Verify",
+                        False,
+                        error_details="JWT cookie not set in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Auth Magic Verify",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Magic Verify",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_session(self):
+        """Test GET /api/auth/session with JWT cookie"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Auth Session",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["email", "role", "tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Auth Session",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Auth Session",
+                    True,
+                    f"Email: {data.get('email')}, Role: {data.get('role')}, Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Auth Session",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Session",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_chemistry_options(self):
+        """Test GET /api/chemistry/options"""
+        try:
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "modifications" in data and "exclusions" in data:
+                    self.log_test(
+                        "Chemistry Options",
+                        True,
+                        f"Returned {len(data.get('modifications', []))} modifications, {len(data.get('exclusions', []))} exclusions"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Chemistry Options",
+                        False,
+                        error_details="Missing modifications or exclusions in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Chemistry Options",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_patentpulse_items(self):
+        """Test GET /api/patentpulse/items?limit=5"""
+        try:
+            response = requests.get(f"{API_BASE}/patentpulse/items?limit=5", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "items" in data:
+                    items = data.get("items", [])
+                    self.log_test(
+                        "PatentPulse Items",
+                        True,
+                        f"Returned {len(items)} patent items"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "PatentPulse Items",
+                        False,
+                        error_details="Missing items in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "PatentPulse Items",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "PatentPulse Items",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_patentpulse_stats(self):
+        """Test GET /api/patentpulse/stats"""
+        try:
+            response = requests.get(f"{API_BASE}/patentpulse/stats", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "total_items" in data or "stats" in data:
+                    self.log_test(
+                        "PatentPulse Stats",
+                        True,
+                        f"Stats retrieved successfully"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "PatentPulse Stats",
+                        False,
+                        error_details="Missing stats data in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "PatentPulse Stats",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "PatentPulse Stats",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_admin_analytics_summary(self):
+        """Test GET /api/admin/analytics/summary with admin JWT"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Admin Analytics Summary",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/analytics/summary", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Admin Analytics Summary",
+                    True,
+                    f"Analytics data retrieved successfully"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Analytics Summary",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Analytics Summary",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_billing_state(self):
+        """Test GET /api/billing/state with valid JWT"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Billing State",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Billing State",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Billing State",
+                    True,
+                    f"Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Billing State",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing State",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_billing_mock_webhook(self):
+        """Test GET /api/webhooks/billing/mock/success?uid=USER_ID&credits=100"""
+        try:
+            # Use a test user ID
+            user_id = "test_user_123"
+            response = requests.get(f"{API_BASE}/webhooks/billing/mock/success?uid={user_id}&credits=100", timeout=10, allow_redirects=False)
+            
+            # Mock webhook should return 302 redirect or 200 success
+            if response.status_code in [200, 302]:
+                self.log_test(
+                    "Billing Mock Webhook",
+                    True,
+                    f"Mock webhook responded with {response.status_code}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Billing Mock Webhook",
+                    False,
+                    error_details=f"Expected HTTP 200 or 302, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing Mock Webhook",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def run_comprehensive_test(self):
+        """Run comprehensive Partner Shares deprecation and core app stabilization tests"""
+        print("=" * 80)
+        print("🚫 PARTNER SHARES DEPRECATION & CORE APP STABILIZATION TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Admin Email: {self.admin_email}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Priority 1: Partner Shares API Deprecation
+        print("🚫 PRIORITY 1: PARTNER SHARES API DEPRECATION")
+        print("-" * 50)
+        self.test_partner_shares_get_deprecation()
+        self.test_partner_shares_post_deprecation()
+        self.test_partner_shares_rotate_deprecation()
+        self.test_partner_shares_revoke_deprecation()
+        
+        # Priority 2: Core Authentication & Session (Regression Test)
+        print("\n🔐 PRIORITY 2: CORE AUTHENTICATION & SESSION")
+        print("-" * 50)
+        self.test_auth_magic_request()
+        self.test_auth_magic_verify()
+        self.test_auth_session()
+        
+        # Priority 3: Core Application Endpoints (Regression Test)
+        print("\n🧬 PRIORITY 3: CORE APPLICATION ENDPOINTS")
+        print("-" * 50)
+        self.test_chemistry_options()
+        self.test_patentpulse_items()
+        self.test_patentpulse_stats()
+        self.test_admin_analytics_summary()
+        
+        # Priority 4: Billing System (Regression Test)
+        print("\n💳 PRIORITY 4: BILLING SYSTEM")
+        print("-" * 50)
+        self.test_billing_state()
+        self.test_billing_mock_webhook()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 PARTNER SHARES DEPRECATION & CORE APP TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Categorize results
+        partner_shares_tests = [t for t in self.test_results.keys() if "Partner Shares" in t]
+        auth_tests = [t for t in self.test_results.keys() if "Auth" in t]
+        core_tests = [t for t in self.test_results.keys() if any(x in t for x in ["Chemistry", "PatentPulse", "Admin Analytics"])]
+        billing_tests = [t for t in self.test_results.keys() if "Billing" in t]
+        
+        partner_shares_passed = sum(1 for t in partner_shares_tests if self.test_results[t]["success"])
+        auth_passed = sum(1 for t in auth_tests if self.test_results[t]["success"])
+        core_passed = sum(1 for t in core_tests if self.test_results[t]["success"])
+        billing_passed = sum(1 for t in billing_tests if self.test_results[t]["success"])
+        
+        print(f"\n📊 RESULTS BY CATEGORY:")
+        print(f"  Partner Shares Deprecation: {partner_shares_passed}/{len(partner_shares_tests)} ({'✅ COMPLETE' if partner_shares_passed == len(partner_shares_tests) else '❌ INCOMPLETE'})")
+        print(f"  Authentication Flow: {auth_passed}/{len(auth_tests)} ({'✅ WORKING' if auth_passed == len(auth_tests) else '❌ ISSUES'})")
+        print(f"  Core Application: {core_passed}/{len(core_tests)} ({'✅ WORKING' if core_passed == len(core_tests) else '❌ ISSUES'})")
+        print(f"  Billing System: {billing_passed}/{len(billing_tests)} ({'✅ WORKING' if billing_passed == len(billing_tests) else '❌ ISSUES'})")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        # Success criteria
+        partner_shares_success = partner_shares_passed == len(partner_shares_tests)
+        core_success = (auth_passed + core_passed + billing_passed) >= (len(auth_tests) + len(core_tests) + len(billing_tests)) * 0.85
+        
+        overall_status = "✅ SUCCESS" if partner_shares_success and core_success else "❌ ISSUES DETECTED"
+        print(f"\nOverall Status: {overall_status}")
+        
+        if partner_shares_success:
+            print("✅ Partner Shares deprecation is COMPLETE - all endpoints return 410 GONE")
+        else:
+            print("❌ Partner Shares deprecation is INCOMPLETE - some endpoints not properly deprecated")
+            
+        if core_success:
+            print("✅ Core application flows are WORKING after Partner Shares removal")
+        else:
+            print("❌ Core application flows have ISSUES after Partner Shares removal")
+        
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "partner_shares_deprecated": partner_shares_success,
+            "core_app_stable": core_success,
+            "overall_success": partner_shares_success and core_success
+        }
+
 class GlobalLoginRBACTest:
     """Test Global Login & RBAC Implementation Comprehensively"""
     
