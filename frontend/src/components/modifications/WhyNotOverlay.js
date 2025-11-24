@@ -43,6 +43,7 @@ function WhyNotOverlay({
               </p>
             </div>
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={onClose}
