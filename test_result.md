@@ -542,6 +542,18 @@ frontend:
         agent: "main"
         comment: "Implemented complete Partner Portal backend: (1) partner_shares.py router with admin endpoints (create, list, get, rotate, revoke, analytics) and public endpoints (share metadata, download with watermarking), (2) HMAC-signed token generation and verification, (3) Policy enforcement (expiry, max downloads, IP allowlist, rate limiting), (4) partner_analytics.py module for event tracking and dashboard metrics, (5) share_link_cleaner.py job for nightly cleanup, (6) Updated watermark/pdf_watermark.py with mask_email and JSON watermark headers, (7) Database indexes for partner_shares and partner_share_events collections, (8) Environment configuration in .env with feature flags and policy defaults, (9) require_role dependency added to middleware/auth.py for 2FA-protected admin endpoints."
 
+  - task: "Partner Shares Feature Deprecation (Frontend)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/apps/patentpulse/pages/PatentPulsePage.js, /app/frontend/src/components/admin/PartnerShares.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Partner Shares UI removed from all pages. Fixed JSX compilation error in PatentPulsePage.js (missing closing div tag). Removed Partner Shares tab from PatentPulse page, removed from Settings page Admin Tools section, removed from AdminPage. PartnerShares.js component replaced with deprecation stub message. TestPage.js references updated."
+
   - task: "Partner Portal Frontend (Phase IXf+)"
     implemented: true
     working: true
