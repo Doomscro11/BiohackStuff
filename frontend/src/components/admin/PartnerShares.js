@@ -202,21 +202,26 @@ const PartnerSharesAdmin = () => {
     const reason = prompt('Reason for revocation (optional):');
     if (reason === null) return; // User cancelled
 
-    const result = await fetchJSON(
-      `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/revoke`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ reason: reason || 'Revoked by admin' })
-      }
-    );
+    try {
+      const result = await fetchJSON(
+        `${BACKEND_URL}/api/patentpulse/partner/shares/${shareId}/revoke`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ reason: reason || 'Revoked by admin' })
+        }
+      );
 
-    if (result.ok) {
-      alert('Share revoked successfully');
-      fetchShares();
-    } else {
-      alert(`Error: ${result.text || 'Failed to revoke share'}`);
+      if (result.ok) {
+        alert('Share revoked successfully');
+        await fetchShares();
+      } else {
+        alert(`Error: ${result.text || 'Failed to revoke share'}`);
+      }
+    } catch (error) {
+      console.error('Error revoking share:', error);
+      alert(`Error: ${error.message || 'Failed to revoke share'}`);
     }
   };
 
