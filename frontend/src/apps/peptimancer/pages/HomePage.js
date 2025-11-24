@@ -422,16 +422,30 @@ function App() {
                 {/* Number of Analogues */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Number of Analogues
+                    Number of Analogues <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     min="1"
                     max="10"
-                    className="w-full px-3 py-2 border rounded-md"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      fieldErrors.num_analogues ? 'border-red-500 bg-red-50' : ''
+                    }`}
                     value={formData.num_analogues}
-                    onChange={(e) => handleInputChange('num_analogues', parseInt(e.target.value))}
+                    onChange={(e) => {
+                      handleInputChange('num_analogues', parseInt(e.target.value));
+                      // Clear field error when user types
+                      if (fieldErrors.num_analogues) {
+                        setFieldErrors(prev => ({ ...prev, num_analogues: undefined }));
+                      }
+                    }}
                   />
+                  {fieldErrors.num_analogues && (
+                    <p className="text-xs mt-1 text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldErrors.num_analogues}
+                    </p>
+                  )}
                 </div>
 
                 {/* Target Use */}
