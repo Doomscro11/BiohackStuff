@@ -361,74 +361,14 @@ function App() {
                   />
                 </div>
 
-                {/* Allowed Modifications */}
-                {chemOptions && chemOptions.mods && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Allowed Modifications
-                      {chemOptions.tier && (
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          Tier: {chemOptions.tier}
-                        </Badge>
-                      )}
-                    </label>
-                    
-                    {/* Group modifications by PK intent */}
-                    {Object.entries(groupedMods).map(([groupName, mods]) => (
-                      <div key={groupName} className="mb-4">
-                        <h4 className="text-xs font-semibold text-gray-600 mb-2">{groupName}</h4>
-                        <div className="space-y-2">
-                          {mods.map((mod) => (
-                            <label key={mod.value} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50">
-                              <input
-                                type="checkbox"
-                                checked={formData.allowed_mods.includes(mod.value)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    handleInputChange('allowed_mods', [...formData.allowed_mods, mod.value]);
-                                  } else {
-                                    handleInputChange('allowed_mods', formData.allowed_mods.filter(v => v !== mod.value));
-                                  }
-                                }}
-                                className="mt-1"
-                              />
-                              <div className="flex-1">
-                                <span className="text-sm font-medium">{mod.label}</span>
-                                {mod.notes && (
-                                  <p className="text-xs text-gray-500 mt-1">{mod.notes}</p>
-                                )}
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Exclusion Clauses */}
-                {chemOptions && chemOptions.exclusions && chemOptions.exclusions.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Exclusion Clauses
-                    </label>
-                    <MultiSelect
-                      options={chemOptions.exclusions.map(exc => ({ value: exc.value, label: exc.label }))}
-                      value={formData.exclusions}
-                      onChange={(val) => handleInputChange('exclusions', val)}
-                      max={6}
-                      placeholder="Select exclusions (optional)"
-                    />
-                  </div>
-                )}
-
-                {/* Conflict Warning */}
-                {conflictMsg && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{conflictMsg}</AlertDescription>
-                  </Alert>
-                )}
+                {/* New Accordion-Based Modification UI */}
+                <div className="my-6">
+                  <TierAwareModPanel
+                    user={user}
+                    selectedModifications={selectedModifications}
+                    onChange={setSelectedModifications}
+                  />
+                </div>
 
                 {/* Submit Button */}
                 <Button 
