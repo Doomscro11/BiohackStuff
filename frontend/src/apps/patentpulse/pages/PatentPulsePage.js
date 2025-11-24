@@ -309,12 +309,6 @@ export default function PatentPulsePage() {
             </div>
           </CardContent>
         </Card>
-          </TabsContent>
-          
-          <TabsContent value="partner-shares" className="mt-6">
-            <PartnerSharesAdmin />
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   );
