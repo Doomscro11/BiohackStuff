@@ -61,10 +61,13 @@ class StripeBilling:
         
         logger.info("Stripe billing adapter initialized")
 
-    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None) -> CheckoutResult:
+    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None, package_id: str = None) -> CheckoutResult:
         """Create a Stripe Checkout session"""
+        from billing.credit_packages import get_package
+        
         line_items = []
         mode = "payment"  # Default for one-time purchases
+        metadata = {"user_id": user_id}
         
         if plan:
             # Subscription mode for plans
@@ -86,10 +89,28 @@ class StripeBilling:
                 },
                 "quantity": 1
             })
+            metadata["plan"] = plan
         
-        if purchase_credits:
-            # One-time credit purchase
-            # Simple pricing: $0.05 per credit, minimum $5
+        if package_id:
+            # One-time credit purchase using package
+            package = get_package(package_id)
+            if not package:
+                raise ValueError(f"Invalid package_id: {package_id}")
+            
+            line_items.append({
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": package["display_name"]},
+                    "unit_amount": package["price_cents"]
+                },
+                "quantity": 1
+            })
+            metadata["package_id"] = package_id
+            metadata["credits"] = str(package["credits"])
+        
+        elif purchase_credits:
+            # Legacy: direct credit amount (for backward compatibility)
+            # Use simple $0.05 per credit pricing
             unit_amount = max(500, purchase_credits * 5)  # cents
             
             line_items.append({
@@ -100,6 +121,7 @@ class StripeBilling:
                 },
                 "quantity": 1
             })
+            metadata["credits"] = str(purchase_credits)
         
         app_url = os.getenv("APP_URL", "http://localhost:3000")
         
