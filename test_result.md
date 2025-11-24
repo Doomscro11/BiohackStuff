@@ -524,11 +524,14 @@ frontend:
     file: "/app/backend/api/patentpulse/partner_shares.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Partner Shares backend API deprecated. All endpoints now return HTTP 410 GONE status with clear deprecation message. Feature removed due to persistent 'Response body is already used' bugs. Future external sharing will be reimplemented as separate Export/Share system."
+      - working: true
+        agent: "testing"
+        comment: "PARTNER SHARES DEPRECATION COMPLETE - ALL TESTS PASSING (4/4, 100% success rate): ✅ VERIFIED: All Partner Shares endpoints correctly return HTTP 410 GONE with clear deprecation message: (1) GET /api/patentpulse/partner/shares ✅, (2) POST /api/patentpulse/partner/shares ✅, (3) POST /api/patentpulse/partner/shares/{share_id}/rotate ✅, (4) POST /api/patentpulse/partner/shares/{share_id}/revoke ✅. Deprecation message: 'Partner Shares have been deprecated in this version. External sharing will be reintroduced in a future release.' All endpoints properly deprecated and no longer functional."
 
   - task: "Partner Portal Backend (Phase IXf+)"
     implemented: true
