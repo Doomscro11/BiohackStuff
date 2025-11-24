@@ -128,14 +128,10 @@ class StripeBilling:
         session = stripe.checkout.Session.create(
             mode=mode,
             line_items=line_items,
-            success_url=f"{app_url}/app/settings/billing?success=1&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{app_url}/app/settings/billing?canceled=1",
+            success_url=f"{app_url}/billing?success=1&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{app_url}/billing?canceled=1",
             customer_email=email,
-            metadata={
-                "user_id": user_id,
-                "plan": plan or "",
-                "credits": str(purchase_credits or 0)
-            }
+            metadata=metadata
         )
         
         logger.info(f"Stripe checkout created for user {user_id}: session_id={session.id}")
