@@ -122,40 +122,52 @@ const PartnerSharesAdmin = () => {
   const createShare = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      ...formData,
-      ip_allowlist: formData.ip_allowlist
-        ? formData.ip_allowlist.split(',').map(ip => ip.trim()).filter(Boolean)
-        : []
-    };
+    try {
+      const payload = {
+        ...formData,
+        ip_allowlist: formData.ip_allowlist
+          ? formData.ip_allowlist.split(',').map(ip => ip.trim()).filter(Boolean)
+          : []
+      };
 
-    const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(payload)
-    });
-
-    if (result.ok) {
-      // Show share URL
-      alert(`Share created successfully!\n\nShare URL:\n${result.data.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
-
-      // Reset form and refresh
-      setShowCreateForm(false);
-      setFormData({
-        file_id: '',
-        recipient_email: '',
-        recipient_first_name: '',
-        company_or_project: '',
-        expires_in_days: 14,
-        max_downloads: 10,
-        ip_allowlist: '',
-        watermark_enabled: true,
-        internal_notes: ''
+      // Use fetchJSON which reads response body exactly once
+      const result = await fetchJSON(`${BACKEND_URL}/api/patentpulse/partner/shares`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
       });
-      fetchShares();
-    } else {
-      alert(`Error creating share: ${result.text || 'Failed to create share'}`);
+
+      if (result.ok && result.data) {
+        // Show share URL
+        alert(`Share created successfully!\n\nShare URL:\n${result.data.share_url}\n\nThis link has been generated for ${formData.recipient_email}.`);
+
+        // Reset form and refresh
+        setShowCreateForm(false);
+        setFormData({
+          file_id: '',
+          recipient_email: '',
+          recipient_first_name: '',
+          company_or_project: '',
+          expires_in_days: 14,
+          max_downloads: 10,
+          ip_allowlist: '',
+          watermark_enabled: true,
+          internal_notes: ''
+        });
+        
+        // Refresh shares list (await to ensure completion)
+        await fetchShares();
+      } else {
+        // Safe error message - result.text is already a string from fetchJSON
+        const errorMsg = result.text || 'Failed to create share';
+        alert(`Error creating share: ${errorMsg}`);
+      }
+    } catch (error) {
+      // Handle any unexpected errors
+      console.error('Error creating share:', error);
+      const errorMsg = error.message || 'An unexpected error occurred';
+      alert(`Error creating share: ${errorMsg}`);
     }
   };
 
