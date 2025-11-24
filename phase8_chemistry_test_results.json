@@ -1,39 +1,39 @@
 {
-  "tests_run": 4,
-  "tests_passed": 3,
-  "success_rate": 75.0,
-  "critical_failures": [
-    {
-      "test": "Pro User Authentication Setup - Magic Code Verify",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-22T15:19:31.154950"
-    }
-  ],
+  "tests_run": 5,
+  "tests_passed": 5,
+  "success_rate": 100.0,
+  "critical_failures": [],
   "test_results": {
     "Chemistry Options (Anonymous - Basic Tier)": {
       "success": true,
       "details": "Tier: basic, Basic mods: 5, Pro mods: 0, Enterprise mods: 0, Exclusions: 6",
       "error": "",
-      "timestamp": "2025-11-22T15:19:30.938353"
+      "timestamp": "2025-11-24T16:03:19.961084"
     },
     "Chemistry Options Response Structure": {
       "success": true,
       "details": "Valid structure: 5 mods, 6 exclusions, PK intent categories present",
       "error": "",
-      "timestamp": "2025-11-22T15:19:30.980237"
+      "timestamp": "2025-11-24T16:03:19.999487"
     },
     "Tier Filtering Logic": {
       "success": true,
       "details": "Tier hierarchy enforced correctly - Basic user has 5 options, no tier escalation",
       "error": "",
-      "timestamp": "2025-11-22T15:19:31.016582"
+      "timestamp": "2025-11-24T16:03:20.039654"
     },
-    "Pro User Authentication Setup - Magic Code Verify": {
-      "success": false,
-      "details": "",
-      "error": "HTTP 500: {\"detail\":\"Authentication failed\"}",
-      "timestamp": "2025-11-22T15:19:31.154958"
+    "Pro User Authentication Setup": {
+      "success": true,
+      "details": "Authenticated as pro@example.com, tier: pro",
+      "error": "",
+      "timestamp": "2025-11-24T16:03:21.329576"
+    },
+    "Chemistry Options (Pro User)": {
+      "success": true,
+      "details": "Tier: pro, Basic mods: 5, Pro mods: 3, Enterprise mods: 0, Exclusions: 9",
+      "error": "",
+      "timestamp": "2025-11-24T16:03:21.366714"
     }
   },
-  "chemistry_api_working": false
+  "chemistry_api_working": true
 }
