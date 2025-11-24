@@ -143,38 +143,40 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setFieldErrors({});  // Clear previous field errors
     setResults(null);
 
     try {
       // CLIENT-SIDE VALIDATION: Check all required fields before submission
-      const validationErrors = [];
+      const errors = {};
       
       // 1. Base sequence validation
       if (!formData.base_molecule || !formData.base_molecule.trim()) {
-        validationErrors.push('Base peptide sequence is required');
+        errors.base_molecule = 'Base peptide sequence is required';
       } else if (!sequenceValidation?.is_valid) {
-        validationErrors.push('Base peptide sequence is invalid');
+        errors.base_molecule = 'Invalid peptide sequence. Only standard amino acid letters are allowed.';
       }
       
       // 2. Number of analogues validation
       if (!formData.num_analogues || formData.num_analogues < 1 || formData.num_analogues > 10) {
-        validationErrors.push('Number of analogues must be between 1 and 10');
+        errors.num_analogues = 'Number must be between 1 and 10';
       }
       
       // 3. Target use validation
       if (!formData.target_use || !formData.target_use.trim()) {
-        validationErrors.push('Target use is required');
+        errors.target_use = 'Target use is required';
       }
       
       // 4. Modifications validation
       const allSelectedMods = Object.values(selectedModifications || {}).flat();
       if (allSelectedMods.length === 0) {
-        validationErrors.push('At least one modification must be selected');
+        errors.modifications = 'Select at least one modification from the accordion below';
       }
       
       // If validation errors exist, show them and stop
-      if (validationErrors.length > 0) {
-        setError(validationErrors.join('. ') + '.');
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        setError('Please fix the errors above before submitting.');
         setLoading(false);
         return;
       }
