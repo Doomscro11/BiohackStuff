@@ -39,6 +39,23 @@ function App() {
   const [synthesisLoading, setSynthesisLoading] = useState(null);
   const [currentMode, setCurrentMode] = useState(null);
   const [featureLevel, setFeatureLevel] = useState(0);
+  const [user, setUser] = useState(null);
+  const [selectedModifications, setSelectedModifications] = useState({});
+
+  // Load user session
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const session = await fetchSession();
+        if (session) {
+          setUser(session);
+        }
+      } catch (error) {
+        console.debug('User session not available:', error);
+      }
+    };
+    loadUser();
+  }, []);
 
   // Load current mode and feature level on component mount
   useEffect(() => {
