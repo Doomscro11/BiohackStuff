@@ -89,14 +89,6 @@ function MainApp() {
                   
                   <CreditBadge />
                   
-                  {/* Standard User Navigation */}
-                  <Link to="/billing">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" />
-                      Billing & Credits
-                    </Button>
-                  </Link>
-                  
                   {/* PatentPulse - Admin-Only */}
                   {canAccessAdmin(user) && (
                     <Link to="/admin/patentpulse">
