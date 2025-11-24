@@ -478,10 +478,27 @@ function App() {
 
                 {/* New Accordion-Based Modification UI */}
                 <div className="my-6">
+                  <label className="block text-sm font-medium mb-2">
+                    Modifications & Optimization <span className="text-red-500">*</span>
+                  </label>
+                  {fieldErrors.modifications && (
+                    <Alert className="mb-3" variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="text-sm">
+                        {fieldErrors.modifications}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <TierAwareModPanel
                     user={user}
                     selectedModifications={selectedModifications}
-                    onChange={setSelectedModifications}
+                    onChange={(mods) => {
+                      setSelectedModifications(mods);
+                      // Clear modifications error when user selects any mod
+                      if (fieldErrors.modifications && Object.values(mods || {}).flat().length > 0) {
+                        setFieldErrors(prev => ({ ...prev, modifications: undefined }));
+                      }
+                    }}
                   />
                 </div>
 
