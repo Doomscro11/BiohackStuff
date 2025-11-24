@@ -154,6 +154,29 @@ export default function AnalyticsPage() {
           <p className="text-gray-600">Last 24 hours and 30-day trends</p>
         </div>
 
+        {/* Warning Banner - Show when using mock data */}
+        {error && (
+          <Card className="mb-6 border-yellow-300 bg-yellow-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-semibold text-yellow-900 mb-1">
+                    Analytics Currently Unavailable
+                  </div>
+                  <p className="text-sm text-yellow-800 mb-2">
+                    {error}
+                  </p>
+                  <p className="text-xs text-yellow-700">
+                    <strong>Note:</strong> Core Peptimancer and PatentPulse functionality is unaffected. 
+                    This only impacts admin analytics visibility.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Metric Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Active Users */}
