@@ -131,7 +131,7 @@ function MainApp() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/share/:token" element={<SharePage />} />
+          {/* /share/:token route removed - Partner Shares feature deprecated */}
           
           {/* Protected Routes - Any authenticated user */}
           <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
