@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Dna, Zap, TrendingUp, Clock, DollarSign, Shield, Beaker, Download, Send, CreditCard } from 'lucide-react';
+import { AlertCircle, Dna, Zap, TrendingUp, Clock, DollarSign, Shield, Beaker, Download, Send, CreditCard, Copy, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 // import AnalogueForm from '@/components/AnalogueForm.js';
 import { fetchChemistryOptions, hasClientConflicts } from '@/lib/chemistry';
