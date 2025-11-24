@@ -47,19 +47,51 @@ export default function AnalyticsPage() {
         getSnapshots(30, signal)
       ]);
 
+      // Check if request was cancelled
+      if (liveResult.status === 0 && liveResult.text === 'Request cancelled') {
+        return; // Silently return on abort
+      }
+
       if (!liveResult.ok) {
-        throw new Error(`Failed to load live analytics: ${liveResult.text || 'Unknown error'}`);
+        // Use mock data fallback on error
+        console.warn('Live analytics failed, using mock data:', liveResult.text);
+        setError('Analytics currently unavailable; showing mock data.');
+        setLive({
+          active_users_24h: 1,
+          analogues_24h: 0,
+          credits_consumed_24h: 0,
+          credits_purchased_24h: 0,
+          mod_group_mix_24h: {},
+          avg_credits_per_run: 0
+        });
+        setSnapshots([]);
+        return;
       }
 
       if (!snapshotsResult.ok) {
-        throw new Error(`Failed to load snapshots: ${snapshotsResult.text || 'Unknown error'}`);
+        console.warn('Snapshots failed:', snapshotsResult.text);
+        // Use live data but empty snapshots
+        setLive(liveResult.data);
+        setSnapshots([]);
+        return;
       }
 
       setLive(liveResult.data);
-      setSnapshots(snapshotsResult.data.snapshots);
+      setSnapshots(snapshotsResult.data.snapshots || []);
     } catch (err) {
       if (err.name !== 'AbortError') {
-        setError(err.message || 'Failed to load analytics');
+        console.error('Analytics error:', err);
+        setError('Analytics currently unavailable; showing mock data.');
+        // Fallback to mock data
+        setLive({
+          active_users_24h: 1,
+          analogues_24h: 0,
+          credits_consumed_24h: 0,
+          credits_purchased_24h: 0,
+          mod_group_mix_24h: {},
+          avg_credits_per_run: 0
+        });
+        setSnapshots([]);
       }
     } finally {
       setLoading(false);
