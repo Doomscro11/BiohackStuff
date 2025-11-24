@@ -1,10 +1,13 @@
 // Safe HTTP utilities - prevents "Response body already used" errors
 
 /**
- * Safe JSON fetch - reads response body exactly once
+ * Safe JSON fetch - reads response body exactly once using text()
  * Returns result object instead of throwing
  * Always includes credentials by default
  * Supports AbortController for request cancellation (React StrictMode safe)
+ * 
+ * CRITICAL: Uses response.text() instead of response.json() to prevent
+ * "Failed to execute 'clone' on 'Response': Response body is already used" errors
  */
 export async function fetchJSON(input, init) {
   try {
@@ -18,18 +21,32 @@ export async function fetchJSON(input, init) {
     
     const response = await fetch(input, config);
     
+    // CRITICAL: Read body as text EXACTLY ONCE
+    // This prevents "Response body is already used" errors that occur when
+    // multiple .json() calls are made or when error handlers try to re-read the body
+    const text = await response.text().catch(() => "");
+    
+    // Parse JSON from text (safe, doesn't touch Response object)
+    let data = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        // Non-JSON response - keep as raw text
+        console.warn('[fetchJSON] Non-JSON response:', text.substring(0, 100));
+        data = { raw: text };
+      }
+    }
+    
     if (!response.ok) {
-      // Read text exactly once for errors
-      const text = await response.text().catch(() => "");
       return { 
         ok: false, 
         status: response.status, 
-        text 
+        text: typeof data === 'string' ? data : (data?.message || data?.detail || text || 'Request failed'),
+        data
       };
     }
     
-    // Read JSON exactly once for success
-    const data = await response.json();
     return { 
       ok: true, 
       data 
