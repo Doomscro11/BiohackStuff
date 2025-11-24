@@ -108,9 +108,9 @@ export default function BillingWidget() {
     window.location.href = result.data.url;
   };
 
-  const buyCredits = async (credits) => {
+  const buyCredits = async (packageId) => {
     setActionLoading(true);
-    const result = await startCheckout({ purchase_credits: credits });
+    const result = await startCheckout({ package_id: packageId });
     
     if (!result.ok) {
       alert(`Failed to start checkout: ${result.text || 'Unknown error'}`);
