@@ -43,6 +43,26 @@ function App() {
   const [featureLevel, setFeatureLevel] = useState(0);
   const [user, setUser] = useState(null);
   const [selectedModifications, setSelectedModifications] = useState({});
+  const [copySuccess, setCopySuccess] = useState(null);
+  
+  const navigate = useNavigate();
+
+  // Handler for copying sequence to clipboard
+  const handleCopyForPatentPulse = async (sequence, analogueName) => {
+    try {
+      await navigator.clipboard.writeText(sequence);
+      setCopySuccess(analogueName);
+      setTimeout(() => setCopySuccess(null), 3000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy sequence. Please copy manually.');
+    }
+  };
+
+  // Handler for navigating to PatentPulse
+  const handleOpenPatentPulse = () => {
+    navigate('/admin/patentpulse');
+  };
 
   // Load user session
   useEffect(() => {
