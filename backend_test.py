@@ -4754,9 +4754,9 @@ if __name__ == "__main__":
             print("Available test types: global-login, rbac, auth, billing, chemistry, partner-shares, deprecation, enterprise")
             sys.exit(1)
     else:
-        # Run Global Login & RBAC tests by default
-        rbac_test = GlobalLoginRBACTest()
-        results = rbac_test.run_comprehensive_global_login_rbac_tests()
+        # Run Partner Shares Deprecation & Core App Stabilization tests by default
+        partner_test = PartnerSharesDeprecationTest()
+        results = partner_test.run_comprehensive_test()
         
         # Exit with appropriate code
-        sys.exit(0 if results["global_login_rbac_working"] else 1)
+        sys.exit(0 if results["overall_success"] else 1)
