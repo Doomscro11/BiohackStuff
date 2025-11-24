@@ -36,6 +36,7 @@ function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});  // Field-specific errors
   const [sequenceValidation, setSequenceValidation] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [synthesisLoading, setSynthesisLoading] = useState(null);
