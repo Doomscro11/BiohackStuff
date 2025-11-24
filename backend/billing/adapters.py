@@ -17,11 +17,24 @@ class CheckoutResult:
 class MockBilling:
     """Mock billing adapter for testing without Stripe"""
     
-    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None) -> CheckoutResult:
+    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None, package_id: str = None) -> CheckoutResult:
         """Create a mock checkout session"""
-        sid = f"mock_{user_id}"
-        url = f"/billing/mock/success?sid={sid}&plan={plan or ''}&credits={purchase_credits or 0}&uid={user_id}"
-        logger.info(f"Mock checkout created for user {user_id}: plan={plan}, credits={purchase_credits}")
+        from billing.credit_packages import get_package
+        
+        # If package_id provided, use it to get credits
+        credits_to_purchase = 0
+        if package_id:
+            package = get_package(package_id)
+            if package:
+                credits_to_purchase = package["credits"]
+            else:
+                raise ValueError(f"Invalid package_id: {package_id}")
+        elif purchase_credits:
+            credits_to_purchase = purchase_credits
+        
+        sid = f"mock_{user_id}_{package_id or 'custom'}"
+        url = f"/billing/mock/success?sid={sid}&plan={plan or ''}&credits={credits_to_purchase}&uid={user_id}&package={package_id or ''}"
+        logger.info(f"Mock checkout created for user {user_id}: plan={plan}, package={package_id}, credits={credits_to_purchase}")
         return CheckoutResult(provider="mock", url=url, session_id=sid)
 
     def parse_webhook(self, request) -> Dict[str, Any]:
