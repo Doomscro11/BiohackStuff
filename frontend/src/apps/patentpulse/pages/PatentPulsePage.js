@@ -125,13 +125,8 @@ export default function PatentPulsePage() {
           <p className="text-gray-600">Patent Mining & Commercialization Intelligence</p>
         </div>
 
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="dashboard">Patent Dashboard</TabsTrigger>
-            <TabsTrigger value="partner-shares">Partner Shares</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="space-y-6 mt-6">
+        {/* Partner Shares tab removed - feature deprecated */}
+        <div className="space-y-6">
 
         {/* Stats Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
