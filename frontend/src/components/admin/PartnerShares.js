@@ -1,9 +1,14 @@
 /**
- * Partner Shares Admin Component (Phase IXf+)
- * Manage partner share links, view analytics, and control access
+ * DEPRECATED: Partner Shares Admin Interface
+ * 
+ * This component has been deprecated and is no longer used.
+ * Partner Shares feature has been removed from the application.
+ * 
+ * TODO: Future external sharing/export will be implemented as a separate
+ * "Export to PDF / Share Report" feature with a cleaner architecture.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { fetchJSON } from '@/lib/http';
 import './PartnerShares.css';
 
