@@ -8,7 +8,7 @@ function TestPage() {
       <div style={{ marginTop: '2rem' }}>
         <h2>Available Test Links:</h2>
         <ul>
-          <li><a href="/admin/patentpulse">PatentPulse Dashboard (Partner Shares)</a></li>
+          <li><a href="/admin/patentpulse">PatentPulse Dashboard</a></li>
           <li><a href="/share/test-token">Partner Share Page (Test Token)</a></li>
         </ul>
       </div>
