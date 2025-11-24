@@ -132,7 +132,7 @@ function RationalePopover({ warning, onClose, isOpen }) {
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-          <Button onClick={onClose} className="w-full">
+          <Button type="button" onClick={onClose} className="w-full">
             Close
           </Button>
         </div>
