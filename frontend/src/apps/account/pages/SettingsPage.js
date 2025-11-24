@@ -329,7 +329,7 @@ function SettingsPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Partner Shares */}
+                  {/* PatentPulse Manual Review - No longer includes Partner Shares */}
                   <Card className="bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-3 mb-3">
@@ -339,7 +339,7 @@ function SettingsPage() {
                         <div>
                           <div className="font-semibold text-sm">PatentPulse Admin</div>
                           <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            Manage partner shares and exports
+                            Manual IP candidate review (beta)
                           </div>
                         </div>
                       </div>
