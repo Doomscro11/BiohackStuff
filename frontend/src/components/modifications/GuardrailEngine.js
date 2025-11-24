@@ -111,6 +111,7 @@ function GuardrailEngine({
                   {/* Why Button */}
                   {onWarningClick && (
                     <Button
+                      type="button"
                       variant="link"
                       size="sm"
                       onClick={() => onWarningClick(warning)}
