@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { fetchJSON } from '@/lib/http';
+import { updateSessionCache } from '@/lib/session';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
