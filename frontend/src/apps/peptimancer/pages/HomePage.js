@@ -145,21 +145,67 @@ function App() {
     setResults(null);
 
     try {
-      // Flatten selectedModifications from category structure to array
+      // CLIENT-SIDE VALIDATION: Check all required fields before submission
+      const validationErrors = [];
+      
+      // 1. Base sequence validation
+      if (!formData.base_molecule || !formData.base_molecule.trim()) {
+        validationErrors.push('Base peptide sequence is required');
+      } else if (!sequenceValidation?.is_valid) {
+        validationErrors.push('Base peptide sequence is invalid');
+      }
+      
+      // 2. Number of analogues validation
+      if (!formData.num_analogues || formData.num_analogues < 1 || formData.num_analogues > 10) {
+        validationErrors.push('Number of analogues must be between 1 and 10');
+      }
+      
+      // 3. Target use validation
+      if (!formData.target_use || !formData.target_use.trim()) {
+        validationErrors.push('Target use is required');
+      }
+      
+      // 4. Modifications validation
       const allSelectedMods = Object.values(selectedModifications || {}).flat();
+      if (allSelectedMods.length === 0) {
+        validationErrors.push('At least one modification must be selected');
+      }
+      
+      // If validation errors exist, show them and stop
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join('. ') + '.');
+        setLoading(false);
+        return;
+      }
+      
+      // Generate a unique ID for this generation request
+      const generationId = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      console.log('DEBUG formData:', formData);
+      console.log('DEBUG selectedModifications:', selectedModifications);
+      console.log('DEBUG allSelectedMods:', allSelectedMods);
       
       // Convert arrays to comma-separated strings for backend
       const requestData = {
-        ...formData,
+        generation_id: generationId,  // CRITICAL: Backend requires this field
+        base_molecule: formData.base_molecule,
         allowed_mods: allSelectedMods.join(', '),
-        exclusions: formData.exclusions.join(', ')
+        exclusions: formData.exclusions.join(', '),
+        target_use: formData.target_use,
+        num_analogues: formData.num_analogues,
+        include_cost: formData.include_cost
       };
+      
+      console.log('DEBUG requestData being sent:', requestData);
       
       const response = await axios.post(`${API}/generate-analogues`, requestData);
       setResults(response.data);
     } catch (error) {
       // Use error normalizer to safely handle all error types including Pydantic validation errors
-      setError(getAxiosErrorMessage(error, 'Failed to generate analogues'));
+      const errorMessage = getAxiosErrorMessage(error, 'Failed to generate analogues');
+      console.error('Submit error:', error);
+      console.error('Error response:', error.response?.data);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
