@@ -57,10 +57,19 @@ function LoginPage() {
       });
 
       if (result.ok && result.data && result.data.success) {
+        // Update session cache to prevent race conditions on next page load
+        updateSessionCache({
+          email: result.data.email,
+          role: result.data.role,
+          tier: result.data.tier || 'basic',
+          credits: result.data.credits || 0,
+          feature_level: result.data.feature_level || 0
+        });
+        
         // Determine redirect destination - default to home page for admin users
         const redirectUrl = result.data.role === 'admin' ? '/' : (returnTo || '/');
         
-        console.log('[LoginPage] Authentication successful, redirecting to:', redirectUrl);
+        console.log('[LoginPage] Authentication successful, session cached, redirecting to:', redirectUrl);
         
         // Wait for cookie to be properly set and persisted by browser
         // Increased delay to ensure cookie is fully committed before page reload
