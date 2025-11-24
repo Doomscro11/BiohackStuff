@@ -115,6 +115,7 @@ function WhyNotOverlay({
           <div className="flex flex-col sm:flex-row gap-3">
             {onFixForMe && (
               <Button 
+                type="button"
                 onClick={onFixForMe}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
@@ -122,6 +123,7 @@ function WhyNotOverlay({
               </Button>
             )}
             <Button 
+              type="button"
               onClick={onClose}
               variant="outline"
               className="flex-1"
@@ -130,6 +132,7 @@ function WhyNotOverlay({
             </Button>
             {onContinueAnyway && (
               <Button 
+                type="button"
                 onClick={onContinueAnyway}
                 variant="ghost"
                 className="text-xs text-gray-600 dark:text-gray-400"
