@@ -14,7 +14,7 @@ import CreditBadge from './components/CreditBadge';
 import RoleBadge from './components/auth/RoleBadge';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
-import { Shield, CreditCard, BarChart3, FileText, LogOut } from 'lucide-react';
+import { Shield, CreditCard, BarChart3, FileText, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSession } from './lib/session';
 import { fetchJSON } from './lib/http';
