@@ -50,10 +50,10 @@ async def billing_checkout(body: CheckoutBody, request: Request):
         )
     
     # Validate request
-    if not (body.plan or body.purchase_credits):
+    if not (body.plan or body.purchase_credits or body.package_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Specify either 'plan' or 'purchase_credits'"
+            detail="Specify either 'plan', 'purchase_credits', or 'package_id'"
         )
     
     try:
@@ -62,7 +62,8 @@ async def billing_checkout(body: CheckoutBody, request: Request):
             user["id"],
             user["email"],
             plan=body.plan,
-            purchase_credits=body.purchase_credits
+            purchase_credits=body.purchase_credits,
+            package_id=body.package_id
         )
         
         # Phase VIII: Persist session→user mapping for webhook resolution
