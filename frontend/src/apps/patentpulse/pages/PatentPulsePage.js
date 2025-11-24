@@ -1,4 +1,14 @@
-// PatentPulse Dashboard - Patent Mining & Commercialization
+/**
+ * PatentPulse Dashboard - Patent Mining & Commercialization
+ * 
+ * NOTE: This dashboard page is currently not routed (as of stabilization patch).
+ * It may be reintroduced in the future as a panel inside the unified PatentPulse admin page
+ * or as a separate dashboard for analytics.
+ * 
+ * For now, the canonical PatentPulse UI is PatentPulseStandalonePage.js at /admin/patentpulse.
+ * 
+ * This file is kept for future reference and potential reuse of its UI components.
+ */
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
