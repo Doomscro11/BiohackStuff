@@ -5,10 +5,10 @@ import TestPage from './pages/TestPage';
 import AdminPage from './apps/admin/pages/AdminPage';
 import BillingPage from './apps/account/pages/BillingPage';
 import SettingsPage from './apps/account/pages/SettingsPage';
-import AnalyticsPage from './apps/admin/pages/AnalyticsPage';
+// AnalyticsPage - Removed from routing (may be reintroduced as embedded panel)
 import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
 import PatentPulseStandalonePage from './apps/patentpulse/pages/PatentPulseStandalonePage';
-import SharePage from './apps/patentpulse/pages/SharePage';
+// SharePage - Removed for Partner Shares deprecation
 import LoginPage from './apps/auth/pages/LoginPage';
 import GuardrailEditorPage from './apps/admin/pages/GuardrailEditorPage';
 import CreditBadge from './components/CreditBadge';
