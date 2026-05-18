@@ -63,8 +63,8 @@ jobs:
       - name: Run backend tests
         run: pytest -q
 
-  frontend-build-and-tests:
-    name: Frontend build and tests
+  frontend-build:
+    name: Frontend build
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -93,13 +93,40 @@ jobs:
       - name: Build frontend
         run: yarn build
 
+  frontend-tests:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    env:
+      CI: true
+      REACT_APP_BACKEND_URL: http://localhost:8001
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Run frontend tests
         run: yarn test --watchAll=false --passWithNoTests
 
   release-gate:
     name: Release gate summary
     runs-on: ubuntu-latest
-    needs: [ backend-tests, frontend-build-and-tests ]
+    needs: [ backend-tests, frontend-build, frontend-tests ]
     if: always()
     steps:
       - name: Enforce all required jobs passed
@@ -108,8 +135,12 @@ jobs:
             echo "Backend tests failed: ${{ needs.backend-tests.result }}"
             exit 1
           fi
-          if [ "${{ needs.frontend-build-and-tests.result }}" != "success" ]; then
-            echo "Frontend build/tests failed: ${{ needs.frontend-build-and-tests.result }}"
+          if [ "${{ needs.frontend-build.result }}" != "success" ]; then
+            echo "Frontend build failed: ${{ needs.frontend-build.result }}"
+            exit 1
+          fi
+          if [ "${{ needs.frontend-tests.result }}" != "success" ]; then
+            echo "Frontend tests failed: ${{ needs.frontend-tests.result }}"
             exit 1
           fi
           echo "Release gate passed."
