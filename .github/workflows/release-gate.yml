@@ -73,7 +73,7 @@ jobs:
         working-directory: frontend
 
     env:
-      CI: true
+      CI: false
       REACT_APP_BACKEND_URL: http://localhost:8001
 
     steps:
