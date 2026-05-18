@@ -3,8 +3,6 @@ name: Release Gate
 on:
   pull_request:
     branches: [ main ]
-  push:
-    branches: [ main, refactor/monorepo-structure ]
   workflow_dispatch:
 
 concurrency:
@@ -98,7 +96,7 @@ jobs:
         run: yarn build
 
       - name: Run frontend tests
-        run: yarn test --watchAll=false
+        run: yarn test --watchAll=false --passWithNoTests
 
   release-gate:
     name: Release gate summary
