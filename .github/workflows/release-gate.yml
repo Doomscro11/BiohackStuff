@@ -60,6 +60,22 @@ jobs:
       - name: Check backend dependency consistency
         run: pip check
 
+      - name: Ensure external Emergent package is not installed
+        run: |
+          python - <<'PY'
+          import importlib.metadata
+          import sys
+
+          try:
+              importlib.metadata.version('emergentintegrations')
+          except importlib.metadata.PackageNotFoundError:
+              print('external emergentintegrations package not installed')
+              sys.exit(0)
+
+          print('external emergentintegrations package must not be installed')
+          sys.exit(1)
+          PY
+
       - name: Import backend app
         run: python -c "import server; print('backend import ok')"
 
