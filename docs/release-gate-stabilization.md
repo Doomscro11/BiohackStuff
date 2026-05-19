@@ -32,3 +32,5 @@ It verifies:
 Legacy workflows are quarantined to manual dispatch during stabilization so their older assumptions do not pollute the PR signal.
 
 The frontend gate uses Node 20 because the current dependency graph includes packages that require Node >=20.
+
+Latest verification nudge: confirm Node 20 install, conservative email masking, and async test loop stabilization against the current branch head.
