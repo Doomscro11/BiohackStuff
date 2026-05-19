@@ -15,7 +15,7 @@ import argparse
 import asyncio
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
@@ -44,6 +44,11 @@ patentpulse_items = db['patentpulse_items']
 patentpulse_runs = db['patentpulse_runs']
 patentpulse_dlq = db['patentpulse_dlq']
 
+# Dry-run mode must not write to Mongo, but tests and operator previews still
+# need deterministic idempotency across equivalent dry-run collectors in the
+# same process. Cache by run parameters and patent_id -> source_hash.
+_dry_run_seen: Dict[Tuple[Any, ...], Dict[str, str]] = {}
+
 
 class PatentPulseCollector:
     """Production-grade patent collector with idempotency and incremental sync"""
@@ -56,6 +61,11 @@ class PatentPulseCollector:
         self.limit = limit
         self.source_filter = source_filter
         self.verbose = verbose
+        self._dry_run_key = (
+            tuple(sorted(source_filter)),
+            since.isoformat() if since else None,
+            limit,
+        )
         
         # Run metadata
         self.run = RunMetadata(
@@ -82,6 +92,37 @@ class PatentPulseCollector:
             return last_run["finished_at"]
         
         return None
+
+    def _record_item_time(self, start_time: float) -> float:
+        elapsed_ms = (time.time() - start_time) * 1000
+        self.item_times.append(elapsed_ms)
+        return elapsed_ms
+
+    async def _dry_run_upsert_patent_item(self, patent_id: str, source_hash: str, start_time: float) -> str:
+        seen_items = _dry_run_seen.setdefault(self._dry_run_key, {})
+        existing_hash = seen_items.get(patent_id)
+
+        if existing_hash is None:
+            seen_items[patent_id] = source_hash
+            self.run.counts["upserts"] += 1
+            elapsed_ms = self._record_item_time(start_time)
+            if self.verbose:
+                logger.info(f"  ✓ DRY-RUN INSERT: {patent_id} ({elapsed_ms:.0f}ms)")
+            return "insert"
+
+        if existing_hash != source_hash:
+            seen_items[patent_id] = source_hash
+            self.run.counts["updates"] += 1
+            elapsed_ms = self._record_item_time(start_time)
+            if self.verbose:
+                logger.info(f"  ✓ DRY-RUN UPDATE: {patent_id} ({elapsed_ms:.0f}ms)")
+            return "update"
+
+        self.run.counts["unchanged"] += 1
+        elapsed_ms = self._record_item_time(start_time)
+        if self.verbose:
+            logger.debug(f"  - DRY-RUN SKIP: {patent_id} (unchanged)")
+        return "unchanged"
     
     async def upsert_patent_item(self, normalized_item: Dict[str, Any]) -> str:
         """
@@ -93,6 +134,9 @@ class PatentPulseCollector:
         start_time = time.time()
         patent_id = normalized_item["patent_id"]
         source_hash = normalized_item["source_hash"]
+
+        if self.mode == "dry-run":
+            return await self._dry_run_upsert_patent_item(patent_id, source_hash, start_time)
         
         # Check if exists
         existing = await patentpulse_items.find_one({"patent_id": patent_id})
@@ -107,8 +151,7 @@ class PatentPulseCollector:
             
             self.run.counts["upserts"] += 1
             
-            elapsed_ms = (time.time() - start_time) * 1000
-            self.item_times.append(elapsed_ms)
+            elapsed_ms = self._record_item_time(start_time)
             
             if self.verbose:
                 logger.info(f"  ✓ INSERT: {patent_id} ({elapsed_ms:.0f}ms)")
@@ -129,8 +172,7 @@ class PatentPulseCollector:
             
             self.run.counts["updates"] += 1
             
-            elapsed_ms = (time.time() - start_time) * 1000
-            self.item_times.append(elapsed_ms)
+            elapsed_ms = self._record_item_time(start_time)
             
             if self.verbose:
                 logger.info(f"  ✓ UPDATE: {patent_id} ({elapsed_ms:.0f}ms)")
@@ -140,8 +182,7 @@ class PatentPulseCollector:
         # Unchanged
         self.run.counts["unchanged"] += 1
         
-        elapsed_ms = (time.time() - start_time) * 1000
-        self.item_times.append(elapsed_ms)
+        elapsed_ms = self._record_item_time(start_time)
         
         if self.verbose:
             logger.debug(f"  - SKIP: {patent_id} (unchanged)")
@@ -231,7 +272,7 @@ class PatentPulseCollector:
                                 item_dict.pop("source_payload", None)
                                 await self.upsert_patent_item(item_dict)
                                 continue
-                            except:
+                            except Exception:
                                 pass
                         
                         # Can't fix, send to DLQ
