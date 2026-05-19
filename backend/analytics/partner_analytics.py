@@ -6,16 +6,28 @@ Tracks and reports on partner share access events
 import os
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any, List, Optional, Literal
+from typing import Dict, Any, List, Optional, Literal, Tuple
 from motor.motor_asyncio import AsyncIOMotorClient
 
 logger = logging.getLogger(__name__)
 
-# MongoDB connection (shared with main app)
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-db_name = os.environ.get('DB_NAME', 'peptimancer_db')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
+# Cache clients by resolved environment. Do not bind a database at import time;
+# tests and CI may set DB_NAME/MONGO_URL before execution but after import.
+_client_cache: Dict[Tuple[str, str], AsyncIOMotorClient] = {}
+
+
+def get_db():
+    """Resolve the active Mongo database from the current environment."""
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.environ.get('DB_NAME', 'peptimancer_db')
+    key = (mongo_url, db_name)
+
+    client = _client_cache.get(key)
+    if client is None:
+        client = AsyncIOMotorClient(mongo_url)
+        _client_cache[key] = client
+
+    return client[db_name]
 
 
 async def track_event(
@@ -45,6 +57,7 @@ async def track_event(
         Event ID
     """
     import uuid
+    db = get_db()
     
     event_doc = {
         "event_id": str(uuid.uuid4()),
@@ -60,7 +73,7 @@ async def track_event(
     }
     
     try:
-        result = await db.partner_share_events.insert_one(event_doc)
+        await db.partner_share_events.insert_one(event_doc)
         logger.info(f"Tracked event: share={share_id} event={event} ip={ip}")
         return event_doc["event_id"]
     except Exception as e:
@@ -78,6 +91,7 @@ async def get_share_analytics(share_id: str) -> Dict[str, Any]:
     Returns:
         Analytics data: {opens, downloads, blocked, last_access_at, top_ips, geo_breakdown}
     """
+    db = get_db()
     pipeline = [
         {"$match": {"share_id": share_id}},
         {
@@ -169,6 +183,7 @@ async def get_dashboard_metrics(
     Returns:
         Dashboard metrics
     """
+    db = get_db()
     if start_date is None:
         start_date = datetime.now(timezone.utc) - timedelta(days=30)
     if end_date is None:
@@ -305,6 +320,7 @@ async def cleanup_old_events(days: int = 180) -> int:
     Returns:
         Number of deleted events
     """
+    db = get_db()
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     
     try:
