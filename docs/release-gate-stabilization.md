@@ -33,4 +33,4 @@ Legacy workflows are quarantined to manual dispatch during stabilization so thei
 
 The frontend gate uses Node 20 because the current dependency graph includes packages that require Node >=20.
 
-Latest verification nudge: confirm Node 20 install, conservative email masking, and async test loop stabilization against the current branch head.
+Latest verification nudge: confirm Node 20 install, conservative email masking, async loop stabilization, partner analytics DB resolution, and dry-run collector idempotency against the current branch head.
