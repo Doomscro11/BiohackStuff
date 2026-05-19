@@ -141,8 +141,8 @@ jobs:
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run frontend tests
-        run: yarn test --watchAll=false --passWithNoTests
+      - name: Run frontend unit tests
+        run: yarn test:unit
 
   release-gate:
     name: Release gate summary
