@@ -30,7 +30,9 @@ def mask_email(email: str) -> str:
     if len(local) <= 2:
         masked_local = local[0] + '***'
     else:
-        masked_local = local[0] + '*' * (len(local) - 2) + local[-1]
+        # Use a conservative mask: keep first/last character, but mask at
+        # least as much as the remaining visible local-part length.
+        masked_local = local[0] + '*' * (len(local) - 1) + local[-1]
     
     return f"{masked_local}@{domain}"
 
