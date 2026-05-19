@@ -14,9 +14,16 @@ logger = logging.getLogger(__name__)
 # Initialize router
 router = APIRouter(prefix="/api/billing", tags=["billing"])
 
-# Ensure plans are seeded on startup
-import asyncio
-asyncio.create_task(ensure_seed_plans())
+
+@router.on_event("startup")
+async def seed_billing_plans_on_startup():
+    """Seed default billing plans during application startup.
+
+    This must not run at module import time because clean imports and CI smoke
+    checks may occur without a running asyncio event loop.
+    """
+    await ensure_seed_plans()
+
 
 # ==================== User Billing Routes ====================
 
