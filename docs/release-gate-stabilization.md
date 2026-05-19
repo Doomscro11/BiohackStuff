@@ -25,7 +25,7 @@ It verifies:
 - Backend pytest suite
 - Frontend dependency installation under Node 20
 - Frontend production build
-- Frontend test command
+- Frontend deterministic unit test command
 
 ## Notes
 
@@ -33,4 +33,4 @@ Legacy workflows are quarantined to manual dispatch during stabilization so thei
 
 The frontend gate uses Node 20 because the current dependency graph includes packages that require Node >=20.
 
-Latest verification nudge: confirm Node 20 install, conservative email masking, async loop stabilization, partner analytics DB resolution, and dry-run collector idempotency against the current branch head.
+Latest verification nudge: confirm the default-branch and refactor-branch workflow copies are aligned on Node 20, deterministic frontend unit tests, backend fixes, and Emergent-removal guards.
