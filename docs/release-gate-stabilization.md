@@ -23,10 +23,12 @@ It verifies:
 - External Emergent package absence
 - Backend app import
 - Backend pytest suite
-- Frontend dependency installation
+- Frontend dependency installation under Node 20
 - Frontend production build
 - Frontend test command
 
 ## Notes
 
 Legacy workflows are quarantined to manual dispatch during stabilization so their older assumptions do not pollute the PR signal.
+
+The frontend gate uses Node 20 because the current dependency graph includes packages that require Node >=20.
