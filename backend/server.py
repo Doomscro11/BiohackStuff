@@ -24,11 +24,11 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Import admin routes and auth system (after loading .env)
-from routes_admin import admin_router
-from routes_auth import auth_router
-from routes_admin_health import router as admin_health_router
-from routes_admin_users import router as admin_users_router
+# Import routes from new api structure (after loading .env)
+from api.admin.modes import admin_router
+from api.auth import auth_router
+from api.admin.health import router as admin_health_router
+from api.admin.users import router as admin_users_router
 from services.settings import get_settings, is_feature_enabled
 from middleware.auth import AuthMiddleware
 
@@ -1100,30 +1100,40 @@ app.include_router(admin_health_router)
 app.include_router(admin_users_router)
 
 # Include Phase VIII billing routes
-from routes_billing import router as billing_router
-from routes_webhooks import router as webhooks_router
+from api.billing import router as billing_router
+from api.webhooks import router as webhooks_router
 app.include_router(billing_router)
 app.include_router(webhooks_router)
 
 # Include Phase VIII chemistry options route
-from routes_chemistry import router as chemistry_router
+from api.chemistry import router as chemistry_router
 app.include_router(chemistry_router)
 
 # Include Phase IXa analytics routes
-from routes_analytics import router as analytics_router
+from api.admin.analytics import router as analytics_router
 app.include_router(analytics_router)
 
 # Include Phase IXb PatentPulse routes
-from routes_patentpulse import router as patentpulse_router
+from api.patentpulse.items import router as patentpulse_router
 app.include_router(patentpulse_router)
 
 # Include Phase IXd PatentPulse Signals routes
-from routes.patentpulse_signals import router as patentpulse_signals_router
+from api.patentpulse.signals import router as patentpulse_signals_router
 app.include_router(patentpulse_signals_router)
 
 # Include Phase IXe PatentPulse Reclaim routes
-from routes.patentpulse_reclaim import router as patentpulse_reclaim_router
+from api.patentpulse.reclaim import router as patentpulse_reclaim_router
 app.include_router(patentpulse_reclaim_router)
+
+# Include Phase IXf+ Partner Portal routes
+from api.patentpulse.partner_shares import router as partner_shares_router
+app.include_router(partner_shares_router)
+
+# Include Feature Flags routes (Phase DAC-Zero)
+from api.admin.feature_flags import router as feature_flags_router
+from api.placeholder import router as placeholder_router
+app.include_router(feature_flags_router)
+app.include_router(placeholder_router)
 
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)

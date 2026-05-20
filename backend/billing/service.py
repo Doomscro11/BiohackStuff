@@ -8,6 +8,15 @@ from bson import ObjectId
 
 logger = logging.getLogger(__name__)
 
+def get_user_query(user_id: str) -> Dict[str, Any]:
+    """Get user query that works with both ObjectId and string IDs"""
+    try:
+        # Try to use as ObjectId first (legacy users)
+        return {"_id": ObjectId(user_id)}
+    except:
+        # Fall back to string ID (new users)
+        return {"id": user_id}
+
 # Database connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
@@ -50,12 +59,12 @@ async def ensure_seed_plans():
 
 async def get_user(user_id: str) -> dict:
     """Get user document"""
-    return await users.find_one({"_id": ObjectId(user_id)})
+    return await users.find_one(get_user_query(user_id))
 
 async def set_user_tier(user_id: str, tier: str):
     """Update user tier"""
     await users.update_one(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"$set": {"tier": tier}}
     )
     logger.info(f"User {user_id} tier set to {tier}")
@@ -67,7 +76,7 @@ async def add_credits(user_id: str, delta: int, reason: str, meta: Optional[Dict
     """
     # Update user credits
     result = await users.find_one_and_update(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"$inc": {"credits": delta}},
         return_document=True
     )
@@ -95,7 +104,7 @@ async def consume_credits(user_id: str, amount: int, reason: str) -> int:
     Raises ValueError if insufficient credits
     Returns new balance
     """
-    user_doc = await users.find_one({"_id": ObjectId(user_id)})
+    user_doc = await users.find_one(get_user_query(user_id))
     current_balance = int(user_doc.get("credits", 0)) if user_doc else 0
     
     if current_balance < amount:
@@ -169,7 +178,7 @@ async def get_billing_state(user_id: str) -> dict:
     """
     # Get user data
     user_doc = await users.find_one(
-        {"_id": ObjectId(user_id)},
+        get_user_query(user_id),
         {"tier": 1, "credits": 1, "email": 1}
     )
     

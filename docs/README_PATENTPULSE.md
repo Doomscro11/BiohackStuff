@@ -61,7 +61,7 @@
 
 ### Base URL
 ```
-https://peptide-designer-5.preview.emergentagent.com/api/patentpulse
+https://partner-purge.preview.emergentagent.com/api/patentpulse
 ```
 
 ### 1. GET /items

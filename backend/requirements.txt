@@ -19,7 +19,6 @@ distro==1.9.0
 dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
-emergentintegrations==0.1.0
 fastapi==0.110.1
 fastuuid==0.14.0
 filelock==3.20.0
@@ -95,6 +94,7 @@ python-jose==3.5.0
 python-multipart==0.0.20
 pytokens==0.2.0
 pytz==2025.2
+PyPDF2==3.0.1
 PyYAML==6.0.3
 referencing==0.37.0
 regex==2025.11.3

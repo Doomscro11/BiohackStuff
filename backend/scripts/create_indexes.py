@@ -292,6 +292,51 @@ try:
 except Exception as e:
     print(f"  ✗ Error creating PatentPulse Exports indexes: {str(e)}")
 
+# Phase IXf+: Partner Shares indexes
+print("\nCreating Partner Shares indexes...")
+try:
+    db.partner_shares.create_index("share_id", unique=True, name="share_id_unique_idx")
+    print("  ✓ partner_shares.share_id (unique)")
+    
+    db.partner_shares.create_index("state", name="state_idx")
+    print("  ✓ partner_shares.state")
+    
+    db.partner_shares.create_index("recipient_email", name="recipient_email_idx")
+    print("  ✓ partner_shares.recipient_email")
+    
+    db.partner_shares.create_index(
+        [("created_at", DESCENDING)],
+        name="created_at_desc_idx"
+    )
+    print("  ✓ partner_shares.created_at (descending)")
+    
+    db.partner_shares.create_index("policy.expires_at", name="policy_expires_at_idx")
+    print("  ✓ partner_shares.policy.expires_at")
+    
+except Exception as e:
+    print(f"  ✗ Error creating Partner Shares indexes: {str(e)}")
+
+# Phase IXf+: Partner Share Events indexes
+print("\nCreating Partner Share Events indexes...")
+try:
+    db.partner_share_events.create_index("share_id", name="share_id_idx")
+    print("  ✓ partner_share_events.share_id")
+    
+    db.partner_share_events.create_index(
+        [("ts", DESCENDING)],
+        name="ts_desc_idx"
+    )
+    print("  ✓ partner_share_events.ts (descending)")
+    
+    db.partner_share_events.create_index("event", name="event_idx")
+    print("  ✓ partner_share_events.event")
+    
+    db.partner_share_events.create_index("ip", name="ip_idx")
+    print("  ✓ partner_share_events.ip")
+    
+except Exception as e:
+    print(f"  ✗ Error creating Partner Share Events indexes: {str(e)}")
+
 print("\n✅ Index creation complete!")
 
 # Show all indexes

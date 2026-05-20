@@ -17,11 +17,24 @@ class CheckoutResult:
 class MockBilling:
     """Mock billing adapter for testing without Stripe"""
     
-    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None) -> CheckoutResult:
+    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None, package_id: str = None) -> CheckoutResult:
         """Create a mock checkout session"""
-        sid = f"mock_{user_id}"
-        url = f"/billing/mock/success?sid={sid}&plan={plan or ''}&credits={purchase_credits or 0}&uid={user_id}"
-        logger.info(f"Mock checkout created for user {user_id}: plan={plan}, credits={purchase_credits}")
+        from billing.credit_packages import get_package
+        
+        # If package_id provided, use it to get credits
+        credits_to_purchase = 0
+        if package_id:
+            package = get_package(package_id)
+            if package:
+                credits_to_purchase = package["credits"]
+            else:
+                raise ValueError(f"Invalid package_id: {package_id}")
+        elif purchase_credits:
+            credits_to_purchase = purchase_credits
+        
+        sid = f"mock_{user_id}_{package_id or 'custom'}"
+        url = f"/billing/mock/success?sid={sid}&plan={plan or ''}&credits={credits_to_purchase}&uid={user_id}&package={package_id or ''}"
+        logger.info(f"Mock checkout created for user {user_id}: plan={plan}, package={package_id}, credits={credits_to_purchase}")
         return CheckoutResult(provider="mock", url=url, session_id=sid)
 
     def parse_webhook(self, request) -> Dict[str, Any]:
@@ -61,10 +74,13 @@ class StripeBilling:
         
         logger.info("Stripe billing adapter initialized")
 
-    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None) -> CheckoutResult:
+    def create_checkout(self, user_id: str, email: str, plan: str = None, purchase_credits: int = None, package_id: str = None) -> CheckoutResult:
         """Create a Stripe Checkout session"""
+        from billing.credit_packages import get_package
+        
         line_items = []
         mode = "payment"  # Default for one-time purchases
+        metadata = {"user_id": user_id}
         
         if plan:
             # Subscription mode for plans
@@ -86,10 +102,28 @@ class StripeBilling:
                 },
                 "quantity": 1
             })
+            metadata["plan"] = plan
         
-        if purchase_credits:
-            # One-time credit purchase
-            # Simple pricing: $0.05 per credit, minimum $5
+        if package_id:
+            # One-time credit purchase using package
+            package = get_package(package_id)
+            if not package:
+                raise ValueError(f"Invalid package_id: {package_id}")
+            
+            line_items.append({
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": package["display_name"]},
+                    "unit_amount": package["price_cents"]
+                },
+                "quantity": 1
+            })
+            metadata["package_id"] = package_id
+            metadata["credits"] = str(package["credits"])
+        
+        elif purchase_credits:
+            # Legacy: direct credit amount (for backward compatibility)
+            # Use simple $0.05 per credit pricing
             unit_amount = max(500, purchase_credits * 5)  # cents
             
             line_items.append({
@@ -100,20 +134,17 @@ class StripeBilling:
                 },
                 "quantity": 1
             })
+            metadata["credits"] = str(purchase_credits)
         
         app_url = os.getenv("APP_URL", "http://localhost:3000")
         
         session = stripe.checkout.Session.create(
             mode=mode,
             line_items=line_items,
-            success_url=f"{app_url}/app/settings/billing?success=1&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{app_url}/app/settings/billing?canceled=1",
+            success_url=f"{app_url}/billing?success=1&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{app_url}/billing?canceled=1",
             customer_email=email,
-            metadata={
-                "user_id": user_id,
-                "plan": plan or "",
-                "credits": str(purchase_credits or 0)
-            }
+            metadata=metadata
         )
         
         logger.info(f"Stripe checkout created for user {user_id}: session_id={session.id}")

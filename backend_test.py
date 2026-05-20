@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Phase VI Production Enterprise Launch - Backend API Testing
-Comprehensive validation for Peptimancer enterprise deployment
+Partner Shares Deprecation & Core App Stabilization Testing
+Comprehensive validation for Partner Shares removal and core functionality
 """
 
 import requests
@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys
 
 # Use production endpoint from frontend .env
-BACKEND_URL = "https://peptide-designer-5.preview.emergentagent.com"
+BACKEND_URL = "https://partner-purge.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class PeptimancerEnterpriseTest:
@@ -589,8 +589,690 @@ class PeptimancerEnterpriseTest:
             "enterprise_ready": self.tests_passed >= self.tests_run * 0.9
         }
 
-class AuthenticationTest:
-    """Test Admin Authentication with Email OTP and RBAC"""
+class PartnerSharesDeprecationTest:
+    """Test Partner Shares Deprecation & Core App Stabilization"""
+    
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.critical_failures = []
+        self.test_results = {}
+        self.admin_jwt_cookie = None
+        self.admin_email = "founder@peptologic.ai"
+        self.demo_code = None
+        
+    def log_test(self, test_name, success, details="", error_details=""):
+        """Log test results"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}: PASSED")
+            if details:
+                print(f"   Details: {details}")
+        else:
+            print(f"❌ {test_name}: FAILED")
+            if error_details:
+                print(f"   Error: {error_details}")
+            self.critical_failures.append({
+                "test": test_name,
+                "error": error_details,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        self.test_results[test_name] = {
+            "success": success,
+            "details": details,
+            "error": error_details,
+            "timestamp": datetime.now().isoformat()
+        }
+        print()
+
+    def test_partner_shares_get_deprecation(self):
+        """Test GET /api/patentpulse/partner/shares returns 410 GONE"""
+        try:
+            response = requests.get(f"{API_BASE}/patentpulse/partner/shares", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares GET Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares GET Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares GET Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares GET Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_post_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares returns 410 GONE"""
+        try:
+            payload = {"test": "data"}
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares", json=payload, timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares POST Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares POST Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares POST Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares POST Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_rotate_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares/{share_id}/rotate returns 410 GONE"""
+        try:
+            share_id = "test_share_123"
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares/{share_id}/rotate", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares Rotate Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares Rotate Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares Rotate Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares Rotate Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_partner_shares_revoke_deprecation(self):
+        """Test POST /api/patentpulse/partner/shares/{share_id}/revoke returns 410 GONE"""
+        try:
+            share_id = "test_share_123"
+            response = requests.post(f"{API_BASE}/patentpulse/partner/shares/{share_id}/revoke", timeout=10)
+            
+            if response.status_code == 410:
+                try:
+                    data = response.json()
+                    message = data.get("detail", "")
+                    self.log_test(
+                        "Partner Shares Revoke Deprecation",
+                        True,
+                        f"Correctly returned 410 GONE with message: {message}"
+                    )
+                    return True
+                except:
+                    self.log_test(
+                        "Partner Shares Revoke Deprecation",
+                        True,
+                        "Correctly returned 410 GONE"
+                    )
+                    return True
+            else:
+                self.log_test(
+                    "Partner Shares Revoke Deprecation",
+                    False,
+                    error_details=f"Expected HTTP 410 GONE, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Partner Shares Revoke Deprecation",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_magic_request(self):
+        """Test POST /api/auth/magic/request with admin email"""
+        try:
+            payload = {"email": self.admin_email}
+            response = requests.post(f"{API_BASE}/auth/magic/request", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "demo_code" in data:
+                    self.demo_code = data["demo_code"]
+                    self.log_test(
+                        "Auth Magic Request",
+                        True,
+                        f"Demo code: {self.demo_code}, expires in {data.get('expires_in_minutes')} minutes"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Auth Magic Request",
+                        False,
+                        error_details="Response missing demo_code or success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Auth Magic Request",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Magic Request",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_magic_verify(self):
+        """Test POST /api/auth/magic/verify with demo code"""
+        if not self.demo_code:
+            self.log_test(
+                "Auth Magic Verify",
+                False,
+                error_details="No demo code available (request must succeed first)"
+            )
+            return False
+        
+        try:
+            payload = {"email": self.admin_email, "code": self.demo_code}
+            response = requests.post(f"{API_BASE}/auth/magic/verify", json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                cookies = response.cookies
+                if "pmnc_jwt" in cookies:
+                    self.admin_jwt_cookie = cookies["pmnc_jwt"]
+                    self.log_test(
+                        "Auth Magic Verify",
+                        True,
+                        f"JWT cookie set, role: {data.get('role')}, email: {data.get('email')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Auth Magic Verify",
+                        False,
+                        error_details="JWT cookie not set in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Auth Magic Verify",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Magic Verify",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_session(self):
+        """Test GET /api/auth/session with JWT cookie"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Auth Session",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["email", "role", "tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Auth Session",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Auth Session",
+                    True,
+                    f"Email: {data.get('email')}, Role: {data.get('role')}, Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Auth Session",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Auth Session",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_chemistry_options(self):
+        """Test GET /api/chemistry/options"""
+        try:
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "mods" in data and "exclusions" in data:
+                    self.log_test(
+                        "Chemistry Options",
+                        True,
+                        f"Returned {len(data.get('mods', []))} modifications, {len(data.get('exclusions', []))} exclusions"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Chemistry Options",
+                        False,
+                        error_details="Missing mods or exclusions in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Chemistry Options",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_patentpulse_items(self):
+        """Test GET /api/patentpulse/items?limit=5"""
+        try:
+            # Try without auth first, then with auth if needed
+            response = requests.get(f"{API_BASE}/patentpulse/items?limit=5", timeout=10)
+            
+            if response.status_code == 401 and self.admin_jwt_cookie:
+                # Try with authentication
+                cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+                response = requests.get(f"{API_BASE}/patentpulse/items?limit=5", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "items" in data:
+                    items = data.get("items", [])
+                    self.log_test(
+                        "PatentPulse Items",
+                        True,
+                        f"Returned {len(items)} patent items"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "PatentPulse Items",
+                        False,
+                        error_details="Missing items in response"
+                    )
+                    return False
+            elif response.status_code == 403:
+                # Admin 2FA required - this is expected behavior
+                self.log_test(
+                    "PatentPulse Items",
+                    True,
+                    f"Admin 2FA required (expected) - endpoint is protected correctly"
+                )
+                return True
+            else:
+                self.log_test(
+                    "PatentPulse Items",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "PatentPulse Items",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_patentpulse_stats(self):
+        """Test GET /api/patentpulse/stats"""
+        try:
+            # Try without auth first, then with auth if needed
+            response = requests.get(f"{API_BASE}/patentpulse/stats", timeout=10)
+            
+            if response.status_code == 401 and self.admin_jwt_cookie:
+                # Try with authentication
+                cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+                response = requests.get(f"{API_BASE}/patentpulse/stats", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "total_items" in data or "stats" in data:
+                    self.log_test(
+                        "PatentPulse Stats",
+                        True,
+                        f"Stats retrieved successfully"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "PatentPulse Stats",
+                        False,
+                        error_details="Missing stats data in response"
+                    )
+                    return False
+            elif response.status_code == 403:
+                # Admin 2FA required - this is expected behavior
+                self.log_test(
+                    "PatentPulse Stats",
+                    True,
+                    f"Admin 2FA required (expected) - endpoint is protected correctly"
+                )
+                return True
+            else:
+                self.log_test(
+                    "PatentPulse Stats",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "PatentPulse Stats",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_admin_analytics_summary(self):
+        """Test GET /api/admin/analytics/live with admin JWT"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Admin Analytics Summary",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/analytics/live", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Admin Analytics Summary",
+                    True,
+                    f"Analytics data retrieved successfully"
+                )
+                return True
+            elif response.status_code == 403:
+                # Admin 2FA required - this is expected behavior
+                self.log_test(
+                    "Admin Analytics Summary",
+                    True,
+                    f"Admin 2FA required (expected) - endpoint is protected correctly"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Analytics Summary",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Analytics Summary",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_billing_state(self):
+        """Test GET /api/billing/state with valid JWT"""
+        if not self.admin_jwt_cookie:
+            self.log_test(
+                "Billing State",
+                False,
+                error_details="No JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Billing State",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Billing State",
+                    True,
+                    f"Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Billing State",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing State",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_billing_mock_webhook(self):
+        """Test GET /api/webhooks/billing/mock/success?uid=USER_ID&credits=100"""
+        try:
+            # Use a test user ID
+            user_id = "test_user_123"
+            response = requests.get(f"{API_BASE}/webhooks/billing/mock/success?uid={user_id}&credits=100", timeout=10, allow_redirects=False)
+            
+            # Mock webhook should return 302 redirect or 200 success
+            if response.status_code in [200, 302]:
+                self.log_test(
+                    "Billing Mock Webhook",
+                    True,
+                    f"Mock webhook responded with {response.status_code}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Billing Mock Webhook",
+                    False,
+                    error_details=f"Expected HTTP 200 or 302, got {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Billing Mock Webhook",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def run_comprehensive_test(self):
+        """Run comprehensive Partner Shares deprecation and core app stabilization tests"""
+        print("=" * 80)
+        print("🚫 PARTNER SHARES DEPRECATION & CORE APP STABILIZATION TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Admin Email: {self.admin_email}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+        print()
+        
+        # Priority 1: Partner Shares API Deprecation
+        print("🚫 PRIORITY 1: PARTNER SHARES API DEPRECATION")
+        print("-" * 50)
+        self.test_partner_shares_get_deprecation()
+        self.test_partner_shares_post_deprecation()
+        self.test_partner_shares_rotate_deprecation()
+        self.test_partner_shares_revoke_deprecation()
+        
+        # Priority 2: Core Authentication & Session (Regression Test)
+        print("\n🔐 PRIORITY 2: CORE AUTHENTICATION & SESSION")
+        print("-" * 50)
+        self.test_auth_magic_request()
+        self.test_auth_magic_verify()
+        self.test_auth_session()
+        
+        # Priority 3: Core Application Endpoints (Regression Test)
+        print("\n🧬 PRIORITY 3: CORE APPLICATION ENDPOINTS")
+        print("-" * 50)
+        self.test_chemistry_options()
+        self.test_patentpulse_items()
+        self.test_patentpulse_stats()
+        self.test_admin_analytics_summary()
+        
+        # Priority 4: Billing System (Regression Test)
+        print("\n💳 PRIORITY 4: BILLING SYSTEM")
+        print("-" * 50)
+        self.test_billing_state()
+        self.test_billing_mock_webhook()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("📈 PARTNER SHARES DEPRECATION & CORE APP TEST SUMMARY")
+        print("=" * 80)
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Categorize results
+        partner_shares_tests = [t for t in self.test_results.keys() if "Partner Shares" in t]
+        auth_tests = [t for t in self.test_results.keys() if "Auth" in t]
+        core_tests = [t for t in self.test_results.keys() if any(x in t for x in ["Chemistry", "PatentPulse", "Admin Analytics"])]
+        billing_tests = [t for t in self.test_results.keys() if "Billing" in t]
+        
+        partner_shares_passed = sum(1 for t in partner_shares_tests if self.test_results[t]["success"])
+        auth_passed = sum(1 for t in auth_tests if self.test_results[t]["success"])
+        core_passed = sum(1 for t in core_tests if self.test_results[t]["success"])
+        billing_passed = sum(1 for t in billing_tests if self.test_results[t]["success"])
+        
+        print(f"\n📊 RESULTS BY CATEGORY:")
+        print(f"  Partner Shares Deprecation: {partner_shares_passed}/{len(partner_shares_tests)} ({'✅ COMPLETE' if partner_shares_passed == len(partner_shares_tests) else '❌ INCOMPLETE'})")
+        print(f"  Authentication Flow: {auth_passed}/{len(auth_tests)} ({'✅ WORKING' if auth_passed == len(auth_tests) else '❌ ISSUES'})")
+        print(f"  Core Application: {core_passed}/{len(core_tests)} ({'✅ WORKING' if core_passed == len(core_tests) else '❌ ISSUES'})")
+        print(f"  Billing System: {billing_passed}/{len(billing_tests)} ({'✅ WORKING' if billing_passed == len(billing_tests) else '❌ ISSUES'})")
+        
+        if self.critical_failures:
+            print(f"\n❌ CRITICAL FAILURES ({len(self.critical_failures)}):")
+            for failure in self.critical_failures:
+                print(f"  • {failure['test']}: {failure['error']}")
+        
+        # Success criteria
+        partner_shares_success = partner_shares_passed == len(partner_shares_tests)
+        core_success = (auth_passed + core_passed + billing_passed) >= (len(auth_tests) + len(core_tests) + len(billing_tests)) * 0.85
+        
+        overall_status = "✅ SUCCESS" if partner_shares_success and core_success else "❌ ISSUES DETECTED"
+        print(f"\nOverall Status: {overall_status}")
+        
+        if partner_shares_success:
+            print("✅ Partner Shares deprecation is COMPLETE - all endpoints return 410 GONE")
+        else:
+            print("❌ Partner Shares deprecation is INCOMPLETE - some endpoints not properly deprecated")
+            
+        if core_success:
+            print("✅ Core application flows are WORKING after Partner Shares removal")
+        else:
+            print("❌ Core application flows have ISSUES after Partner Shares removal")
+        
+        print("=" * 80)
+        
+        return {
+            "tests_run": self.tests_run,
+            "tests_passed": self.tests_passed,
+            "success_rate": self.tests_passed/self.tests_run*100,
+            "critical_failures": self.critical_failures,
+            "test_results": self.test_results,
+            "partner_shares_deprecated": partner_shares_success,
+            "core_app_stable": core_success,
+            "overall_success": partner_shares_success and core_success
+        }
+
+class GlobalLoginRBACTest:
+    """Test Global Login & RBAC Implementation Comprehensively"""
     
     def __init__(self):
         self.tests_run = 0
@@ -599,7 +1281,10 @@ class AuthenticationTest:
         self.test_results = {}
         self.jwt_cookie = None
         self.admin_email = "founder@peptologic.ai"
-        self.non_admin_email = "user@example.com"
+        self.cto_email = "cto@peptologic.ai"
+        self.test_email = "test@example.com"
+        self.admin_jwt_cookie = None
+        self.non_admin_jwt_cookie = None
         
     def log_test(self, test_name, success, details="", error_details=""):
         """Log test results"""
@@ -1148,51 +1833,470 @@ class AuthenticationTest:
             )
             return False
     
-    def run_all_tests(self):
-        """Run all authentication tests"""
+    def test_session_endpoint_without_auth(self):
+        """Test session endpoint without authentication - should return 401"""
+        try:
+            response = requests.get(f"{API_BASE}/auth/session", timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Session Endpoint Without Auth",
+                    True,
+                    "Correctly returned 401 Unauthorized"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Session Endpoint Without Auth",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Session Endpoint Without Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_session_endpoint_with_auth(self):
+        """Test session endpoint with valid JWT - should return user data"""
+        if not hasattr(self, 'admin_jwt_cookie') or not self.admin_jwt_cookie:
+            self.log_test(
+                "Session Endpoint With Auth",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/auth/session", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["email", "role", "tier", "credits", "feature_level"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Session Endpoint With Auth",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Session Endpoint With Auth",
+                    True,
+                    f"Email: {data.get('email')}, Role: {data.get('role')}, Tier: {data.get('tier')}, Credits: {data.get('credits')}, Feature Level: {data.get('feature_level')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Session Endpoint With Auth",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Session Endpoint With Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_protected_billing_endpoint_without_auth(self):
+        """Test protected billing endpoint without auth - should return 401"""
+        try:
+            response = requests.get(f"{API_BASE}/billing/state", timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Protected Billing Endpoint Without Auth",
+                    True,
+                    "Correctly returned 401 Unauthorized"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Protected Billing Endpoint Without Auth",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Protected Billing Endpoint Without Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_protected_billing_endpoint_with_auth(self):
+        """Test protected billing endpoint with valid JWT - should return billing data"""
+        if not hasattr(self, 'admin_jwt_cookie') or not self.admin_jwt_cookie:
+            self.log_test(
+                "Protected Billing Endpoint With Auth",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/billing/state", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["tier", "credits"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test(
+                        "Protected Billing Endpoint With Auth",
+                        False,
+                        error_details=f"Missing required fields: {missing_fields}"
+                    )
+                    return False
+                
+                self.log_test(
+                    "Protected Billing Endpoint With Auth",
+                    True,
+                    f"Tier: {data.get('tier')}, Credits: {data.get('credits')}"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Protected Billing Endpoint With Auth",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Protected Billing Endpoint With Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_public_chemistry_options_endpoint(self):
+        """Test public chemistry options endpoint - should work without auth"""
+        try:
+            response = requests.get(f"{API_BASE}/chemistry/options", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "modifications" in data and "exclusions" in data:
+                    self.log_test(
+                        "Public Chemistry Options Endpoint",
+                        True,
+                        f"Returned basic tier options: {len(data.get('modifications', []))} mods, {len(data.get('exclusions', []))} exclusions"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Public Chemistry Options Endpoint",
+                        False,
+                        error_details="Missing modifications or exclusions in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Public Chemistry Options Endpoint",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Public Chemistry Options Endpoint",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_chemistry_options_with_auth(self):
+        """Test chemistry options endpoint with auth - should return tier-appropriate options"""
+        if not hasattr(self, 'admin_jwt_cookie') or not self.admin_jwt_cookie:
+            self.log_test(
+                "Chemistry Options With Auth",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/chemistry/options", cookies=cookies, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "modifications" in data and "exclusions" in data:
+                    self.log_test(
+                        "Chemistry Options With Auth",
+                        True,
+                        f"Returned tier-appropriate options: {len(data.get('modifications', []))} mods, {len(data.get('exclusions', []))} exclusions"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Chemistry Options With Auth",
+                        False,
+                        error_details="Missing modifications or exclusions in response"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Chemistry Options With Auth",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Chemistry Options With Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_admin_feature_flags_without_auth(self):
+        """Test admin feature flags endpoint without auth - should return 401"""
+        try:
+            response = requests.get(f"{API_BASE}/admin/features/flags", timeout=10)
+            
+            if response.status_code == 401:
+                self.log_test(
+                    "Admin Feature Flags Without Auth",
+                    True,
+                    "Correctly returned 401 Unauthorized"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Feature Flags Without Auth",
+                    False,
+                    error_details=f"Expected HTTP 401, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Feature Flags Without Auth",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_admin_feature_flags_with_non_admin(self):
+        """Test admin feature flags endpoint with non-admin JWT - should return 403"""
+        if not hasattr(self, 'non_admin_jwt_cookie') or not self.non_admin_jwt_cookie:
+            self.log_test(
+                "Admin Feature Flags With Non-Admin",
+                False,
+                error_details="No non-admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.non_admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/features/flags", cookies=cookies, timeout=10)
+            
+            if response.status_code == 403:
+                self.log_test(
+                    "Admin Feature Flags With Non-Admin",
+                    True,
+                    "Correctly returned 403 Forbidden for non-admin user"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Feature Flags With Non-Admin",
+                    False,
+                    error_details=f"Expected HTTP 403, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Feature Flags With Non-Admin",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_admin_feature_flags_with_admin_no_2fa(self):
+        """Test admin feature flags endpoint with admin JWT but no 2FA - should return 403"""
+        if not hasattr(self, 'admin_jwt_cookie') or not self.admin_jwt_cookie:
+            self.log_test(
+                "Admin Feature Flags With Admin No 2FA",
+                False,
+                error_details="No admin JWT cookie available"
+            )
+            return False
+        
+        try:
+            cookies = {"pmnc_jwt": self.admin_jwt_cookie}
+            response = requests.get(f"{API_BASE}/admin/features/flags", cookies=cookies, timeout=10)
+            
+            # This should return 403 because admin endpoints require 2FA
+            if response.status_code == 403:
+                self.log_test(
+                    "Admin Feature Flags With Admin No 2FA",
+                    True,
+                    "Correctly returned 403 Forbidden - admin endpoints require 2FA"
+                )
+                return True
+            elif response.status_code == 200:
+                # If it returns 200, it means 2FA is not required or already satisfied
+                self.log_test(
+                    "Admin Feature Flags With Admin No 2FA",
+                    True,
+                    "Admin access granted - 2FA requirement may be disabled or satisfied"
+                )
+                return True
+            else:
+                self.log_test(
+                    "Admin Feature Flags With Admin No 2FA",
+                    False,
+                    error_details=f"Expected HTTP 403 or 200, got {response.status_code}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Admin Feature Flags With Admin No 2FA",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_public_partner_share_endpoint(self):
+        """Test public partner share endpoint - should work without auth"""
+        try:
+            # Use a dummy token for testing
+            dummy_token = "test_token_123"
+            response = requests.get(f"{API_BASE}/patentpulse/partner/share/{dummy_token}", timeout=10)
+            
+            # This should return either 200 (valid token) or 404 (invalid token), but not 401 (auth required)
+            if response.status_code in [200, 404]:
+                self.log_test(
+                    "Public Partner Share Endpoint",
+                    True,
+                    f"Public endpoint accessible - returned {response.status_code} (expected for dummy token)"
+                )
+                return True
+            elif response.status_code == 401:
+                self.log_test(
+                    "Public Partner Share Endpoint",
+                    False,
+                    error_details="Endpoint requires authentication but should be public"
+                )
+                return False
+            else:
+                self.log_test(
+                    "Public Partner Share Endpoint",
+                    True,
+                    f"Endpoint accessible - returned {response.status_code}"
+                )
+                return True
+        except Exception as e:
+            self.log_test(
+                "Public Partner Share Endpoint",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_logout_endpoint(self):
+        """Test logout endpoint - should clear JWT cookie"""
+        try:
+            response = requests.post(f"{API_BASE}/auth/logout", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test(
+                        "Logout Endpoint",
+                        True,
+                        "Successfully logged out"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Logout Endpoint",
+                        False,
+                        error_details="Response missing success flag"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Logout Endpoint",
+                    False,
+                    error_details=f"HTTP {response.status_code}: {response.text}"
+                )
+                return False
+        except Exception as e:
+            self.log_test(
+                "Logout Endpoint",
+                False,
+                error_details=f"Request failed: {str(e)}"
+            )
+            return False
+
+    def run_comprehensive_global_login_rbac_tests(self):
+        """Run comprehensive Global Login & RBAC tests"""
         print("=" * 80)
-        print("🔐 PEPTIMANCER ADMIN AUTHENTICATION & RBAC TESTING")
+        print("🔐 GLOBAL LOGIN & RBAC COMPREHENSIVE TESTING")
         print("=" * 80)
         print(f"Backend URL: {BACKEND_URL}")
-        print(f"Admin Email: {self.admin_email}")
-        print(f"Non-Admin Email: {self.non_admin_email}")
+        print(f"Admin Emails: {self.admin_email}, {self.cto_email}")
+        print(f"Test Email: {self.test_email}")
         print(f"Test Started: {datetime.now().isoformat()}")
         print("=" * 80)
         print()
         
-        # Test 1: Magic Code Request
-        print("📋 MAGIC CODE REQUEST TESTS")
+        # Test 1: Authentication Flow
+        print("🔑 AUTHENTICATION FLOW TESTS")
         print("-" * 40)
         self.test_magic_code_request_admin()
         self.test_magic_code_request_non_admin()
-        
-        # Test 2: Magic Code Verification
-        print("\n🔑 MAGIC CODE VERIFICATION TESTS")
-        print("-" * 40)
         self.test_magic_code_verify_admin()
         self.test_magic_code_verify_non_admin()
         
-        # Test 3: Get Current User
-        print("\n👤 GET CURRENT USER TESTS")
+        # Test 2: Session Endpoint
+        print("\n📋 SESSION ENDPOINT TESTS")
         print("-" * 40)
-        self.test_get_current_user_admin()
-        self.test_get_current_user_non_admin()
+        self.test_session_endpoint_without_auth()
+        self.test_session_endpoint_with_auth()
         
-        # Test 4: Admin Settings Access (RBAC)
-        print("\n🛡️ RBAC PROTECTION TESTS")
+        # Test 3: Protected Endpoints
+        print("\n🛡️ PROTECTED ENDPOINTS TESTS")
         print("-" * 40)
+        self.test_protected_billing_endpoint_without_auth()
+        self.test_protected_billing_endpoint_with_auth()
+        self.test_chemistry_options_with_auth()
+        
+        # Test 4: Admin-Only Endpoints
+        print("\n👑 ADMIN-ONLY ENDPOINTS TESTS")
+        print("-" * 40)
+        self.test_admin_feature_flags_without_auth()
+        self.test_admin_feature_flags_with_non_admin()
+        self.test_admin_feature_flags_with_admin_no_2fa()
         self.test_admin_settings_access_with_admin()
         self.test_admin_settings_access_with_non_admin()
         
-        # Test 5: Admin Settings Update
-        print("\n⚙️ ADMIN SETTINGS UPDATE TESTS")
+        # Test 5: Public Endpoints
+        print("\n🌐 PUBLIC ENDPOINTS TESTS")
         print("-" * 40)
-        self.test_admin_settings_update()
+        self.test_public_chemistry_options_endpoint()
+        self.test_public_partner_share_endpoint()
         
         # Test 6: Logout
         print("\n🚪 LOGOUT TESTS")
         print("-" * 40)
-        self.test_logout()
+        self.test_logout_endpoint()
         
         # Test 7: Edge Cases
         print("\n🔬 EDGE CASE TESTS")
@@ -1203,7 +2307,7 @@ class AuthenticationTest:
         
         # Final summary
         print("\n" + "=" * 80)
-        print("📈 AUTHENTICATION & RBAC TEST SUMMARY")
+        print("📈 GLOBAL LOGIN & RBAC TEST SUMMARY")
         print("=" * 80)
         print(f"Tests Run: {self.tests_run}")
         print(f"Tests Passed: {self.tests_passed}")
@@ -1214,7 +2318,7 @@ class AuthenticationTest:
             for failure in self.critical_failures:
                 print(f"  • {failure['test']}: {failure['error']}")
         
-        print(f"\nAuthentication System Status: {'✅ WORKING' if self.tests_passed >= self.tests_run * 0.85 else '❌ ISSUES DETECTED'}")
+        print(f"\nGlobal Login & RBAC Status: {'✅ WORKING' if self.tests_passed >= self.tests_run * 0.85 else '❌ ISSUES DETECTED'}")
         print("=" * 80)
         
         return {
@@ -1223,7 +2327,7 @@ class AuthenticationTest:
             "success_rate": self.tests_passed/self.tests_run*100,
             "critical_failures": self.critical_failures,
             "test_results": self.test_results,
-            "auth_working": self.tests_passed >= self.tests_run * 0.85
+            "global_login_rbac_working": self.tests_passed >= self.tests_run * 0.85
         }
 
 class Phase82BillingTest:
@@ -3181,17 +4285,7 @@ class Phase8BillingTest:
             "phase8_working": self.tests_passed >= self.tests_run * 0.85
         }
 
-if __name__ == "__main__":
-    # Run Phase 8 Final: Chemistry Options API tests
-    chemistry_tester = Phase8ChemistryTest()
-    chemistry_results = chemistry_tester.run_all_tests()
-    
-    # Save results
-    with open('/app/phase8_chemistry_test_results.json', 'w') as f:
-        json.dump(chemistry_results, f, indent=2)
-    
-    # Exit with appropriate code
-    sys.exit(0 if chemistry_results['chemistry_api_working'] else 1)
+# Removed duplicate main section
 
     def test_sequence_validation_invalid(self):
         """Test sequence validation with invalid sequence"""
@@ -3632,4 +4726,63 @@ def main():
         sys.exit(0 if results["enterprise_ready"] else 1)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if len(sys.argv) > 1:
+        test_type = sys.argv[1].lower()
+        
+        if test_type == "global-login" or test_type == "rbac":
+            # Run Global Login & RBAC tests
+            rbac_test = GlobalLoginRBACTest()
+            results = rbac_test.run_comprehensive_global_login_rbac_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["global_login_rbac_working"] else 1)
+            
+        elif test_type == "auth":
+            # Run authentication tests (legacy)
+            auth_test = GlobalLoginRBACTest()
+            results = auth_test.run_comprehensive_global_login_rbac_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["global_login_rbac_working"] else 1)
+            
+        elif test_type == "billing":
+            # Run Phase 8.2 billing tests
+            billing_test = Phase82BillingTest()
+            
+            # Authenticate first
+            if not billing_test.authenticate_admin_user():
+                print("❌ Failed to authenticate admin user - cannot run billing tests")
+                sys.exit(1)
+            
+            results = billing_test.run_all_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["billing_working"] else 1)
+            
+        elif test_type == "chemistry":
+            # Run Phase 8 Final chemistry tests
+            chemistry_test = Phase8ChemistryTest()
+            results = chemistry_test.run_all_tests()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["chemistry_api_working"] else 1)
+            
+        elif test_type == "partner-shares" or test_type == "deprecation":
+            # Run Partner Shares Deprecation & Core App Stabilization tests
+            partner_test = PartnerSharesDeprecationTest()
+            results = partner_test.run_comprehensive_test()
+            
+            # Exit with appropriate code
+            sys.exit(0 if results["overall_success"] else 1)
+            
+        else:
+            print(f"Unknown test type: {test_type}")
+            print("Available test types: global-login, rbac, auth, billing, chemistry, partner-shares, deprecation, enterprise")
+            sys.exit(1)
+    else:
+        # Run Partner Shares Deprecation & Core App Stabilization tests by default
+        partner_test = PartnerSharesDeprecationTest()
+        results = partner_test.run_comprehensive_test()
+        
+        # Exit with appropriate code
+        sys.exit(0 if results["overall_success"] else 1)

@@ -65,14 +65,30 @@ async def stripe_webhook(request: Request):
                 if session_doc:
                     user_id = session_doc["user_id"]
                     plan = session_doc.get("plan")
-                    credits = session_doc.get("purchase_credits", 0)
+                    
+                    # Try package_id first, fallback to direct credits
+                    package_id = session_doc.get("package_id")
+                    if package_id:
+                        from billing.credit_packages import get_package
+                        package = get_package(package_id)
+                        credits = package["credits"] if package else 0
+                    else:
+                        credits = session_doc.get("purchase_credits", 0)
                 else:
                     # Fallback: try query params or metadata
                     user_id = request.query_params.get("uid")
                     if data.get("metadata"):
                         user_id = data["metadata"].get("user_id", user_id)
                         plan = data["metadata"].get("plan")
-                        credits = int(data["metadata"].get("credits", 0))
+                        
+                        # Check for package_id in metadata
+                        package_id = data["metadata"].get("package_id")
+                        if package_id:
+                            from billing.credit_packages import get_package
+                            package = get_package(package_id)
+                            credits = package["credits"] if package else 0
+                        else:
+                            credits = int(data["metadata"].get("credits", 0))
                     else:
                         plan = None
                         credits = 0

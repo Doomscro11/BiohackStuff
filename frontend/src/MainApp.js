@@ -1,22 +1,76 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import App from './App';
-import AdminGate from './components/admin/AdminGate.tsx';
-import BillingPage from './pages/BillingPage';
-import AnalyticsPage from './pages/AnalyticsPage.tsx';
-import PatentPulsePage from './pages/PatentPulsePage.tsx';
+import App from './apps/peptimancer/pages/HomePage';
+import TestPage from './pages/TestPage';
+import AdminPage from './apps/admin/pages/AdminPage';
+import BillingPage from './apps/account/pages/BillingPage';
+import SettingsPage from './apps/account/pages/SettingsPage';
+// AnalyticsPage - Removed from routing (may be reintroduced as embedded panel)
+import PatentPulsePage from './apps/patentpulse/pages/PatentPulsePage';
+import PatentPulseStandalonePage from './apps/patentpulse/pages/PatentPulseStandalonePage';
+// SharePage - Removed for Partner Shares deprecation
+import LoginPage from './apps/auth/pages/LoginPage';
+import GuardrailEditorPage from './apps/admin/pages/GuardrailEditorPage';
 import CreditBadge from './components/CreditBadge';
-import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
+import RoleBadge from './components/auth/RoleBadge';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
+import { Shield, BarChart3, FileText, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fetchSession } from './lib/session.ts';
+import { fetchSession } from './lib/session';
+import { fetchJSON } from './lib/http';
+import { canAccessAdmin } from './lib/roles';
 
 function MainApp() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Bootstrap: fetch session on app load
+  // Note: No AbortController here - MainApp is top-level and should complete its session fetch
   useEffect(() => {
-    fetchSession().catch(() => {
-      // User not authenticated - this is fine
-    });
+    let mounted = true;
+    
+    const loadSession = async () => {
+      try {
+        const session = await fetchSession();
+        if (mounted) {
+          console.log('[MainApp] Session loaded:', session);
+          if (session) {
+            setUser(session);
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (err) {
+        if (mounted) {
+          console.log('[MainApp] Session load failed:', err);
+          setUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadSession();
+    
+    // Cleanup function - just mark as unmounted
+    return () => {
+      mounted = false;
+    };
   }, []);
+
+  const handleLogout = async () => {
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+    const result = await fetchJSON(`${BACKEND_URL}/api/auth/logout`, { method: 'POST' });
+    if (result.ok) {
+      setUser(null);
+      window.location.href = '/login';
+    } else {
+      console.error('Logout failed:', result);
+    }
+  };
 
   return (
     <Router>
@@ -28,42 +82,68 @@ function MainApp() {
               🧬 Peptimancer
             </Link>
             <div className="flex items-center gap-3">
-              <CreditBadge />
-              <Link to="/billing">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Billing & Credits
-                </Button>
-              </Link>
-              <Link to="/admin/analytics">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Analytics
-                </Button>
-              </Link>
-              <Link to="/admin/patentpulse">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  PatentPulse
-                </Button>
-              </Link>
-              <Link to="/admin">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Admin
-                </Button>
-              </Link>
+              {!isLoading && user && (
+                <>
+                  {/* Role Badge - shows current user role */}
+                  <RoleBadge user={user} size="sm" />
+                  
+                  <CreditBadge />
+                  
+                  {/* PatentPulse - Admin-Only */}
+                  {canAccessAdmin(user) && (
+                    <Link to="/admin/patentpulse">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        PatentPulse
+                      </Button>
+                    </Link>
+                  )}
+                  
+                  {/* Settings - Available to all authenticated users */}
+                  <Link to="/settings">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Button>
+                  </Link>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                </>
+              )}
+              {!isLoading && !user && (
+                <Link to="/login">
+                  <Button size="sm">Sign In</Button>
+                </Link>
+              )}
             </div>
           </div>
         </nav>
 
         {/* Routes */}
         <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/admin" element={<AdminGate />} />
-          <Route path="/admin/analytics" element={<AnalyticsPage />} />
-          <Route path="/admin/patentpulse" element={<PatentPulsePage />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          {/* /share/:token route removed - Partner Shares feature deprecated */}
+          
+          {/* Protected Routes - Any authenticated user */}
+          <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
+          <Route path="/test" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          
+          {/* Admin-Only Routes - Require admin role */}
+          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+          {/* Analytics route removed - may be reintroduced as embedded panel */}
+          <Route path="/admin/patentpulse" element={<AdminRoute><PatentPulseStandalonePage /></AdminRoute>} />
+          <Route path="/admin/guardrails" element={<AdminRoute><GuardrailEditorPage /></AdminRoute>} />
         </Routes>
       </div>
     </Router>

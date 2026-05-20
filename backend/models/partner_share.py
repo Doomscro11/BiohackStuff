@@ -77,29 +77,14 @@ class PartnerShareEvent(BaseModel):
         arbitrary_types_allowed = True
 
 
-class ShareCreationRequest(BaseModel):
-    """Request to create a new partner share"""
-    file_id: str
-    recipient_email: EmailStr
-    recipient_first_name: str
-    company_or_project: str
-    expires_in_days: int = 14
-    max_downloads: int = 10
-    ip_allowlist: List[str] = Field(default_factory=list)
-    watermark_enabled: bool = True
-    internal_notes: str = ""
-    
-    class Config:
-        arbitrary_types_allowed = True
+# DTOs have been moved to schemas/partner_share.py
+# Import them here for backward compatibility
+from schemas.partner_share import ShareCreationRequest, ShareRotationResult
 
-
-class ShareRotationResult(BaseModel):
-    """Result of share token rotation"""
-    share_id: str
-    old_token: str
-    new_token: str
-    new_expires_at: datetime
-    rotated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    
-    class Config:
-        arbitrary_types_allowed = True
+__all__ = [
+    'SharePolicy',
+    'PartnerShare',
+    'PartnerShareEvent',
+    'ShareCreationRequest',  # Re-exported from schemas
+    'ShareRotationResult',   # Re-exported from schemas
+]

@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AlertCircle, Dna, Zap, TrendingUp, Clock, DollarSign, Shield, Beaker, Download, Send, CreditCard } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import AnalogueForm from '@/components/AnalogueForm.tsx';
-import { fetchChemistryOptions, hasClientConflicts } from './lib/chemistry.ts';
+// import AnalogueForm from '@/components/AnalogueForm.js';
+import { fetchChemistryOptions, hasClientConflicts } from './lib/chemistry';
+import { normalizeError, getAxiosErrorMessage } from './lib/errorUtils';
 import '@/App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -98,7 +99,8 @@ function App() {
       const response = await axios.post(`${API}/generate-analogues`, requestData);
       setResults(response.data);
     } catch (error) {
-      setError(error.response?.data?.detail || 'Failed to generate analogues');
+      // Use error normalizer to safely handle all error types
+      setError(getAxiosErrorMessage(error, 'Failed to generate analogues'));
     } finally {
       setLoading(false);
     }
@@ -276,16 +278,6 @@ function App() {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* New Compact Accordion Form */}
-                <AnalogueForm
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  chemOptions={chemOptions}
-                  conflictMsg={conflictMsg}
-                  sequenceValidation={sequenceValidation}
-                  groupedMods={groupedMods}
-                />
-
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
