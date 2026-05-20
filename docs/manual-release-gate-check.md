@@ -2,6 +2,23 @@
 
 Use this when the GitHub connector does not expose the latest branch-push workflow run.
 
+## Fast local verifier
+
+From a clean checkout on `refactor/monorepo-structure`, run:
+
+```bash
+bash scripts/release-gate-local.sh all
+```
+
+Or run one side only:
+
+```bash
+bash scripts/release-gate-local.sh backend
+bash scripts/release-gate-local.sh frontend
+```
+
+This script reproduces the canonical Release Gate commands and environment defaults locally.
+
 ## GitHub Actions UI path
 
 1. Open the repository in GitHub.
@@ -27,6 +44,7 @@ Backend:
 cd backend
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install pytest pytest-asyncio
 pip check
 PYTHONPATH=backend python -c "import server; print('backend import ok')"
 pytest -q
