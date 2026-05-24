@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 import asyncio
 import re
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from services.llm_provider import generate_llm_text
 import hashlib
 from fpdf import FPDF
 import json
@@ -361,33 +361,6 @@ class VaultPDFGenerator:
         
         return str(filepath)
 
-# Initialize LLM Chat
-async def get_llm_chat():
-    return LlmChat(
-        api_key=os.environ.get('EMERGENT_LLM_KEY'),
-        session_id=str(uuid.uuid4()),
-        system_message="""You are Peptimancer, an expert AI peptide architect specializing in generating novel peptide analogues. 
-
-Your expertise includes:
-- Advanced peptide chemistry (substitutions, D-isomers, lipidation, cyclization)
-- Structure-activity relationships (SAR)
-- Pharmacokinetic optimization
-- Intellectual property considerations
-- Biological plausibility assessment
-
-For each analogue, provide:
-1. A unique descriptive name
-2. Modified sequence with clear notation
-3. 1-3 specific modifications applied
-4. Precise modification positions
-5. IP risk assessment (0-10 scale)
-6. Novelty score (0-10 scale) 
-7. Affinity estimate (qualitative)
-8. PK estimate (qualitative)
-
-Focus on creating patent-differentiated analogues that preserve or enhance biological function."""
-    ).with_model("openai", "gpt-4")
-
 async def generate_peptide_analogues(request: PeptideGenerationRequest) -> List[PeptideAnalogue]:
     """Generate peptide analogues using AI-powered design"""
     processor = PeptideProcessor()
@@ -471,10 +444,8 @@ RETURN FORMAT (for each analogue):
 
 Generate all {request.num_analogues} analogues in this exact format."""
     
-    # Get AI response
-    chat = await get_llm_chat()
-    user_message = UserMessage(text=prompt)
-    response = await chat.send_message(user_message)
+    # Get AI response through provider boundary
+    response = await generate_llm_text(prompt)
     
     # Parse AI response into structured analogues
     analogues = parse_analogue_response(response, clean_sequence, request.include_cost)
