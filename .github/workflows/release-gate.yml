@@ -108,11 +108,24 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
 
+      - name: Print frontend environment
+        run: |
+          node --version
+          yarn --version
+          pwd
+          ls -la
+          test -f package.json
+          test -f yarn.lock
+
       - name: Install frontend dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          set -euxo pipefail
+          yarn install --frozen-lockfile --non-interactive
 
       - name: Build frontend
-        run: yarn build
+        run: |
+          set -euxo pipefail
+          yarn build
 
   frontend-tests:
     name: Frontend tests
@@ -138,11 +151,25 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
 
+      - name: Print frontend test environment
+        run: |
+          node --version
+          yarn --version
+          pwd
+          ls -la
+          test -f package.json
+          test -f yarn.lock
+          test -f jest.config.js
+
       - name: Install frontend dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          set -euxo pipefail
+          yarn install --frozen-lockfile --non-interactive
 
       - name: Run frontend unit tests
-        run: yarn test:unit
+        run: |
+          set -euxo pipefail
+          yarn test:unit --runInBand
 
   release-gate:
     name: Release gate summary
