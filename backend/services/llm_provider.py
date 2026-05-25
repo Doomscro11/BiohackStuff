@@ -1,18 +1,15 @@
 """LLM provider adapter boundary for peptide analogue generation.
 
-This module intentionally preserves the existing Emergent-backed behavior while
-moving provider-specific imports and request handling out of the FastAPI entrypoint.
-
-Future providers should be added behind this boundary instead of being imported
-directly in route or business-logic modules.
+Provider-specific SDK usage belongs in this module, not in route or business
+logic modules. The project standard is that BiohackStuff must not depend on
+Emergent packages or imports.
 """
 
 import os
-import uuid
 from dataclasses import dataclass
 from typing import Protocol
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from openai import AsyncOpenAI
 
 
 PEPTIMANCER_SYSTEM_MESSAGE = """You are Peptimancer, an expert AI peptide architect specializing in generating novel peptide analogues.
@@ -43,31 +40,40 @@ class LLMProvider(Protocol):
 
 
 @dataclass
-class EmergentLLMProvider:
-    """Emergent-backed provider preserving the current runtime behavior."""
+class OpenAICompatibleProvider:
+    """OpenAI-compatible provider with explicit environment configuration."""
 
     api_key: str | None = None
-    model_provider: str = "openai"
-    model_name: str = "gpt-4"
+    model_name: str | None = None
     system_message: str = PEPTIMANCER_SYSTEM_MESSAGE
 
     async def generate_text(self, prompt: str) -> str:
-        chat = LlmChat(
-            api_key=self.api_key or os.environ.get("EMERGENT_LLM_KEY"),
-            session_id=str(uuid.uuid4()),
-            system_message=self.system_message,
-        ).with_model(self.model_provider, self.model_name)
-        return await chat.send_message(UserMessage(text=prompt))
+        resolved_api_key = self.api_key or os.environ.get("OPENAI_API_KEY")
+        if not resolved_api_key:
+            raise RuntimeError("OPENAI_API_KEY is required for live text generation")
+
+        client = AsyncOpenAI(api_key=resolved_api_key)
+        response = await client.chat.completions.create(
+            model=self.model_name or os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": self.system_message},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        content = response.choices[0].message.content
+        if not content:
+            raise RuntimeError("LLM provider returned an empty response")
+        return content
 
 
 def get_llm_provider() -> LLMProvider:
     """Return the configured LLM provider.
 
-    The default remains Emergent to avoid behavior changes in this PR. Provider
-    selection can be expanded in a later guarded PR.
+    BiohackStuff does not use Emergent dependencies. The default provider is an
+    OpenAI-compatible SDK boundary using explicit environment configuration.
     """
 
-    return EmergentLLMProvider()
+    return OpenAICompatibleProvider()
 
 
 async def generate_llm_text(prompt: str) -> str:
