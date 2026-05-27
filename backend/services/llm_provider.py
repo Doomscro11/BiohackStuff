@@ -40,6 +40,38 @@ class LLMProvider(Protocol):
 
 
 @dataclass
+class MockLLMProvider:
+    """Deterministic local provider for tests, CI, and demo mode."""
+
+    async def generate_text(self, prompt: str) -> str:
+        return """### Analogue: Mock GLP-1 Analogue Alpha
+
+**Sequence:**  
+`D-Ser-Ala-Gly-[PEG3-C18]`
+**Modifications Applied:**  
+- Position 1: Serine converted to D-Ser
+- Position 4: Lysine lipidated with PEG3-C18
+
+---
+
+**IP Risk Profile**  
+- Patent Similarity Risk: Low
+- Novelty Score: 82%
+- Notes: Deterministic mock response for non-production validation.
+
+---
+
+**Bioactivity Profile**  
+- Binding Affinity: -8.5 kcal/mol
+- Predicted Half-Life: 2.1 days
+- Synthesis Complexity: 3 / 5
+- Notes: Mock profile suitable for parser and route tests.
+
+---
+"""
+
+
+@dataclass
 class OpenAICompatibleProvider:
     """OpenAI-compatible provider with explicit environment configuration."""
 
@@ -66,12 +98,21 @@ class OpenAICompatibleProvider:
         return content
 
 
+def _is_truthy(value: str | None) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
 def get_llm_provider() -> LLMProvider:
     """Return the configured LLM provider.
 
-    BiohackStuff does not use Emergent dependencies. The default provider is an
-    OpenAI-compatible SDK boundary using explicit environment configuration.
+    BiohackStuff does not use Emergent dependencies. CI, test, and demo modes
+    use a deterministic mock provider. Live mode uses the OpenAI-compatible SDK
+    boundary with explicit environment configuration.
     """
+
+    mode = os.environ.get("LLM_PROVIDER", "").strip().lower()
+    if mode == "mock" or _is_truthy(os.environ.get("CI")) or _is_truthy(os.environ.get("DEMO_MODE")):
+        return MockLLMProvider()
 
     return OpenAICompatibleProvider()
 
