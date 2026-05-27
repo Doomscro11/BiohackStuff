@@ -36,6 +36,7 @@ jobs:
       ENABLE_DEMO_OTP: "true"
       DEMO_MODE: "true"
       ENV: development
+      LLM_PROVIDER: mock
       PARTNER_SIGNING_SECRET: release-gate-partner-secret
       STRIPE_SECRET_KEY: sk_test_placeholder
       STRIPE_WEBHOOK_SECRET: whsec_placeholder
