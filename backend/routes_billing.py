@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 # Initialize router
 router = APIRouter(prefix="/api/billing", tags=["billing"])
 
-# Ensure plans are seeded on startup
-import asyncio
-asyncio.create_task(ensure_seed_plans())
+async def seed_billing_plans() -> None:
+    """Seed billing plans from an active application event loop."""
+    await ensure_seed_plans()
 
 # ==================== User Billing Routes ====================
 
@@ -115,7 +115,7 @@ async def admin_get_plans(request: Request):
 
 @router.put("/admin/plans")
 async def admin_upsert_plan(body: PlanUpsert, request: Request):
-    """Update or create billing plan (admin only)"""
+    """Update or create plan (admin only)"""
     from motor.motor_asyncio import AsyncIOMotorClient
     import os
     
