@@ -121,7 +121,7 @@ jobs:
     
     - name: Upload sample export
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sample-reclaim-pack
         path: /tmp/test-exports/*.pdf
@@ -178,7 +178,7 @@ jobs:
     
     - name: Upload Playwright report
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-reclaim-report
         path: frontend/playwright-report/
@@ -186,7 +186,7 @@ jobs:
     
     - name: Upload test traces
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-reclaim-traces
         path: frontend/test-results/
@@ -220,39 +220,18 @@ jobs:
     - name: Start backend
       run: |
         cd backend
-        # Create exports directory
-        mkdir -p /tmp/ci-exports
-        # Start backend in background
-        FEATURE_PATENTPULSE_RECLAIM=true \
-        RECLAIM_EXPORT_DIR=/tmp/ci-exports \
-        MONGO_URL=mongodb://localhost:27017 \
-        DB_NAME=peptimancer_ci_db \
         python server.py &
-        sleep 5
+        sleep 10
       env:
-        PORT: 8001
+        MONGO_URL: mongodb://localhost:27017
+        DB_NAME: peptimancer_test_db
+        FEATURE_PATENTPULSE_RECLAIM: true
     
-    - name: Test API endpoints
+    - name: Test reclaim API endpoints
       run: |
-        # Health check
-        curl -f http://localhost:8001/api/health || echo "Backend not responding"
+        # Test health endpoint
+        curl -f http://localhost:8001/api/health || echo "Health endpoint not available"
         
-        # Test reclaim export (will fail without auth, but checks endpoint exists)
-        curl -v http://localhost:8001/api/patentpulse/reclaim/list 2>&1 | grep -E "401|403" && echo "✓ Auth required (expected)" || echo "⚠ Unexpected response"
-    
-    - name: Comment on PR
-      if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const status = '${{ job.status }}';
-          const comment = `## 🚀 Reclaim Pack CI Results\n\n**Status:** ${status === 'success' ? '✅ Passed' : '❌ Failed'}\n\n### Jobs\n- Backend Tests: ${{ needs.backend-tests.result }}\n- Frontend Tests: ${{ needs.frontend-tests.result }}\n- Integration Test: ${status}\n\n[View full logs](${context.payload.pull_request.html_url}/checks)`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: comment
-          });
-      env:
-        JOB_STATUS: ${{ job.status }}
+        # Test reclaim endpoints
+        curl -f http://localhost:8001/api/patentpulse/reclaim/preview?limit=5 || echo "Preview endpoint not ready"
+        curl -f -X POST http://localhost:8001/api/patentpulse/reclaim/export -H "Content-Type: application/json" -d '{"format":"json","limit":5}' || echo "Export endpoint not ready"

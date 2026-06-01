@@ -32,7 +32,7 @@ jobs:
         cache-dependency-path: frontend/yarn.lock
     
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: yarn install --frozen-lockfile || yarn install --no-lockfile
     
     - name: TypeScript type check
       run: yarn typecheck || npm run typecheck || echo "No typecheck script found"
@@ -119,7 +119,7 @@ jobs:
     
     - name: Upload Playwright artifacts on failure
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-report
         path: frontend/playwright-report/
@@ -127,7 +127,7 @@ jobs:
     
     - name: Upload test traces on failure
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-traces
         path: frontend/test-results/

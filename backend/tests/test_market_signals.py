@@ -4,6 +4,7 @@ Tests signal adapters, enrichment logic, TTL cache, and score adjustments
 """
 
 import pytest
+import pytest_asyncio
 import asyncio
 from datetime import datetime, timedelta, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -74,7 +75,7 @@ class TestSignalAdapters:
 class TestMarketEnricher:
     """Test market signals enricher"""
     
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_db(self):
         """Setup test database with sample patent"""
         mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
