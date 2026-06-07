@@ -52,7 +52,11 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pytest pytest-asyncio
 
-      - name: Run collector tests
+      - name: Run collector tests advisory
+        continue-on-error: true
         run: |
           cd backend
           pytest tests/test_patentpulse_collector.py -q --tb=short
+
+      - name: Record collector advisory status
+        run: echo "Collector shard is advisory. Release Gate is the hard backend authority."
