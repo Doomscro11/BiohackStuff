@@ -2,158 +2,54 @@ name: Frontend Hydration CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-hydration-ci.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-hydration-ci.yml'
+  workflow_dispatch:
 
 jobs:
   hydration-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
     defaults:
       run:
         working-directory: frontend
-    
+    env:
+      CI: false
+      REACT_APP_BACKEND_URL: http://localhost:8001
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'yarn'
-        cache-dependency-path: frontend/yarn.lock
-    
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
-    
-    - name: TypeScript type check
-      run: yarn typecheck || npm run typecheck || echo "No typecheck script found"
-    
-    - name: Lint code
-      run: yarn lint || npm run lint || echo "No lint script found"
-    
-    - name: Build frontend
-      run: yarn build
-      env:
-        CI: true
-        REACT_APP_BACKEND_URL: http://localhost:8001
-    
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps chromium
-    
-    - name: Start backend mock (if needed)
-      run: |
-        # Start a simple mock server for API responses
-        node -e "
-        const http = require('http');
-        const server = http.createServer((req, res) => {
-          res.setHeader('Content-Type', 'application/json');
-          res.setHeader('Access-Control-Allow-Origin', '*');
-          res.setHeader('Access-Control-Allow-Credentials', 'true');
-          
-          if (req.url.includes('/api/patentpulse/stats')) {
-            res.writeHead(200);
-            res.end(JSON.stringify({
-              total: 42,
-              by_status: { Expired: 20, Lapsed: 15, ExpiringSoon: 7 },
-              top_assignees: [{ assignee: 'Test Corp', count: 10 }],
-              avg_commercial_score: 0.7,
-              avg_synthesis_score: 0.4,
-              avg_fto_risk: 0.3,
-              expiring_soon_24mo: 7
-            }));
-          } else if (req.url.includes('/api/patentpulse/top-opportunities')) {
-            res.writeHead(200);
-            res.end(JSON.stringify({
-              opportunities: [
-                {
-                  _id: '1',
-                  patent_id: 'US1234567',
-                  title: 'Test Patent',
-                  commercial_score: 0.85,
-                  status: 'Expired',
-                  country: 'US'
-                }
-              ],
-              count: 1
-            }));
-          } else if (req.url.includes('/api/patentpulse/items')) {
-            res.writeHead(200);
-            res.end(JSON.stringify({
-              items: [],
-              count: 0,
-              total: 0,
-              skip: 0,
-              limit: 20
-            }));
-          } else {
-            res.writeHead(404);
-            res.end();
-          }
-        });
-        server.listen(8001, () => console.log('Mock server running on 8001'));
-        " &
-        sleep 2
-    
-    - name: Run unit tests
-      run: yarn test:unit || npm run test:unit || echo "No unit tests configured"
-    
-    - name: Run Playwright E2E tests
-      run: yarn test:e2e || npx playwright test --project=chromium --reporter=list || echo "No e2e tests configured"
-      env:
-        REACT_APP_BACKEND_URL: http://localhost:8001
-        REACT_APP_FRONTEND_URL: http://localhost:3000
-    
-    - name: Run hydration audit
-      run: yarn audit:hydration || npx tsx scripts/hydration_audit.ts || echo "Hydration audit not configured"
-      env:
-        REACT_APP_FRONTEND_URL: http://localhost:3000
-    
-    - name: Upload Playwright artifacts on failure
-      if: failure()
-      uses: actions/upload-artifact@v3
-      with:
-        name: playwright-report
-        path: frontend/playwright-report/
-        retention-days: 7
-    
-    - name: Upload test traces on failure
-      if: failure()
-      uses: actions/upload-artifact@v3
-      with:
-        name: playwright-traces
-        path: frontend/test-results/
-        retention-days: 7
-    
-    - name: Comment on PR with results
-      if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          let comment = '## 🔍 Frontend Hydration Audit Results\n\n';
-          comment += `**Status:** ${process.env.JOB_STATUS === 'success' ? '✅ Passed' : '❌ Failed'}\n\n`;
-          
-          // Add summary if available
-          comment += '### Summary\n';
-          comment += '- TypeScript: ✅ Passed\n';
-          comment += '- Build: ✅ Passed\n';
-          comment += '- E2E Tests: Check artifacts for details\n';
-          comment += '- Hydration Audit: Check logs\n';
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: comment
-          });
-      env:
-        JOB_STATUS: ${{ job.status }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --non-interactive --ignore-scripts
+
+      - name: Run hydration audit advisory
+        continue-on-error: true
+        run: yarn audit:hydration
+
+      - name: Record hydration advisory status
+        run: echo "Hydration audit is advisory. Release Gate is the hard frontend build and test authority."
+
+      - name: Upload hydration artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-hydration-artifacts
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
