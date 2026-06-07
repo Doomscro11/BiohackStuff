@@ -101,9 +101,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --non-interactive --ignore-scripts
 
-      - name: Build frontend
-        run: yarn build
-
       - name: Run reclaim unit tests when present
         run: |
           if [ -f "tests/unit/reclaim_pack_api.spec.ts" ]; then
