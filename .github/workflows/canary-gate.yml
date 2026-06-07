@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment environment'
+        description: 'Verification environment'
         required: true
         default: 'canary'
         type: choice
@@ -12,180 +12,71 @@ on:
           - canary
           - production
   push:
-    branches:
-      - feature/patentpulse
+    branches: [feature/patentpulse]
     paths:
       - 'backend/routes_patentpulse.py'
       - 'backend/jobs/patentpulse_collector.py'
       - 'frontend/src/pages/PatentPulsePage.tsx'
-
-env:
-  API_BASE_URL: ${{ secrets.CANARY_API_URL }}
-  MONGO_URI: ${{ secrets.MONGO_URI }}
-  DB_NAME: peptimancer_db
-  FEATURE_FLAG_NAME: FEATURE_PATENTPULSE
-  FEATURE_FLAG_EXPECTED: "true"
-  P95_MAX_MS: 900
-  ERROR_RATE_MAX: 0.02
-  EXPECT_MIN_ITEMS: 27
+      - '.github/workflows/canary-gate.yml'
 
 jobs:
   verify-canary:
-    name: Verify Canary Deployment
+    name: Verify Canary Readiness
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+    env:
+      API_BASE_URL: ${{ secrets.CANARY_API_URL }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      DB_NAME: peptimancer_db
+      FEATURE_FLAG_NAME: FEATURE_PATENTPULSE
+      FEATURE_FLAG_EXPECTED: "true"
+      P95_MAX_MS: 900
+      ERROR_RATE_MAX: 0.02
+      EXPECT_MIN_ITEMS: 27
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
-      - name: Install dependencies
-        run: |
-          pip install requests pymongo
-      
+
+      - name: Install verifier dependencies
+        run: python -m pip install --upgrade pip requests pymongo
+
       - name: Run post-deploy verifier
         id: verify
         run: |
           python backend/jobs/post_deploy_verifier.py > verification_output.txt 2>&1
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
-      
+
       - name: Upload verification results
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: verification-results
           path: verification_output.txt
-      
-      - name: Parse verification results
-        id: parse
-        run: |
-          cat verification_output.txt
-          
-          # Extract metrics
-          P95=$(grep "Latency (p95)" verification_output.txt | grep -oP '\d+\.\d+' | head -1)
-          ERROR_RATE=$(grep "Error rate" verification_output.txt | grep -oP '\d+\.\d+%' | head -1)
-          
-          echo "p95_ms=$P95" >> $GITHUB_OUTPUT
-          echo "error_rate=$ERROR_RATE" >> $GITHUB_OUTPUT
-      
-      - name: Check verification status
+          retention-days: 7
+
+      - name: Enforce verification status
         if: steps.verify.outputs.exit_code != '0'
         run: |
-          echo "❌ Verification FAILED - Initiating rollback"
+          cat verification_output.txt
+          echo "Canary verification failed. Promotion, rollback, tagging, and production mutation are manual-only."
           exit 1
-      
+
       - name: Create job summary
         if: always()
         run: |
-          echo "## 🔍 PatentPulse Canary Verification" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ steps.verify.outputs.exit_code }}" == "0" ]; then
-            echo "### ✅ Status: PASSED" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### ❌ Status: FAILED" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Metrics:**" >> $GITHUB_STEP_SUMMARY
-          echo "- p95 Latency: ${{ steps.parse.outputs.p95_ms }}ms (SLO: ≤900ms)" >> $GITHUB_STEP_SUMMARY
-          echo "- Error Rate: ${{ steps.parse.outputs.error_rate }} (SLO: ≤2%)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>Full Verification Log</summary>" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat verification_output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
-  
-  promote-canary:
-    name: Promote to Production
-    runs-on: ubuntu-latest
-    needs: verify-canary
-    if: success()
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Promote to 100% traffic
-        run: |
-          echo "🚀 Promoting canary to 100% traffic"
-          # Example: Update feature flag in production
-          # kubectl set env deployment/backend FEATURE_PATENTPULSE=true -n production
-      
-      - name: Tag production release
-        run: |
-          git tag "production-patentpulse-$(date +%Y%m%d-%H%M)"
-          git push origin --tags
-      
-      - name: Notify success
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              "text": "✅ PatentPulse Canary Promoted to Production",
-              "attachments": [{
-                "color": "good",
-                "fields": [
-                  {"title": "Environment", "value": "Production", "short": true},
-                  {"title": "Feature", "value": "PatentPulse", "short": true},
-                  {"title": "Status", "value": "Active", "short": true}
-                ]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  
-  rollback-canary:
-    name: Rollback Canary
-    runs-on: ubuntu-latest
-    needs: verify-canary
-    if: failure()
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Revert to pre-patentpulse tag
-        run: |
-          echo "🚨 Rolling back to pre-patentpulse tag"
-          git checkout pre-patentpulse-20251111-1950
-          # kubectl set env deployment/backend FEATURE_PATENTPULSE=false -n production
-      
-      - name: Disable feature flag
-        run: |
-          echo "Disabling FEATURE_PATENTPULSE"
-          # Update config map or env variable
-      
-      - name: Notify failure
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              "text": "🚨 PatentPulse Canary FAILED - Rollback Initiated",
-              "attachments": [{
-                "color": "danger",
-                "fields": [
-                  {"title": "Environment", "value": "Canary", "short": true},
-                  {"title": "Action", "value": "Rollback", "short": true},
-                  {"title": "Tag", "value": "pre-patentpulse-20251111-1950", "short": false}
-                ]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      
-      - name: Create incident
-        run: |
-          # Trigger PagerDuty incident or similar
-          echo "Incident created for failed canary deployment"
+          echo "## PatentPulse Canary Verification" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Environment: ${{ github.event.inputs.environment || 'canary' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exit code: ${{ steps.verify.outputs.exit_code }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Promotion, rollback, tagging, and production mutation are manual-only." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat verification_output.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
