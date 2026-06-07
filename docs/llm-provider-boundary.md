@@ -1,12 +1,12 @@
 # LLM Provider Boundary
 
-This document records the provider-boundary step introduced by Unbuildr.
+This document records the provider-boundary state introduced and finalized by Unbuildr.
 
 ## Purpose
 
-BiohackStuff currently uses an Emergent-backed LLM integration for peptide analogue generation. The completion path is to move provider-specific imports and request handling behind a narrow adapter interface so future providers, test doubles, and production guardrails can be added without spreading provider logic through application code.
+BiohackStuff must not depend on Emergent LLM packages or direct Emergent imports. Provider-specific SDK usage belongs behind a narrow local adapter so route and business logic can call one stable interface while tests, CI, demo mode, and live mode remain explicit.
 
-## Added Boundary
+## Boundary Module
 
 The adapter module is:
 
@@ -18,31 +18,70 @@ It defines:
 
 ```text
 LLMProvider protocol
-EmergentLLMProvider implementation
+MockLLMProvider implementation
+OpenAICompatibleProvider implementation
 get_llm_provider()
 generate_llm_text(prompt)
 ```
 
+## Runtime Selection
+
+Provider selection is explicit:
+
+- `LLM_PROVIDER=mock` uses the deterministic local mock provider.
+- `CI=true` uses the deterministic local mock provider.
+- `DEMO_MODE=true` uses the deterministic local mock provider.
+- Live mode uses the OpenAI-compatible provider and requires `OPENAI_API_KEY`.
+
+The live provider fails closed when no explicit API key is configured.
+
 ## Safety Posture
 
-This step preserves the existing Emergent-backed behavior. It does not add a new provider, new credentials, production access, auto-selection, or deployment behavior.
+This boundary keeps provider SDK calls out of route and domain logic. It does not introduce auto-provider selection, production deployment behavior, secret handling, or auto-merge behavior.
 
-## Next Wiring Step
+The repository release gate also verifies that the external `emergentintegrations` package is not installed.
 
-The next guarded PR should update `backend/server.py` to:
+## Completed Wiring
 
-1. Remove direct imports from `emergentintegrations.llm.chat`.
-2. Import `generate_llm_text` from `services.llm_provider`.
-3. Replace the direct `get_llm_chat()` / `UserMessage` call with `await generate_llm_text(prompt)`.
-4. Keep runtime output and parser behavior unchanged.
+`backend/server.py` imports:
+
+```text
+services.llm_provider.generate_llm_text
+```
+
+Peptide analogue generation calls:
+
+```text
+await generate_llm_text(prompt)
+```
+
+No direct `emergentintegrations.llm.chat` route import is required.
+
+## Guard Tests
+
+The boundary is guarded by:
+
+```text
+backend/tests/test_llm_provider_boundary.py
+```
+
+The tests verify:
+
+- mock provider determinism
+- CI mode uses mock provider
+- demo mode uses mock provider
+- explicit mock mode uses mock provider
+- live provider requires explicit OpenAI configuration
+- live provider fails closed without a key
+- Emergent chat package import is unavailable
 
 ## Non-Goals
 
-This PR does not:
+This step does not:
 
-- change LLM model selection
-- introduce OpenAI/Gemini direct SDK usage
 - change prompt content
 - change parsing logic
-- change billing/credit behavior
-- change production configuration
+- change billing or credit behavior
+- add production credentials
+- add deployment automation
+- add production access
