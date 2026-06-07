@@ -25,9 +25,9 @@ Audit baseline:
 
 Known next blockers:
 
-1. Replace the Emergent LLM integration with a reviewed provider adapter.
-2. Harden demo OTP behavior so it fails closed in production.
-3. Clearly mark deployment, backup, restore, and rollback actions as manual-only.
+1. Harden demo OTP behavior so it fails closed in production.
+2. Clearly mark deployment, backup, restore, and rollback actions as manual-only.
+3. Re-run the Unbuildr target audit after the provider-boundary finalization lands.
 
 ## Repository Layout
 
@@ -61,7 +61,7 @@ stripe
 python-jose
 passlib
 fpdf2
-emergentintegrations
+openai
 ```
 
 ### Backend Environment
@@ -178,14 +178,26 @@ Do not commit secrets, tokens, private keys, payment-provider keys, LLM-provider
 
 ## LLM Provider Boundary
 
-The current backend imports an Emergent LLM integration from `backend/server.py`. The next guarded modernization step is to replace direct Emergent usage with a provider adapter boundary so the app can support explicit provider selection, testing, and production guardrails.
+The backend routes call the local LLM provider boundary in:
 
-Until that replacement is complete:
+```text
+backend/services/llm_provider.py
+```
 
-- treat LLM calls as external side effects
-- do not expose provider keys in logs
-- do not auto-run production LLM calls from tests
-- keep mock/sandbox modes explicit
+The boundary provides deterministic mock behavior for CI/demo modes and an explicit OpenAI-compatible live provider that requires `OPENAI_API_KEY`. The app must not import or depend on Emergent LLM packages.
+
+Provider-boundary behavior is documented in:
+
+```text
+docs/llm-provider-boundary.md
+```
+
+It is guarded by:
+
+```text
+backend/tests/test_llm_provider_boundary.py
+.github/workflows/release-gate.yml
+```
 
 ## Unbuildr Completion Workflow
 
@@ -204,4 +216,4 @@ Each PR should be bounded, reviewable, reversible, and avoid broad mutation.
 
 ## Current Status
 
-BiohackStuff is not treated as complete yet. The repo has a functioning stack and meaningful test infrastructure, but the next completion work should focus on reducing operational ambiguity and replacing fragile integration boundaries before broad feature work.
+BiohackStuff is not treated as complete yet. The repo has a functioning stack and meaningful test infrastructure, but the next completion work should focus on reducing operational ambiguity and hardening production/demo safety checks before broad feature work.
