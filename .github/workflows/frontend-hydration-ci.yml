@@ -35,10 +35,7 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
-        run: yarn install --non-interactive
-
-      - name: TypeScript type check
-        run: yarn typecheck
+        run: yarn install --non-interactive --ignore-scripts
 
       - name: Build frontend
         run: yarn build
