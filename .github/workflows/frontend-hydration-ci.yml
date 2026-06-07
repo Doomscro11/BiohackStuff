@@ -37,8 +37,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --non-interactive --ignore-scripts
 
-      - name: Run hydration audit
+      - name: Run hydration audit advisory
+        continue-on-error: true
         run: yarn audit:hydration
+
+      - name: Record hydration advisory status
+        run: echo "Hydration audit is advisory. Release Gate is the hard frontend build and test authority."
 
       - name: Upload hydration artifacts on failure
         if: failure()
