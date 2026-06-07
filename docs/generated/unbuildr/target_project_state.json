@@ -1,14 +1,10 @@
 {
+  "generated_at": "2026-06-07T10:38:23.153560+00:00",
   "target_repo": "Doomscro11/BiohackStuff",
   "target_branch": "main",
-  "audit_source": "Unbuildr evidence-gated read-only target audit",
+  "operator_mode": "audit",
   "read_only": true,
   "mutation_allowed": false,
-  "files_scanned": 223,
-  "files_collected": 91,
-  "files_skipped": 30,
-  "completion_score": 74,
-  "confidence": "high",
   "detected_stack": [
     "CRACO",
     "Emergent LLM integration",
@@ -21,57 +17,38 @@
     "Yarn",
     "pytest"
   ],
-  "top_blockers": [
-    {
-      "rank": 1,
-      "blocker_class": "missing_project_state",
-      "severity": "high",
-      "recommended_action": "Generate reviewed target_project_state.md before mutation."
-    },
-    {
-      "rank": 2,
-      "blocker_class": "placeholder_readme",
-      "severity": "high",
-      "recommended_action": "Add a repo-level README describing run, test, deploy, and safety boundaries."
-    },
-    {
-      "rank": 3,
-      "blocker_class": "emergent_dependency_present",
-      "severity": "high",
-      "recommended_action": "Replace Emergent integration with a reviewed provider adapter."
-    },
-    {
-      "rank": 4,
-      "blocker_class": "demo_otp_guard_needed",
-      "severity": "medium",
-      "recommended_action": "Fail closed for demo OTP in production."
-    },
-    {
-      "rank": 5,
-      "blocker_class": "manual_ops_commands_present",
-      "severity": "medium",
-      "recommended_action": "Mark deployment, rollback, backup, and restore commands manual-only."
-    }
+  "entrypoints": [
+    "backend/server.py",
+    "frontend/src/App.js",
+    "frontend/src/MainApp.js",
+    "frontend/src/index.js",
+    "Makefile"
   ],
-  "next_guarded_pr_sequence": [
-    {
-      "order": 1,
-      "title": "Add target project state audit artifact",
-      "type": "docs/generated artifact",
-      "mutation_allowed": false
-    },
-    {
-      "order": 2,
-      "title": "Replace Emergent LLM integration with provider adapter",
-      "type": "backend refactor",
-      "mutation_allowed": false
-    },
-    {
-      "order": 3,
-      "title": "Harden demo OTP production guard",
-      "type": "security hardening",
-      "mutation_allowed": false
-    }
+  "package_managers": [
+    "npm/yarn package.json",
+    "pip requirements.txt"
   ],
-  "safety_statement": "This artifact is generated from read-only target analysis. It introduces no source code mutation, branch write automation, patch application, auto-merge, secrets, or production access."
+  "test_commands": [
+    "cd frontend && yarn test:all",
+    "cd frontend && yarn typecheck",
+    "cd frontend && yarn build",
+    "cd backend && pytest"
+  ],
+  "ci_workflows": [
+    ".github/workflows/canary-gate.yml",
+    ".github/workflows/collector-ci.yml",
+    ".github/workflows/frontend-hydration-ci.yml",
+    ".github/workflows/reclaim-pack-ci.yml",
+    ".github/workflows/release-gate.yml",
+    ".github/workflows/signals-ci.yml"
+  ],
+  "missing_core_files": [
+    "docs/PROJECT_STATE.md"
+  ],
+  "risk_flags": [
+    "project_state_missing",
+    "emergent_integration_present",
+    "demo_otp_path_requires_production_guard",
+    "manual_deployment_or_restore_commands_present"
+  ]
 }

@@ -17,10 +17,10 @@ Audit baseline:
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 223 |
+| Files scanned | 226 |
 | Files collected | 91 |
 | Files skipped | 30 |
-| Completion score | 74/100 |
+| Completion score | 82/100 |
 | Confidence | High |
 
 Known next blockers:
