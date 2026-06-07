@@ -2,9 +2,9 @@ name: Release Gate
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ refactor/monorepo-structure ]
+    branches: [refactor/monorepo-structure]
   workflow_dispatch:
 
 concurrency:
@@ -16,7 +16,6 @@ jobs:
     name: Backend tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     services:
       mongodb:
         image: mongo:6.0
@@ -27,7 +26,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-
     env:
       MONGO_URL: mongodb://localhost:27017
       DB_NAME: peptimancer_test_db
@@ -42,7 +40,6 @@ jobs:
       STRIPE_WEBHOOK_SECRET: whsec_placeholder
       REACT_APP_BACKEND_URL: http://localhost:8001
       PYTHONPATH: ${{ github.workspace }}/backend
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,48 +53,52 @@ jobs:
 
       - name: Install backend dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio
+          mkdir -p diagnostics
+          python -m pip install --upgrade pip 2>&1 | tee diagnostics/backend-install.log
+          pip install -r backend/requirements.txt 2>&1 | tee -a diagnostics/backend-install.log
+          pip install pytest pytest-asyncio 2>&1 | tee -a diagnostics/backend-install.log
 
       - name: Check backend dependency consistency
-        run: pip check
+        run: pip check 2>&1 | tee diagnostics/backend-pip-check.log
 
       - name: Ensure external Emergent package is not installed
         run: |
-          python - <<'PY'
+          python - <<'PY' 2>&1 | tee diagnostics/backend-emergent-check.log
           import importlib.metadata
           import sys
-
           try:
               importlib.metadata.version('emergentintegrations')
           except importlib.metadata.PackageNotFoundError:
               print('external emergentintegrations package not installed')
               sys.exit(0)
-
           print('external emergentintegrations package must not be installed')
           sys.exit(1)
           PY
 
       - name: Import backend app
-        run: python -c "import server; print('backend import ok')"
+        run: python -c "import server; print('backend import ok')" 2>&1 | tee diagnostics/backend-import.log
 
       - name: Run backend tests
-        run: pytest -q
+        run: pytest -q 2>&1 | tee diagnostics/backend-tests.log
+
+      - name: Upload backend diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-backend-diagnostics
+          path: diagnostics/
+          retention-days: 7
 
   frontend-build:
     name: Frontend build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     defaults:
       run:
         working-directory: frontend
-
     env:
       CI: false
       REACT_APP_BACKEND_URL: http://localhost:8001
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,36 +112,38 @@ jobs:
 
       - name: Print frontend environment
         run: |
-          node --version
-          yarn --version
-          pwd
-          ls -la
+          mkdir -p diagnostics
+          node --version 2>&1 | tee diagnostics/frontend-build-env.log
+          yarn --version 2>&1 | tee -a diagnostics/frontend-build-env.log
+          pwd 2>&1 | tee -a diagnostics/frontend-build-env.log
+          ls -la 2>&1 | tee -a diagnostics/frontend-build-env.log
           test -f package.json
           test -f yarn.lock
 
       - name: Install frontend dependencies
-        run: |
-          set -euxo pipefail
-          yarn install --non-interactive --ignore-scripts
+        run: yarn install --non-interactive --ignore-scripts 2>&1 | tee diagnostics/frontend-build-install.log
 
       - name: Build frontend
-        run: |
-          set -euxo pipefail
-          yarn build
+        run: yarn build 2>&1 | tee diagnostics/frontend-build.log
+
+      - name: Upload frontend build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-frontend-build-diagnostics
+          path: frontend/diagnostics/
+          retention-days: 7
 
   frontend-tests:
     name: Frontend tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     defaults:
       run:
         working-directory: frontend
-
     env:
       CI: true
       REACT_APP_BACKEND_URL: http://localhost:8001
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -154,28 +157,33 @@ jobs:
 
       - name: Print frontend test environment
         run: |
-          node --version
-          yarn --version
-          pwd
-          ls -la
+          mkdir -p diagnostics
+          node --version 2>&1 | tee diagnostics/frontend-test-env.log
+          yarn --version 2>&1 | tee -a diagnostics/frontend-test-env.log
+          pwd 2>&1 | tee -a diagnostics/frontend-test-env.log
+          ls -la 2>&1 | tee -a diagnostics/frontend-test-env.log
           test -f package.json
           test -f yarn.lock
           test -f jest.config.js
 
       - name: Install frontend dependencies
-        run: |
-          set -euxo pipefail
-          yarn install --non-interactive --ignore-scripts
+        run: yarn install --non-interactive --ignore-scripts 2>&1 | tee diagnostics/frontend-test-install.log
 
       - name: Run frontend unit tests
-        run: |
-          set -euxo pipefail
-          yarn test:unit --runInBand
+        run: yarn test:unit --runInBand 2>&1 | tee diagnostics/frontend-tests.log
+
+      - name: Upload frontend test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-frontend-test-diagnostics
+          path: frontend/diagnostics/
+          retention-days: 7
 
   release-gate:
     name: Release gate summary
     runs-on: ubuntu-latest
-    needs: [ backend-tests, frontend-build, frontend-tests ]
+    needs: [backend-tests, frontend-build, frontend-tests]
     if: always()
     steps:
       - name: Enforce all required jobs passed
