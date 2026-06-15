@@ -25,7 +25,7 @@ OTP_LENGTH = int(os.getenv("OTP_LENGTH", "6"))
 OTP_EXPIRES_MINUTES = int(os.getenv("OTP_EXPIRES_MINUTES", "10"))
 MAX_LOGIN_ATTEMPTS = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
 LOCKOUT_DURATION_MINUTES = int(os.getenv("LOCKOUT_DURATION_MINUTES", "30"))
-ENABLE_DEMO_OTP = os.getenv("ENABLE_DEMO_OTP", "true").lower() == "true"
+ENABLE_DEMO_OTP = os.getenv("ENABLE_DEMO_OTP", "false").lower() == "true"
 
 # Database connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
