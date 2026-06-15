@@ -1,6 +1,6 @@
 # Peptimancer PatentPulse Deployment Makefile
 
-.PHONY: help verify-canary promote-canary rollback-canary health-check seed-dev
+.PHONY: help verify-canary promote-canary rollback-canary health-check seed-dev view-logs check-slos run-collector dry-run-collector db-backup db-restore require-manual-ops docs
 
 help:
 	@echo "Peptimancer PatentPulse Deployment Commands"
@@ -17,6 +17,15 @@ help:
 	@echo "Monitoring:"
 	@echo "  make view-logs         - Tail PatentPulse logs"
 	@echo "  make check-slos        - Check SLO compliance"
+	@echo ""
+	@echo "Manual operations guard:"
+	@echo "  Set CONFIRM_MANUAL_OPS=yes for promote/rollback/backup/restore targets"
+
+require-manual-ops:
+	@if [ "$(CONFIRM_MANUAL_OPS)" != "yes" ]; then \
+		echo "Manual operation blocked. Re-run with CONFIRM_MANUAL_OPS=yes after human review."; \
+		exit 2; \
+	fi
 
 # Development commands
 seed-dev:
@@ -36,7 +45,7 @@ verify-canary:
 	export FEATURE_PATENTPULSE=true && \
 	python backend/jobs/post_deploy_verifier.py
 
-promote-canary:
+promote-canary: require-manual-ops
 	@echo "🚀 Promoting canary to 100% traffic..."
 	@echo "   1. Updating feature flag to enabled"
 	@echo "   2. Scaling up production pods"
@@ -49,7 +58,7 @@ promote-canary:
 	@echo "  - Schedule weekly collector job"
 	@echo "  - Update runbook with any new learnings"
 
-rollback-canary:
+rollback-canary: require-manual-ops
 	@echo "⚠️  Rolling back canary deployment..."
 	@echo "   1. Disabling FEATURE_PATENTPULSE"
 	@echo "   2. Reverting to pre-patentpulse-20251111-1950"
@@ -92,14 +101,14 @@ dry-run-collector:
 	cd backend && FEATURE_PATENTPULSE=true DRY_RUN=true python -m jobs.patentpulse_collector
 
 # Database operations
-db-backup:
+db-backup: require-manual-ops
 	@echo "💾 Backing up patentpulse_items collection..."
 	@mongodump --uri="mongodb://localhost:27017/peptimancer_db" \
 		--collection=patentpulse_items \
 		--out=./backups/patentpulse-$$(date +%Y%m%d-%H%M)
 	@echo "✅ Backup complete"
 
-db-restore:
+db-restore: require-manual-ops
 	@echo "⚠️  Restoring patentpulse_items from backup..."
 	@echo "Specify backup path with BACKUP_PATH=..."
 	@if [ -z "$(BACKUP_PATH)" ]; then \
