@@ -23,11 +23,14 @@ BiohackStuff currently presents as the Peptimancer application:
 
 ## Current Known Readiness Signals
 
-The README records an evidence-gated audit baseline with a completion score of `82/100` and high confidence. It also records three known next blockers:
+The README records an evidence-gated audit baseline with a completion score of `82/100` and high confidence. The generated Unbuildr target state records these ranked blockers:
 
-1. Harden demo OTP behavior so it fails closed in production.
-2. Clearly mark deployment, backup, restore, and rollback actions as manual-only.
-3. Re-run the Unbuildr target audit after provider-boundary finalization lands.
+1. Generate reviewed `target_project_state.md` before code changes.
+2. Replace the current external LLM integration boundary with a reviewed provider adapter.
+3. Harden demo OTP behavior so it fails closed in production.
+4. Clearly mark deployment, backup, restore, and rollback actions as manual-only.
+
+The provider-adapter blocker remains a high-priority audited blocker and should not be displaced by a rerun-only step.
 
 ## First Target PR Scope
 
@@ -42,7 +45,7 @@ Allowed in this pass:
 
 Not allowed in this pass:
 
-- Workflow mutation.
+- Workflow changes.
 - Dependency or lockfile changes.
 - Secrets or environment changes.
 - Production deployment, backup, restore, or rollback automation.
