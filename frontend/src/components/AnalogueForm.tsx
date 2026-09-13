@@ -10,6 +10,37 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Filter, Target, Beaker, Lock, AlertCircle } from 'lucide-react';
 
+export interface ModOption {
+  key: string;
+  label: string;
+  tier: string;
+}
+
+export interface AnalogueFormProps {
+  formData: {
+    base_molecule: string;
+    allowed_mods?: string[];
+    exclusions?: string[];
+    target_use?: string;
+    num_analogues?: number;
+    include_cost?: boolean;
+    [key: string]: unknown;
+  };
+  handleInputChange: (field: string, value: unknown) => void;
+  chemOptions: {
+    tier: string;
+    mods: ModOption[];
+    exclusions: ModOption[];
+  } | null;
+  conflictMsg: string | null;
+  sequenceValidation: {
+    is_valid: boolean;
+    length?: number;
+    error?: string | null;
+  } | null;
+  groupedMods: Record<string, ModOption[]>;
+}
+
 export default function AnalogueForm({
   formData,
   handleInputChange,
@@ -17,7 +48,7 @@ export default function AnalogueForm({
   conflictMsg,
   sequenceValidation,
   groupedMods
-}) {
+}: AnalogueFormProps) {
   // Get user tier from window or default to basic
   const userTier = (window as any).__USER_TIER__ || 'basic';
   
@@ -28,8 +59,8 @@ export default function AnalogueForm({
   };
   
   const getTierBadge = (tier: string) => {
-    if (tier === 'pro') return <Lock className="h-3 w-3 text-blue-600 inline ml-1" title="Pro tier required" />;
-    if (tier === 'enterprise') return <Lock className="h-3 w-3 text-purple-600 inline ml-1" title="Enterprise tier required" />;
+    if (tier === 'pro') return <span title="Pro tier required"><Lock className="h-3 w-3 text-blue-600 inline ml-1" /></span>;
+        if (tier === 'enterprise') return <span title="Enterprise tier required"><Lock className="h-3 w-3 text-purple-600 inline ml-1" /></span>;
     return null;
   };
   
@@ -253,7 +284,7 @@ export default function AnalogueForm({
                 <div className="space-y-2">
                   <Label htmlFor="num_analogues" className="text-sm">Number of Analogues</Label>
                   <Select
-                    value={formData.num_analogues.toString()}
+                    value={(formData.num_analogues ?? 0).toString()}
                     onValueChange={(value) => handleInputChange('num_analogues', parseInt(value))}
                   >
                     <SelectTrigger>

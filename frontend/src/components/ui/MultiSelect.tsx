@@ -74,7 +74,7 @@ export default function MultiSelect({
       <div className="border rounded-md p-2 max-h-48 overflow-y-auto space-y-2">
         {options.map((option) => {
           const isSelected = value.includes(option.value);
-          const isDisabled = !isSelected && max && value.length >= max;
+                    const isDisabled = Boolean(!isSelected && max && value.length >= max);
           
           return (
             <label
