@@ -6,6 +6,7 @@ import BillingPage from './pages/BillingPage';
 import AnalyticsPage from './pages/AnalyticsPage.tsx';
 import PatentPulsePage from './pages/PatentPulsePage.tsx';
 import CreditBadge from './components/CreditBadge';
+import AuthNav from './components/AuthNav.jsx';
 import { Shield, CreditCard, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSession } from './lib/session.ts';
@@ -29,6 +30,7 @@ function MainApp() {
             </Link>
             <div className="flex items-center gap-3">
               <CreditBadge />
+              <AuthNav />
               <Link to="/billing">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />

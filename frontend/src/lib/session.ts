@@ -24,14 +24,14 @@ export async function fetchSession(): Promise<SessionData | null> {
     }
 
     const session: SessionData = await response.json();
-    
+
     // Expose tier globally for frontend components
     (window as any).__USER_TIER__ = session.tier || 'basic';
-    
+
     return session;
   } catch (error) {
     // Silently handle errors - expected when not authenticated
-    console.debug('fetchSession: user not authenticated');
+    console.log('fetchSession: user not authenticated');
     return null;
   }
 }

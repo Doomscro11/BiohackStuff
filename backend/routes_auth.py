@@ -4,6 +4,8 @@ import re
 import random
 import string
 import logging
+import smtplib
+import asyncio
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -25,6 +27,7 @@ OTP_LENGTH = int(os.getenv("OTP_LENGTH", "6"))
 OTP_EXPIRES_MINUTES = int(os.getenv("OTP_EXPIRES_MINUTES", "10"))
 MAX_LOGIN_ATTEMPTS = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
 LOCKOUT_DURATION_MINUTES = int(os.getenv("LOCKOUT_DURATION_MINUTES", "30"))
+OTP_RESEND_SECONDS = int(os.getenv("OTP_RESEND_SECONDS", "60"))
 ENABLE_DEMO_OTP = os.getenv("ENABLE_DEMO_OTP", "false").lower() == "true"
 
 # Database connection
@@ -91,6 +94,21 @@ async def is_user_locked_out(email: str) -> bool:
     
     return recent_attempts >= MAX_LOGIN_ATTEMPTS
 
+
+async def is_resend_too_soon(email: str) -> bool:
+    """Check if a magic-code resend was requested within the cooldown window.
+
+    Without this, magic codes are overwritten on every request (upsert), so an
+    attacker could keep resetting a victim's code to deny login. The cooldown
+    limits requests to ``OTP_RESEND_SECONDS`` apart.
+    """
+    cutoff_time = datetime.utcnow() - timedelta(seconds=OTP_RESEND_SECONDS)
+    recent = await magic_codes_collection.count_documents({
+        "email": email,
+        "created_at": {"$gte": cutoff_time}
+    })
+    return recent > 0
+
 async def log_login_attempt(email: str, success: bool, ip_address: str = None):
     """Log a login attempt for rate limiting"""
     await login_attempts_collection.insert_one({
@@ -100,12 +118,76 @@ async def log_login_attempt(email: str, success: bool, ip_address: str = None):
         "ip_address": ip_address
     })
 
+def _send_otp_email_blocking(email: str, code: str) -> None:
+    """Actually send the OTP code over SMTP (runs on a worker thread).
+
+    Configuration is read from SMTP_HOST / SMTP_PORT / SMTP_USERNAME /
+    SMTP_PASSWORD / SMTP_FROM / SMTP_USE_TLS / SMTP_USE_SSL. Raises when the
+    mail cannot be sent so the caller can fail closed instead of telling the
+    user a code is on its way when it is not.
+    """
+    from email.mime.text import MIMEText
+    from email.utils import formataddr, formatdate
+
+    host = os.getenv("SMTP_HOST", "").strip()
+    port = int(os.getenv("SMTP_PORT", "587") or "587")
+    username = os.getenv("SMTP_USERNAME", "")
+    password = os.getenv("SMTP_PASSWORD", "")
+    sender = os.getenv("SMTP_FROM", "").strip() or (username or f"no-reply@{host}")
+    recipient = email or ""
+    display_name = os.getenv("SMTP_FROM_NAME", "Peptimancer").strip()
+    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
+    use_ssl = os.getenv("SMTP_USE_SSL", "false").lower() in ("1", "true", "yes")
+
+    if not host:
+        raise RuntimeError(
+            "SMTP_HOST is not configured. Set SMTP_* env vars (or ENABLE_DEMO_OTP=true "
+            "for development) before sending magic codes."
+        )
+
+    subject = f"Your {display_name} verification code"
+    body = (
+        f"Your {display_name} verification code is:\n\n"
+        f"{code}\n\n"
+        f"This code expires in {OTP_EXPIRES_MINUTES} minutes.\n"
+        f"If you did not request this code, you can safely ignore this message."
+    )
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = formataddr((display_name, sender))
+    msg["To"] = recipient
+    msg["Date"] = formatdate(localtime=True)
+
+    if use_ssl:
+        server = smtplib.SMTP_SSL(host, port, timeout=15)
+    else:
+        server = smtplib.SMTP(host, port, timeout=15)
+        if use_tls:
+            server.starttls()
+
+    try:
+        if username or password:
+            server.login(username, password)
+        server.sendmail(sender, [recipient], msg.as_string())
+    finally:
+        try:
+            server.quit()
+        except Exception:
+            pass
+
+
 async def send_otp_email(email: str, code: str) -> bool:
-    """Send OTP via email (implement SMTP in production)"""
-    # TODO: Implement SMTP email sending
-    # For now, just log the code
-    logger.info(f"OTP for {email}: {code} (expires in {OTP_EXPIRES_MINUTES} minutes)")
+    """Send the OTP code to the user's email over SMTP.
+
+    Runs the blocking SMTP call on the default thread pool so the event loop
+    is not blocked. Returns True only when delivery succeeds; raises on any
+    failure so ``request_magic_code`` fails closed (a user should never be
+    told a code is on its way when it is not).
+    """
+    await asyncio.to_thread(_send_otp_email_blocking, email, code)
+    logger.info(f"OTP emailed to {email} (expires in {OTP_EXPIRES_MINUTES} minutes)")
     return True
+
 
 # Auth endpoints
 @auth_router.post("/magic/request")
@@ -113,7 +195,7 @@ async def request_magic_code(request: Request, body: EmailRequest):
     """Request a magic code via email"""
     email = normalize_email(body.email)
     client_ip = request.client.host if request.client else "unknown"
-    
+
     try:
         # Check if user is locked out
         if await is_user_locked_out(email):
@@ -121,7 +203,14 @@ async def request_magic_code(request: Request, body: EmailRequest):
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail=f"Too many failed attempts. Try again in {LOCKOUT_DURATION_MINUTES} minutes."
             )
-        
+
+        # Enforce a resend cooldown so codes can't be spammed / overwritten
+        if await is_resend_too_soon(email):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Please wait {OTP_RESEND_SECONDS} seconds before requesting another code."
+            )
+
         # Generate OTP
         code = generate_otp()
         expires = datetime.utcnow() + timedelta(minutes=OTP_EXPIRES_MINUTES)
