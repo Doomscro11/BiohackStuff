@@ -24,6 +24,10 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Run startup guards — fail closed before importing routes
+from startup_guards import run_all as run_startup_guards
+run_startup_guards()
+
 # Import admin routes and auth system (after loading .env)
 from routes_admin import admin_router
 from routes_auth import auth_router
