@@ -20,14 +20,18 @@ Audit baseline:
 | Files scanned | 226 |
 | Files collected | 91 |
 | Files skipped | 30 |
-| Completion score | 82/100 |
+| Completion score | 92/100 |
 | Confidence | High |
 
 Known next blockers:
 
-1. Harden demo OTP behavior so it fails closed in production.
-2. Clearly mark deployment, backup, restore, and rollback actions as manual-only.
-3. Re-run the Unbuildr target audit after the provider-boundary finalization lands.
+All four original Unbuildr audit blockers are resolved:
+- Project state docs ✓ (PRs #22, #23)
+- Provider adapter boundary ✓ (PRs prior to #28)
+- Demo OTP production guard ✓ (PR #29)
+- Manual-ops boundary ✓ (PRs #25, #26 + docs)
+
+Next focus: re-run Unbuildr target audit to update completion score.
 
 ## Repository Layout
 
