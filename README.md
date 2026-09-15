@@ -126,6 +126,20 @@ yarn install --frozen-lockfile
 yarn start
 ```
 
+## Seeding Development Data
+
+The repo includes seed scripts for populating development databases:
+
+```bash
+# Seed PatentPulse analytics data
+cd backend && ENV=dev python -m jobs.seed_patentpulse_dev
+
+# Seed billing analytics data
+cd backend && ENV=dev python -m jobs.seed_analytics_dev
+```
+
+These create realistic demo records in your local MongoDB. Run them after `pip install -r requirements.txt` and configuring a local MongoDB instance.
+
 ## Testing
 
 ### Backend tests
@@ -218,4 +232,4 @@ Each PR should be bounded, reviewable, reversible, and avoid broad mutation.
 
 ## Current Status
 
-**Audit score: 98/100** — all four original Unbuildr blockers resolved. No remaining blockers detected. The repo has a functioning stack, full CI/CD release gate, provider adapter boundary, startup guards, manual-ops guards, and meaningful test infrastructure. Remaining polish items are non-blocking (README seed-data docs, gitignore for generated artifacts).
+**Audit score: 98/100** — all four original Unbuildr blockers resolved. No remaining blockers detected. The repo has a functioning stack, full CI/CD release gate, provider adapter boundary, startup guards, manual-ops guards, and meaningful test infrastructure. Remaining polish items are non-blocking (e.g. seed-data docs, below).
