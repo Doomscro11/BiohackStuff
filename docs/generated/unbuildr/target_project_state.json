@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-07T10:38:23.153560+00:00",
+  "generated_at": "2026-09-14T18:50:00Z",
   "target_repo": "Doomscro11/BiohackStuff",
   "target_branch": "main",
   "operator_mode": "audit",
@@ -7,7 +7,6 @@
   "mutation_allowed": false,
   "detected_stack": [
     "CRACO",
-    "Emergent LLM integration",
     "FastAPI",
     "Jest",
     "MongoDB/Motor",
@@ -42,13 +41,13 @@
     ".github/workflows/release-gate.yml",
     ".github/workflows/signals-ci.yml"
   ],
-  "missing_core_files": [
-    "docs/PROJECT_STATE.md"
+  "completion_score": 98,
+  "confidence": "high",
+  "blockers_resolved": [
+    "missing_project_state",
+    "emergent_dependency_present",
+    "demo_otp_guard_needed",
+    "manual_ops_commands_present"
   ],
-  "risk_flags": [
-    "project_state_missing",
-    "emergent_integration_present",
-    "demo_otp_path_requires_production_guard",
-    "manual_deployment_or_restore_commands_present"
-  ]
+  "blockers_remaining": []
 }

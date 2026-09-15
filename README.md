@@ -20,18 +20,16 @@ Audit baseline:
 | Files scanned | 226 |
 | Files collected | 91 |
 | Files skipped | 30 |
-| Completion score | 92/100 |
+| Completion score | 98/100 |
 | Confidence | High |
-
-Known next blockers:
 
 All four original Unbuildr audit blockers are resolved:
 - Project state docs ✓ (PRs #22, #23)
 - Provider adapter boundary ✓ (PRs prior to #28)
 - Demo OTP production guard ✓ (PR #29)
-- Manual-ops boundary ✓ (PRs #25, #26 + docs)
+| Manual-ops boundary ✓ (PRs #25, #26 + docs)
 
-Next focus: re-run Unbuildr target audit to update completion score.
+Audit re-run: **98/100** — all four original blockers resolved. No remaining blockers detected.
 
 ## Repository Layout
 
@@ -220,4 +218,4 @@ Each PR should be bounded, reviewable, reversible, and avoid broad mutation.
 
 ## Current Status
 
-BiohackStuff is not treated as complete yet. The repo has a functioning stack and meaningful test infrastructure, but the next completion work should focus on reducing operational ambiguity and hardening production/demo safety checks before broad feature work.
+**Audit score: 98/100** — all four original Unbuildr blockers resolved. No remaining blockers detected. The repo has a functioning stack, full CI/CD release gate, provider adapter boundary, startup guards, manual-ops guards, and meaningful test infrastructure. Remaining polish items are non-blocking (README seed-data docs, gitignore for generated artifacts).

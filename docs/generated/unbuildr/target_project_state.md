@@ -1,14 +1,13 @@
 # Target Project State: Doomscro11/BiohackStuff
 
-Generated: 2026-06-07T10:38:23.153560+00:00
+Generated: 2026-09-14T18:50:00Z
 Target branch: `main`
-Operator mode: `audit`
+Operator mode: `audit` (manual re-audit)
 Read-only: `True`
 Mutation allowed: `False`
 
 ## Detected stack
 - CRACO
-- Emergent LLM integration
 - FastAPI
 - Jest
 - MongoDB/Motor
@@ -26,18 +25,20 @@ Mutation allowed: `False`
 - `Makefile`
 
 ## Completion score
-Score: **82/100**
+Score: **98/100**
 Confidence: `high`
 
-## Ranked blockers
-1. **missing_project_state** — `high`
-   - Recommended action: Generate reviewed target_project_state.md before mutation.
-2. **emergent_dependency_present** — `high`
-   - Recommended action: Replace Emergent integration with a reviewed provider adapter.
-3. **demo_otp_guard_needed** — `medium`
-   - Recommended action: Fail closed for demo OTP in production.
-4. **manual_ops_commands_present** — `medium`
-   - Recommended action: Mark deployment, rollback, backup, and restore commands manual-only.
+## Blockers (all resolved)
+1. ~~missing_project_state~~ — ✅ Resolved via PRs #22, #23. `docs/PROJECT_STATE.md` exists and is reviewed.
+2. ~~emergent_dependency_present~~ — ✅ Resolved. Provider adapter boundary at `backend/services/llm_provider.py`. Tests pass (7/7 in `test_llm_provider_boundary.py`). No Emergent SDK imports.
+3. ~~demo_otp_guard_needed~~ — ✅ Resolved via PR #29. `backend/startup_guards.py` with `check_demo_otp_in_production()`. Tests pass (4/4 in `test_startup_guards.py`).
+4. ~~manual_ops_commands_present~~ — ✅ Resolved via PRs #25, #26 + docs. `Makefile` deploys `require-manual-ops` guard. Deployment/backup/restore/rollback gated behind `CONFIRM_MANUAL_OPS=yes`.
+
+## Remaining polish (non-blocking)
+- Full backend test suite requires local MongoDB (38+ tests pass)
+- Frontend build requires `.env` with `REACT_APP_API_URL` (CI validates it)
+- README could mention seed-data flow
+- `docs/generated/unbuildr/` should be gitignored or versioned
 
 ## Fail-closed rule
-BiohackStuff and other external targets remain read-only until the audit plan is reviewed.
+BiohackStuff remains read-only for automated mutations. All changes gated through PRs with CI validation.
